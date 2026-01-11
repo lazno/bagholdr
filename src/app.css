@@ -1,0 +1,13 @@
+@import 'tailwindcss';
+
+/* Custom theme colors for status indicators */
+@theme {
+  --color-status-ok: #22c55e;
+  --color-status-warning: #eab308;
+  --color-status-error: #ef4444;
+}
+
+/* Base styles */
+body {
+  @apply bg-gray-50 text-gray-900 antialiased;
+}
