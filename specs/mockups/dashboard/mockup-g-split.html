@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mockup G: Two-Panel Split</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, sans-serif; background: #f8f8f8; font-size: 14px; }
+
+    /* Layout */
+    .layout { display: flex; min-height: 100vh; padding-top: 32px; }
+    .left-panel { width: 320px; background: #fff; border-right: 1px solid #ddd; padding: 20px; flex-shrink: 0; }
+    .right-panel { flex: 1; padding: 20px; overflow-x: auto; }
+
+    /* Left panel header */
+    .portfolio-header { margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid #eee; }
+    select { font-size: 14px; padding: 6px 10px; border: 1px solid #ccc; width: 100%; margin-bottom: 12px; }
+    .total { font-size: 28px; font-weight: 600; }
+    .perf { font-size: 15px; color: #16a34a; }
+    .neg { color: #dc2626; }
+    .meta { font-size: 11px; color: #999; margin-top: 4px; }
+
+    /* Periods */
+    .periods { display: flex; margin-top: 12px; }
+    .periods button { flex: 1; padding: 6px 4px; border: 1px solid #ddd; background: #fff; cursor: pointer; font-size: 11px; margin-left: -1px; }
+    .periods button:first-child { margin-left: 0; border-radius: 3px 0 0 3px; }
+    .periods button:last-child { border-radius: 0 3px 3px 0; }
+    .periods button.active { background: #333; color: #fff; border-color: #333; }
+
+    /* Section headers */
+    .section-title { font-size: 10px; text-transform: uppercase; color: #999; letter-spacing: 0.5px; margin: 16px 0 8px; }
+
+    /* Sleeve items in left panel */
+    .sleeve-item {
+      padding: 8px 0;
+      border-bottom: 1px solid #f0f0f0;
+      cursor: pointer;
+    }
+    .sleeve-item:hover { background: #fafafa; margin: 0 -20px; padding: 8px 20px; }
+    .sleeve-item.selected { background: #f0f9ff; margin: 0 -20px; padding: 8px 20px; border-left: 3px solid #3b82f6; }
+    .sleeve-item.child { padding-left: 16px; }
+    .sleeve-item.child .sleeve-name { font-weight: 400; color: #666; }
+
+    .sleeve-top { display: flex; justify-content: space-between; align-items: baseline; }
+    .sleeve-name { font-weight: 500; font-size: 13px; }
+    .sleeve-pct { font-size: 13px; font-variant-numeric: tabular-nums; }
+
+    .sleeve-bottom { display: flex; justify-content: space-between; font-size: 11px; color: #999; margin-top: 2px; }
+    .sleeve-dev { font-weight: 500; }
+    .sleeve-dev.warn { color: #d97706; }
+    .sleeve-dev.ok { color: #16a34a; }
+
+    /* Status dot */
+    .status-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; margin-right: 6px; }
+    .status-dot.ok { background: #22c55e; }
+    .status-dot.warn { background: #f59e0b; }
+    .status-dot.error { background: #ef4444; }
+
+    /* Health section */
+    .health-list { font-size: 12px; }
+    .health-item { padding: 6px 0; display: flex; align-items: center; gap: 6px; }
+    .health-item a { color: inherit; text-decoration: none; }
+    .health-item a:hover { text-decoration: underline; }
+
+    /* Right panel */
+    .right-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+    .right-title { font-size: 16px; font-weight: 600; }
+    .view-tabs button { padding: 6px 12px; border: 1px solid #ddd; background: #fff; cursor: pointer; font-size: 12px; margin-left: -1px; }
+    .view-tabs button:first-child { border-radius: 3px 0 0 3px; margin-left: 0; }
+    .view-tabs button:last-child { border-radius: 0 3px 3px 0; }
+    .view-tabs button.active { background: #333; color: #fff; border-color: #333; }
+
+    /* Assets table */
+    .table-container { background: #fff; border: 1px solid #ddd; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #eee; }
+    th { font-size: 11px; color: #666; font-weight: 500; text-transform: uppercase; background: #fafafa; position: sticky; top: 0; }
+    .num { text-align: right; font-variant-numeric: tabular-nums; }
+    tr:hover { background: #f8f8f8; }
+    .ticker { font-weight: 600; }
+    .name { color: #666; font-size: 12px; }
+
+    /* Mockup label */
+    .mockup-label { position: fixed; top: 0; left: 0; right: 0; background: #34d399; padding: 4px 16px; font-size: 12px; font-weight: 600; z-index: 100; }
+  </style>
+</head>
+<body>
+  <div class="mockup-label">MOCKUP G: Two-Panel Split | <a href="index.html">All mockups</a></div>
+
+  <div class="layout">
+    <!-- Left Panel: Portfolio & Sleeves -->
+    <div class="left-panel">
+      <div class="portfolio-header">
+        <select>
+          <option>Conservative Portfolio</option>
+          <option>Aggressive Growth</option>
+        </select>
+        <div class="total">EUR 127,432</div>
+        <div class="perf">+12.4% (+14,032)</div>
+        <div class="meta">synced 3m ago</div>
+        <div class="periods">
+          <button>1D</button>
+          <button>1W</button>
+          <button>1M</button>
+          <button>YTD</button>
+          <button>1Y</button>
+          <button class="active">Cost</button>
+        </div>
+      </div>
+
+      <div class="section-title">Sleeves</div>
+
+      <div class="sleeve-item selected" onclick="selectSleeve(this, 'All')">
+        <div class="sleeve-top">
+          <span class="sleeve-name">All Assets</span>
+          <span class="sleeve-pct">100%</span>
+        </div>
+      </div>
+
+      <div class="sleeve-item" onclick="selectSleeve(this, 'Equities')">
+        <div class="sleeve-top">
+          <span class="sleeve-name"><span class="status-dot ok"></span>Equities</span>
+          <span class="sleeve-pct">58.2%</span>
+        </div>
+        <div class="sleeve-bottom">
+          <span>target 60%</span>
+          <span class="sleeve-dev">-1.8pp</span>
+        </div>
+      </div>
+
+      <div class="sleeve-item child" onclick="selectSleeve(this, 'US Tech')">
+        <div class="sleeve-top">
+          <span class="sleeve-name"><span class="status-dot warn"></span>US Tech</span>
+          <span class="sleeve-pct">27.1%</span>
+        </div>
+        <div class="sleeve-bottom">
+          <span>target 25%</span>
+          <span class="sleeve-dev warn">+2.1pp</span>
+        </div>
+      </div>
+
+      <div class="sleeve-item child" onclick="selectSleeve(this, 'EU Value')">
+        <div class="sleeve-top">
+          <span class="sleeve-name"><span class="status-dot ok"></span>EU Value</span>
+          <span class="sleeve-pct">18.3%</span>
+        </div>
+        <div class="sleeve-bottom">
+          <span>target 20%</span>
+          <span class="sleeve-dev">-1.7pp</span>
+        </div>
+      </div>
+
+      <div class="sleeve-item child" onclick="selectSleeve(this, 'Emerging')">
+        <div class="sleeve-top">
+          <span class="sleeve-name"><span class="status-dot warn"></span>Emerging</span>
+          <span class="sleeve-pct">12.8%</span>
+        </div>
+        <div class="sleeve-bottom">
+          <span>target 15%</span>
+          <span class="sleeve-dev warn">-2.2pp</span>
+        </div>
+      </div>
+
+      <div class="sleeve-item" onclick="selectSleeve(this, 'Bonds')">
+        <div class="sleeve-top">
+          <span class="sleeve-name"><span class="status-dot ok"></span>Bonds</span>
+          <span class="sleeve-pct">31.5%</span>
+        </div>
+        <div class="sleeve-bottom">
+          <span>target 30%</span>
+          <span class="sleeve-dev ok">+1.5pp</span>
+        </div>
+      </div>
+
+      <div class="sleeve-item child" onclick="selectSleeve(this, 'Government')">
+        <div class="sleeve-top">
+          <span class="sleeve-name"><span class="status-dot ok"></span>Government</span>
+          <span class="sleeve-pct">21.0%</span>
+        </div>
+        <div class="sleeve-bottom">
+          <span>target 20%</span>
+          <span class="sleeve-dev ok">+1.0pp</span>
+        </div>
+      </div>
+
+      <div class="sleeve-item child" onclick="selectSleeve(this, 'Corporate')">
+        <div class="sleeve-top">
+          <span class="sleeve-name"><span class="status-dot ok"></span>Corporate</span>
+          <span class="sleeve-pct">10.5%</span>
+        </div>
+        <div class="sleeve-bottom">
+          <span>target 10%</span>
+          <span class="sleeve-dev ok">+0.5pp</span>
+        </div>
+      </div>
+
+      <div class="sleeve-item" onclick="selectSleeve(this, 'Commodities')">
+        <div class="sleeve-top">
+          <span class="sleeve-name"><span class="status-dot ok"></span>Commodities</span>
+          <span class="sleeve-pct">10.3%</span>
+        </div>
+        <div class="sleeve-bottom">
+          <span>target 10%</span>
+          <span class="sleeve-dev ok">+0.3pp</span>
+        </div>
+      </div>
+
+      <div class="section-title">Health</div>
+      <div class="health-list">
+        <div class="health-item"><span class="status-dot error"></span><a href="#">EXAMPLE.MI missing symbol</a></div>
+        <div class="health-item"><span class="status-dot warn"></span><a href="#">2 assets with stale prices</a></div>
+        <div class="health-item"><span class="status-dot warn"></span><a href="#">BTC-EUR unassigned</a></div>
+      </div>
+    </div>
+
+    <!-- Right Panel: Assets -->
+    <div class="right-panel">
+      <div class="right-header">
+        <div class="right-title" id="panel-title">All Assets</div>
+        <div class="view-tabs">
+          <button class="active">All</button>
+          <button>Gainers</button>
+          <button>Losers</button>
+          <button>Largest</button>
+        </div>
+      </div>
+
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Ticker</th>
+              <th>Name</th>
+              <th>Sleeve</th>
+              <th class="num">Qty</th>
+              <th class="num">Price</th>
+              <th class="num">Value</th>
+              <th class="num">Weight</th>
+              <th class="num">Cost</th>
+              <th class="num">Return</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="ticker">VWCE</td>
+              <td class="name">Vanguard FTSE All-World</td>
+              <td>Emerging</td>
+              <td class="num">120</td>
+              <td class="num">108.00</td>
+              <td class="num">12,960</td>
+              <td class="num">10.2%</td>
+              <td class="num">11,980</td>
+              <td class="num perf">+8.2%</td>
+            </tr>
+            <tr>
+              <td class="ticker">MSFT</td>
+              <td class="name">Microsoft Corp</td>
+              <td>US Tech</td>
+              <td class="num">30</td>
+              <td class="num">378.20</td>
+              <td class="num">10,540</td>
+              <td class="num">8.3%</td>
+              <td class="num">8,876</td>
+              <td class="num perf">+18.7%</td>
+            </tr>
+            <tr>
+              <td class="ticker">SGLD</td>
+              <td class="name">Invesco Physical Gold</td>
+              <td>Commodities</td>
+              <td class="num">50</td>
+              <td class="num">198.50</td>
+              <td class="num">9,925</td>
+              <td class="num">7.8%</td>
+              <td class="num">8,940</td>
+              <td class="num perf">+11.0%</td>
+            </tr>
+            <tr>
+              <td class="ticker">NVDA</td>
+              <td class="name">NVIDIA Corp</td>
+              <td>US Tech</td>
+              <td class="num">15</td>
+              <td class="num">520.00</td>
+              <td class="num">8,320</td>
+              <td class="num">6.5%</td>
+              <td class="num">5,855</td>
+              <td class="num perf">+42.1%</td>
+            </tr>
+            <tr>
+              <td class="ticker">AAPL</td>
+              <td class="name">Apple Inc</td>
+              <td>US Tech</td>
+              <td class="num">45</td>
+              <td class="num">182.50</td>
+              <td class="num">7,623</td>
+              <td class="num">6.0%</td>
+              <td class="num">6,130</td>
+              <td class="num perf">+24.3%</td>
+            </tr>
+            <tr>
+              <td class="ticker">IWDA</td>
+              <td class="name">iShares Core MSCI World</td>
+              <td>EU Value</td>
+              <td class="num">85</td>
+              <td class="num">82.00</td>
+              <td class="num">6,970</td>
+              <td class="num">5.5%</td>
+              <td class="num">6,258</td>
+              <td class="num perf">+11.4%</td>
+            </tr>
+            <tr>
+              <td class="ticker">GOOGL</td>
+              <td class="name">Alphabet Inc</td>
+              <td>US Tech</td>
+              <td class="num">35</td>
+              <td class="num">142.80</td>
+              <td class="num">5,890</td>
+              <td class="num">4.6%</td>
+              <td class="num">5,115</td>
+              <td class="num perf">+15.2%</td>
+            </tr>
+            <tr>
+              <td class="ticker">AGGH</td>
+              <td class="name">iShares Global Aggregate</td>
+              <td>Government</td>
+              <td class="num">200</td>
+              <td class="num">4.85</td>
+              <td class="num">970</td>
+              <td class="num">0.8%</td>
+              <td class="num">1,020</td>
+              <td class="num neg">-4.9%</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.querySelectorAll('.periods button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.periods button').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+      });
+    });
+
+    document.querySelectorAll('.view-tabs button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.view-tabs button').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+      });
+    });
+
+    function selectSleeve(el, name) {
+      document.querySelectorAll('.sleeve-item').forEach(s => s.classList.remove('selected'));
+      el.classList.add('selected');
+      document.getElementById('panel-title').textContent = name === 'All' ? 'All Assets' : name + ' Assets';
+    }
+  </script>
+</body>
+</html>

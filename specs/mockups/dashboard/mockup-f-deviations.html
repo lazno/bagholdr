@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mockup F: Deviation Focus</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, sans-serif; background: #fff; padding: 20px; font-size: 14px; line-height: 1.4; }
+    .container { max-width: 900px; margin: 0 auto; }
+
+    /* Header - minimal */
+    .header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 24px; }
+    select { font-size: 13px; padding: 4px 8px; border: 1px solid #ccc; }
+    .total { font-size: 22px; font-weight: 600; }
+    .perf { font-size: 15px; color: #16a34a; }
+    .neg { color: #dc2626; }
+    .periods button { padding: 4px 8px; border: 1px solid #ccc; background: #fff; cursor: pointer; font-size: 11px; margin-left: -1px; }
+    .periods button:first-child { margin-left: 0; }
+    .periods button.active { background: #333; color: #fff; border-color: #333; }
+
+    /* Section */
+    .section { margin-bottom: 32px; }
+    .section-title { font-size: 11px; text-transform: uppercase; color: #999; letter-spacing: 0.5px; margin-bottom: 12px; }
+
+    /* Sleeve list - compact with deviation bars */
+    .sleeve-list { border: 1px solid #e5e5e5; }
+    .sleeve-row {
+      display: grid;
+      grid-template-columns: 140px 1fr 80px 70px;
+      align-items: center;
+      padding: 10px 12px;
+      border-bottom: 1px solid #eee;
+      cursor: pointer;
+    }
+    .sleeve-row:last-child { border-bottom: none; }
+    .sleeve-row:hover { background: #fafafa; }
+    .sleeve-row.child { padding-left: 28px; }
+    .sleeve-row.child .sleeve-name { color: #666; font-weight: 400; }
+
+    .sleeve-name { font-weight: 500; }
+
+    /* Deviation bar - centered on zero */
+    .deviation-bar {
+      height: 16px;
+      position: relative;
+      background: #f5f5f5;
+    }
+    .deviation-bar .zero {
+      position: absolute;
+      left: 50%;
+      top: 0;
+      bottom: 0;
+      width: 1px;
+      background: #ccc;
+    }
+    .deviation-bar .fill {
+      position: absolute;
+      top: 2px;
+      bottom: 2px;
+      background: #16a34a;
+    }
+    .deviation-bar .fill.negative { background: #dc2626; }
+    .deviation-bar .fill.warning { background: #f59e0b; }
+
+    /* Deviation bar fill positions */
+    /* width = deviation pp * 5 (so 2pp = 10%) */
+    /* left = 50% for positive, left = 50% - width for negative */
+
+    .sleeve-actual { text-align: right; font-variant-numeric: tabular-nums; }
+    .sleeve-dev { text-align: right; font-size: 12px; font-weight: 500; }
+    .sleeve-dev.pos { color: #16a34a; }
+    .sleeve-dev.neg { color: #dc2626; }
+    .sleeve-dev.warn { color: #d97706; }
+
+    /* Health - if any issues */
+    .health-bar {
+      background: #fef3c7;
+      border: 1px solid #fcd34d;
+      padding: 8px 12px;
+      font-size: 12px;
+      margin-bottom: 16px;
+      display: flex;
+      gap: 16px;
+    }
+    .health-bar a { color: #92400e; }
+
+    /* Assets */
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 8px 10px; text-align: left; border-bottom: 1px solid #eee; }
+    th { font-size: 10px; color: #999; font-weight: 500; text-transform: uppercase; }
+    .num { text-align: right; font-variant-numeric: tabular-nums; }
+    tr:hover { background: #fafafa; }
+    .ticker { font-weight: 600; }
+    .muted { color: #999; }
+
+    /* Sort indicator */
+    th.sortable { cursor: pointer; }
+    th.sortable:hover { color: #333; }
+
+    /* Mockup label */
+    .mockup-label { position: fixed; top: 0; left: 0; right: 0; background: #a78bfa; padding: 4px 16px; font-size: 12px; font-weight: 600; z-index: 100; }
+    body { padding-top: 36px; }
+  </style>
+</head>
+<body>
+  <div class="mockup-label">MOCKUP F: Deviation Focus | <a href="index.html">All mockups</a></div>
+
+  <div class="container">
+    <div class="header">
+      <div style="display: flex; align-items: baseline; gap: 12px;">
+        <select>
+          <option>Conservative Portfolio</option>
+        </select>
+        <span class="total">EUR 127,432</span>
+        <span class="perf">+12.4%</span>
+      </div>
+      <div class="periods">
+        <button>1D</button>
+        <button>1W</button>
+        <button>1M</button>
+        <button>YTD</button>
+        <button>1Y</button>
+        <button class="active">Cost</button>
+      </div>
+    </div>
+
+    <div class="health-bar">
+      <a href="#">1 missing symbol</a>
+      <a href="#">2 stale prices</a>
+      <a href="#">1 unassigned asset</a>
+      <span class="muted" style="margin-left: auto;">synced 3m ago</span>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Sleeves — deviation from target</div>
+      <div class="sleeve-list">
+        <div class="sleeve-row" onclick="filterSleeve('equities')">
+          <div class="sleeve-name">Equities</div>
+          <div class="deviation-bar">
+            <div class="zero"></div>
+            <div class="fill negative" style="width: 9%; right: 50%;"></div>
+          </div>
+          <div class="sleeve-actual">58.2%</div>
+          <div class="sleeve-dev neg">-1.8pp</div>
+        </div>
+        <div class="sleeve-row child" onclick="filterSleeve('us-tech')">
+          <div class="sleeve-name">US Tech</div>
+          <div class="deviation-bar">
+            <div class="zero"></div>
+            <div class="fill warning" style="width: 10.5%; left: 50%;"></div>
+          </div>
+          <div class="sleeve-actual">27.1%</div>
+          <div class="sleeve-dev warn">+2.1pp</div>
+        </div>
+        <div class="sleeve-row child" onclick="filterSleeve('eu-value')">
+          <div class="sleeve-name">EU Value</div>
+          <div class="deviation-bar">
+            <div class="zero"></div>
+            <div class="fill negative" style="width: 8.5%; right: 50%;"></div>
+          </div>
+          <div class="sleeve-actual">18.3%</div>
+          <div class="sleeve-dev neg">-1.7pp</div>
+        </div>
+        <div class="sleeve-row child" onclick="filterSleeve('emerging')">
+          <div class="sleeve-name">Emerging</div>
+          <div class="deviation-bar">
+            <div class="zero"></div>
+            <div class="fill warning" style="width: 11%; right: 50%;"></div>
+          </div>
+          <div class="sleeve-actual">12.8%</div>
+          <div class="sleeve-dev warn">-2.2pp</div>
+        </div>
+        <div class="sleeve-row" onclick="filterSleeve('bonds')">
+          <div class="sleeve-name">Bonds</div>
+          <div class="deviation-bar">
+            <div class="zero"></div>
+            <div class="fill" style="width: 7.5%; left: 50%;"></div>
+          </div>
+          <div class="sleeve-actual">31.5%</div>
+          <div class="sleeve-dev pos">+1.5pp</div>
+        </div>
+        <div class="sleeve-row child" onclick="filterSleeve('govt')">
+          <div class="sleeve-name">Government</div>
+          <div class="deviation-bar">
+            <div class="zero"></div>
+            <div class="fill" style="width: 5%; left: 50%;"></div>
+          </div>
+          <div class="sleeve-actual">21.0%</div>
+          <div class="sleeve-dev pos">+1.0pp</div>
+        </div>
+        <div class="sleeve-row child" onclick="filterSleeve('corp')">
+          <div class="sleeve-name">Corporate</div>
+          <div class="deviation-bar">
+            <div class="zero"></div>
+            <div class="fill" style="width: 2.5%; left: 50%;"></div>
+          </div>
+          <div class="sleeve-actual">10.5%</div>
+          <div class="sleeve-dev pos">+0.5pp</div>
+        </div>
+        <div class="sleeve-row" onclick="filterSleeve('commodities')">
+          <div class="sleeve-name">Commodities</div>
+          <div class="deviation-bar">
+            <div class="zero"></div>
+            <div class="fill" style="width: 1.5%; left: 50%;"></div>
+          </div>
+          <div class="sleeve-actual">10.3%</div>
+          <div class="sleeve-dev pos">+0.3pp</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Assets</div>
+      <table>
+        <thead>
+          <tr>
+            <th class="sortable">Asset</th>
+            <th class="sortable">Sleeve</th>
+            <th class="sortable num">Value</th>
+            <th class="sortable num">Weight</th>
+            <th class="sortable num">Return</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td><span class="ticker">VWCE</span> <span class="muted">Vanguard FTSE</span></td><td>Emerging</td><td class="num">12,960</td><td class="num">10.2%</td><td class="num perf">+8.2%</td></tr>
+          <tr><td><span class="ticker">MSFT</span> <span class="muted">Microsoft</span></td><td>US Tech</td><td class="num">10,540</td><td class="num">8.3%</td><td class="num perf">+18.7%</td></tr>
+          <tr><td><span class="ticker">SGLD</span> <span class="muted">Invesco Gold</span></td><td>Commodities</td><td class="num">9,925</td><td class="num">7.8%</td><td class="num perf">+11.0%</td></tr>
+          <tr><td><span class="ticker">NVDA</span> <span class="muted">NVIDIA</span></td><td>US Tech</td><td class="num">8,320</td><td class="num">6.5%</td><td class="num perf">+42.1%</td></tr>
+          <tr><td><span class="ticker">AAPL</span> <span class="muted">Apple</span></td><td>US Tech</td><td class="num">7,623</td><td class="num">6.0%</td><td class="num perf">+24.3%</td></tr>
+          <tr><td><span class="ticker">IWDA</span> <span class="muted">iShares World</span></td><td>EU Value</td><td class="num">6,970</td><td class="num">5.5%</td><td class="num perf">+11.4%</td></tr>
+          <tr><td><span class="ticker">AGGH</span> <span class="muted">iShares Agg</span></td><td>Govt</td><td class="num">970</td><td class="num">0.8%</td><td class="num neg">-4.9%</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    document.querySelectorAll('.periods button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.periods button').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+      });
+    });
+
+    function filterSleeve(s) {
+      document.querySelectorAll('.sleeve-row').forEach(r => r.style.background = '');
+      event.target.closest('.sleeve-row').style.background = '#f0f9ff';
+    }
+  </script>
+</body>
+</html>

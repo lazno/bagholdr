@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Mockups - Bagholdr</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, sans-serif; background: #f5f5f5; padding: 40px 20px; line-height: 1.6; }
+    .container { max-width: 900px; margin: 0 auto; }
+
+    h1 { font-size: 24px; margin-bottom: 8px; }
+    h2 { font-size: 18px; margin-bottom: 12px; }
+    .subtitle { color: #666; margin-bottom: 32px; }
+
+    .section { margin-bottom: 40px; }
+
+    .mockups { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+
+    .mockup-card {
+      background: white;
+      border: 1px solid #ddd;
+      padding: 16px;
+      text-decoration: none;
+      color: inherit;
+      transition: box-shadow 0.15s, transform 0.15s;
+    }
+    .mockup-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.1); transform: translateY(-2px); }
+    .mockup-card.deprecated { opacity: 0.5; }
+
+    .mockup-card h3 { font-size: 15px; margin-bottom: 6px; }
+    .mockup-card p { color: #666; font-size: 13px; margin-bottom: 8px; }
+    .mockup-card ul { font-size: 12px; color: #444; padding-left: 16px; }
+    .mockup-card li { margin-bottom: 2px; }
+
+    .tag { font-size: 10px; padding: 2px 6px; border-radius: 3px; font-weight: 600; margin-left: 6px; vertical-align: middle; }
+    .tag-new { background: #dcfce7; color: #166534; }
+    .tag-old { background: #f3f4f6; color: #6b7280; }
+
+    hr { border: none; border-top: 1px solid #ddd; margin: 32px 0; }
+
+    .note { font-size: 13px; color: #666; padding: 12px 16px; background: #fafafa; border-left: 3px solid #ddd; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Dashboard Mockups</h1>
+    <p class="subtitle">Click dummies for the Bagholdr dashboard</p>
+
+    <div class="section">
+      <h2>Latest: Chart Layout</h2>
+      <div class="mockups">
+        <a href="mockup-chart.html" class="mockup-card" style="border: 2px solid #22c55e;">
+          <h3>Chart + Sleeves</h3>
+          <p>Performance chart as hero. Stats in horizontal row. Chart + Sleeves side by side.</p>
+        </a>
+        <a href="mockup-chart-minimal.html" class="mockup-card">
+          <h3>Chart: Minimal</h3>
+          <p>2 sleeves, 3 assets. Chart still fills space meaningfully.</p>
+        </a>
+        <a href="stress-maximal.html" class="mockup-card">
+          <h3>Stress: Maximal</h3>
+          <p>15 sleeves (3 levels deep), 50+ assets.</p>
+        </a>
+      </div>
+    </div>
+
+    <hr>
+
+    <div class="section">
+      <h2>Round 2</h2>
+      <div class="mockups">
+        <a href="mockup-e-treemap.html" class="mockup-card">
+          <h3>E: Proper Treemap</h3>
+          <p>Treemap where size = actual allocation %. Visual proportions are meaningful.</p>
+          <ul>
+            <li>Size reflects real allocation</li>
+            <li>Color = band status</li>
+            <li>Hierarchy via nesting</li>
+            <li>Minimal chrome</li>
+          </ul>
+        </a>
+
+        <a href="mockup-f-deviations.html" class="mockup-card">
+          <h3>F: Deviation Focus</h3>
+          <p>Centered deviation bars show over/under target at a glance.</p>
+          <ul>
+            <li>Bars centered on zero</li>
+            <li>Direction shows drift</li>
+            <li>Compact sleeve rows</li>
+            <li>High data-to-ink ratio</li>
+          </ul>
+        </a>
+
+        <a href="mockup-g-split.html" class="mockup-card">
+          <h3>G: Two-Panel Split</h3>
+          <p>Fixed left panel for sleeves, scrollable right panel for assets.</p>
+          <ul>
+            <li>Sleeves always visible</li>
+            <li>Click to filter assets</li>
+            <li>Health in left panel</li>
+            <li>Clear separation</li>
+          </ul>
+        </a>
+
+        <a href="mockup-h-attention.html" class="mockup-card">
+          <h3>H: Attention First</h3>
+          <p>Prioritizes what needs attention. Health issues and drifting sleeves at top.</p>
+          <ul>
+            <li>Problems shown first</li>
+            <li>OK sleeves collapsed</li>
+            <li>Single-column flow</li>
+            <li>Scannable in seconds</li>
+          </ul>
+        </a>
+      </div>
+    </div>
+
+    <hr>
+
+    <div class="section">
+      <h2>Round 1 <span class="tag tag-old">Earlier</span></h2>
+      <div class="mockups">
+        <a href="mockup-a-classic-table.html" class="mockup-card">
+          <h3>A: Classic Table</h3>
+          <p>Traditional table-based layout. Clean but dated feel.</p>
+        </a>
+
+        <a href="mockup-b-treemap.html" class="mockup-card">
+          <h3>B: Treemap (v1)</h3>
+          <p>Treemap attempt where sizes don't reflect allocation. Cards for assets.</p>
+        </a>
+
+        <a href="mockup-c-cards.html" class="mockup-card">
+          <h3>C: Card Grid</h3>
+          <p>Many cards competing for attention. Busy layout.</p>
+        </a>
+
+        <a href="mockup-d-bars.html" class="mockup-card">
+          <h3>D: Horizontal Bars</h3>
+          <p>Dark theme with progress bars. Bars redundant with numbers.</p>
+        </a>
+      </div>
+    </div>
+
+    <div class="note">
+      These are low-fidelity mockups. Focus on layout and information hierarchy, not visual polish.
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mockup D: Horizontal Bars Layout</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, sans-serif; background: #1a1a2e; color: #e5e5e5; padding: 16px; }
+
+    .container { max-width: 1200px; margin: 0 auto; }
+
+    h2 { font-size: 11px; text-transform: uppercase; color: #888; margin-bottom: 12px; letter-spacing: 1px; }
+    select { padding: 8px 12px; font-size: 14px; background: #16213e; border: 1px solid #444; color: #e5e5e5; }
+
+    .row { display: flex; gap: 16px; }
+    .col { flex: 1; }
+    .col-narrow { flex: 0 0 320px; }
+
+    .card { background: #16213e; border: 1px solid #333; padding: 16px; margin-bottom: 16px; }
+
+    /* Header */
+    .header { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px; padding: 20px; }
+
+    .portfolio-name { font-size: 14px; color: #888; margin-bottom: 4px; }
+    .total-value { font-size: 36px; font-weight: 300; color: #fff; }
+    .performance-big { font-size: 24px; font-weight: 600; }
+    .positive { color: #4ade80; }
+    .negative { color: #f87171; }
+    .sync { font-size: 11px; color: #666; margin-top: 4px; }
+
+    .periods { display: flex; gap: 2px; }
+    .periods button {
+      padding: 8px 14px;
+      border: none;
+      background: #0f3460;
+      color: #888;
+      cursor: pointer;
+      font-size: 12px;
+    }
+    .periods button.active { background: #4ade80; color: #000; }
+    .periods button:hover:not(.active) { background: #1a4a7a; }
+
+    /* Sleeve bars - the main feature */
+    .sleeve-row {
+      display: flex;
+      align-items: center;
+      margin-bottom: 16px;
+      cursor: pointer;
+    }
+    .sleeve-row:hover .sleeve-bar-bg { background: #1a4a7a; }
+    .sleeve-row.selected .sleeve-bar-bg { background: #1a4a7a; box-shadow: 0 0 0 2px #4ade80; }
+
+    .sleeve-label {
+      width: 140px;
+      flex-shrink: 0;
+    }
+    .sleeve-name { font-size: 14px; font-weight: 500; }
+    .sleeve-parent-label { font-size: 10px; color: #666; }
+
+    .sleeve-bar-container {
+      flex: 1;
+      position: relative;
+    }
+
+    .sleeve-bar-bg {
+      height: 32px;
+      background: #0f3460;
+      border-radius: 4px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .sleeve-bar-fill {
+      height: 100%;
+      position: absolute;
+      left: 0;
+      top: 0;
+      display: flex;
+      align-items: center;
+      padding-left: 12px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #000;
+    }
+
+    .fill-ok { background: linear-gradient(90deg, #22c55e, #4ade80); }
+    .fill-warn { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+    .fill-error { background: linear-gradient(90deg, #ef4444, #f87171); }
+
+    /* Target marker */
+    .target-marker {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 3px;
+      background: #fff;
+      opacity: 0.8;
+    }
+
+    /* Band visualization */
+    .band-zone {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      background: rgba(255,255,255,0.05);
+      border-left: 1px dashed rgba(255,255,255,0.2);
+      border-right: 1px dashed rgba(255,255,255,0.2);
+    }
+
+    .sleeve-stats {
+      width: 180px;
+      flex-shrink: 0;
+      text-align: right;
+      font-size: 13px;
+      padding-left: 16px;
+    }
+
+    .sleeve-stats .actual { font-weight: 600; }
+    .sleeve-stats .target { color: #666; font-size: 11px; }
+    .sleeve-stats .return { margin-top: 2px; }
+
+    /* Health strip at top */
+    .health-strip {
+      display: flex;
+      gap: 8px;
+      padding: 8px 0;
+    }
+
+    .health-chip {
+      font-size: 11px;
+      padding: 4px 12px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .health-chip.error { background: rgba(239, 68, 68, 0.2); color: #f87171; }
+    .health-chip.warning { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
+    .health-chip.ok { background: rgba(34, 197, 94, 0.2); color: #4ade80; }
+
+    /* Asset section */
+    .tabs { display: flex; gap: 0; margin-bottom: 16px; }
+    .tabs button {
+      padding: 10px 20px;
+      border: 1px solid #333;
+      background: transparent;
+      color: #888;
+      cursor: pointer;
+      font-size: 12px;
+    }
+    .tabs button.active { background: #0f3460; color: #fff; border-color: #4ade80; }
+    .tabs button:first-child { border-radius: 4px 0 0 4px; }
+    .tabs button:last-child { border-radius: 0 4px 4px 0; }
+
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #333; }
+    th { color: #666; font-weight: 500; font-size: 11px; text-transform: uppercase; }
+    tr:hover { background: rgba(255,255,255,0.02); }
+    .num { text-align: right; font-variant-numeric: tabular-nums; }
+
+    /* Summary cards row */
+    .summary-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .summary-card {
+      background: #0f3460;
+      padding: 12px;
+      border-radius: 4px;
+    }
+
+    .summary-card .label { font-size: 10px; color: #666; text-transform: uppercase; }
+    .summary-card .value { font-size: 18px; font-weight: 600; margin-top: 4px; }
+
+    /* Mockup label */
+    .mockup-label {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: #f472b6;
+      color: #000;
+      padding: 4px 16px;
+      font-size: 12px;
+      font-weight: 600;
+      z-index: 100;
+    }
+    body { padding-top: 40px; }
+
+    /* Filter */
+    .filter-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    /* Child indent */
+    .sleeve-row.child { margin-left: 20px; }
+    .sleeve-row.child .sleeve-label { width: 120px; }
+    .sleeve-row.child .sleeve-bar-bg { height: 24px; }
+    .sleeve-row.child .sleeve-name { font-size: 12px; color: #aaa; }
+  </style>
+</head>
+<body>
+  <div class="mockup-label">
+    MOCKUP D: Horizontal Bars (Dark Theme) | <a href="index.html" style="color: #000;">View all mockups</a>
+  </div>
+
+  <div class="container">
+    <!-- Header -->
+    <div class="card">
+      <div class="header">
+        <div>
+          <div class="portfolio-name">
+            <select>
+              <option>Conservative Portfolio</option>
+              <option>Aggressive Growth</option>
+            </select>
+          </div>
+          <div class="total-value">EUR 127,432.50</div>
+          <div class="sync">Last sync: 3 minutes ago</div>
+        </div>
+        <div style="text-align: right;">
+          <div class="performance-big positive">+12.4%</div>
+          <div class="positive" style="font-size: 16px;">+EUR 14,032</div>
+          <div style="margin-top: 12px;">
+            <div class="periods">
+              <button>1D</button>
+              <button>1W</button>
+              <button>1M</button>
+              <button>YTD</button>
+              <button>1Y</button>
+              <button class="active">Cost</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Health strip -->
+      <div class="health-strip">
+        <span class="health-chip error">1 Missing Symbol</span>
+        <span class="health-chip warning">2 Stale Prices</span>
+        <span class="health-chip warning">1 Unassigned</span>
+      </div>
+    </div>
+
+    <div class="row">
+      <!-- Sleeve Bars - Main Column -->
+      <div class="col">
+        <div class="card">
+          <h2>Sleeve Allocations</h2>
+
+          <!-- Equities -->
+          <div class="sleeve-row" onclick="selectSleeve(this, 'equities')">
+            <div class="sleeve-label">
+              <div class="sleeve-name">Equities</div>
+            </div>
+            <div class="sleeve-bar-container">
+              <div class="sleeve-bar-bg">
+                <div class="band-zone" style="left: 52%; width: 16%;"></div>
+                <div class="sleeve-bar-fill fill-ok" style="width: 58.2%;"></div>
+                <div class="target-marker" style="left: 60%;"></div>
+              </div>
+            </div>
+            <div class="sleeve-stats">
+              <div class="actual">58.2%</div>
+              <div class="target">Target: 60%</div>
+              <div class="return positive">+15.2%</div>
+            </div>
+          </div>
+
+          <!-- US Tech (child) -->
+          <div class="sleeve-row child" onclick="selectSleeve(this, 'us-tech')">
+            <div class="sleeve-label">
+              <div class="sleeve-name">US Tech</div>
+            </div>
+            <div class="sleeve-bar-container">
+              <div class="sleeve-bar-bg">
+                <div class="sleeve-bar-fill fill-warn" style="width: 27.1%;"></div>
+                <div class="target-marker" style="left: 25%;"></div>
+              </div>
+            </div>
+            <div class="sleeve-stats">
+              <div class="actual">27.1%</div>
+              <div class="target">Target: 25%</div>
+              <div class="return positive">+22.4%</div>
+            </div>
+          </div>
+
+          <!-- EU Value (child) -->
+          <div class="sleeve-row child" onclick="selectSleeve(this, 'eu-value')">
+            <div class="sleeve-label">
+              <div class="sleeve-name">EU Value</div>
+            </div>
+            <div class="sleeve-bar-container">
+              <div class="sleeve-bar-bg">
+                <div class="sleeve-bar-fill fill-ok" style="width: 18.3%;"></div>
+                <div class="target-marker" style="left: 20%;"></div>
+              </div>
+            </div>
+            <div class="sleeve-stats">
+              <div class="actual">18.3%</div>
+              <div class="target">Target: 20%</div>
+              <div class="return positive">+8.1%</div>
+            </div>
+          </div>
+
+          <!-- Emerging (child) -->
+          <div class="sleeve-row child" onclick="selectSleeve(this, 'emerging')">
+            <div class="sleeve-label">
+              <div class="sleeve-name">Emerging</div>
+            </div>
+            <div class="sleeve-bar-container">
+              <div class="sleeve-bar-bg">
+                <div class="sleeve-bar-fill fill-warn" style="width: 12.8%;"></div>
+                <div class="target-marker" style="left: 15%;"></div>
+              </div>
+            </div>
+            <div class="sleeve-stats">
+              <div class="actual">12.8%</div>
+              <div class="target">Target: 15%</div>
+              <div class="return negative">-3.2%</div>
+            </div>
+          </div>
+
+          <!-- Bonds -->
+          <div class="sleeve-row" style="margin-top: 16px;" onclick="selectSleeve(this, 'bonds')">
+            <div class="sleeve-label">
+              <div class="sleeve-name">Bonds</div>
+            </div>
+            <div class="sleeve-bar-container">
+              <div class="sleeve-bar-bg">
+                <div class="band-zone" style="left: 24%; width: 12%;"></div>
+                <div class="sleeve-bar-fill fill-ok" style="width: 31.5%;"></div>
+                <div class="target-marker" style="left: 30%;"></div>
+              </div>
+            </div>
+            <div class="sleeve-stats">
+              <div class="actual">31.5%</div>
+              <div class="target">Target: 30%</div>
+              <div class="return positive">+4.2%</div>
+            </div>
+          </div>
+
+          <!-- Govt (child) -->
+          <div class="sleeve-row child" onclick="selectSleeve(this, 'govt')">
+            <div class="sleeve-label">
+              <div class="sleeve-name">Government</div>
+            </div>
+            <div class="sleeve-bar-container">
+              <div class="sleeve-bar-bg">
+                <div class="sleeve-bar-fill fill-ok" style="width: 21%;"></div>
+                <div class="target-marker" style="left: 20%;"></div>
+              </div>
+            </div>
+            <div class="sleeve-stats">
+              <div class="actual">21.0%</div>
+              <div class="target">Target: 20%</div>
+              <div class="return positive">+3.1%</div>
+            </div>
+          </div>
+
+          <!-- Corp (child) -->
+          <div class="sleeve-row child" onclick="selectSleeve(this, 'corp')">
+            <div class="sleeve-label">
+              <div class="sleeve-name">Corporate</div>
+            </div>
+            <div class="sleeve-bar-container">
+              <div class="sleeve-bar-bg">
+                <div class="sleeve-bar-fill fill-ok" style="width: 10.5%;"></div>
+                <div class="target-marker" style="left: 10%;"></div>
+              </div>
+            </div>
+            <div class="sleeve-stats">
+              <div class="actual">10.5%</div>
+              <div class="target">Target: 10%</div>
+              <div class="return positive">+5.8%</div>
+            </div>
+          </div>
+
+          <!-- Commodities -->
+          <div class="sleeve-row" style="margin-top: 16px;" onclick="selectSleeve(this, 'commodities')">
+            <div class="sleeve-label">
+              <div class="sleeve-name">Commodities</div>
+            </div>
+            <div class="sleeve-bar-container">
+              <div class="sleeve-bar-bg">
+                <div class="band-zone" style="left: 8%; width: 4%;"></div>
+                <div class="sleeve-bar-fill fill-ok" style="width: 10.3%;"></div>
+                <div class="target-marker" style="left: 10%;"></div>
+              </div>
+            </div>
+            <div class="sleeve-stats">
+              <div class="actual">10.3%</div>
+              <div class="target">Target: 10%</div>
+              <div class="return positive">+11.0%</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Summary Cards - Right Column -->
+      <div class="col-narrow">
+        <div class="summary-row" style="display: block;">
+          <div class="summary-card" style="margin-bottom: 12px;">
+            <div class="label">Cash Available</div>
+            <div class="value">EUR 5,200</div>
+          </div>
+          <div class="summary-card" style="margin-bottom: 12px;">
+            <div class="label">Invested</div>
+            <div class="value">EUR 122,232</div>
+          </div>
+          <div class="summary-card" style="margin-bottom: 12px;">
+            <div class="label">Unrealized P/L</div>
+            <div class="value positive">+EUR 14,032</div>
+          </div>
+          <div class="summary-card">
+            <div class="label">Assets</div>
+            <div class="value">47</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Assets Table -->
+    <div class="card">
+      <div class="filter-row">
+        <div class="tabs">
+          <button class="active">All Assets</button>
+          <button>Gainers</button>
+          <button>Losers</button>
+          <button>Largest</button>
+        </div>
+        <div>
+          <label style="font-size: 11px; color: #666; margin-right: 8px;">Sleeve:</label>
+          <select id="sleeve-filter" style="font-size: 12px;">
+            <option value="">All</option>
+            <option value="equities">Equities</option>
+            <option value="us-tech">US Tech</option>
+            <option value="eu-value">EU Value</option>
+            <option value="emerging">Emerging</option>
+            <option value="bonds">Bonds</option>
+            <option value="commodities">Commodities</option>
+          </select>
+        </div>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Ticker</th>
+            <th>Name</th>
+            <th>Sleeve</th>
+            <th class="num">Qty</th>
+            <th class="num">Price</th>
+            <th class="num">Value</th>
+            <th class="num">Cost</th>
+            <th class="num">Return</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>VWCE</strong></td>
+            <td>Vanguard FTSE All-World</td>
+            <td style="color: #888;">Emerging</td>
+            <td class="num">120</td>
+            <td class="num">EUR 108</td>
+            <td class="num">EUR 12,960</td>
+            <td class="num" style="color: #666;">EUR 11,980</td>
+            <td class="num positive">+8.2%</td>
+          </tr>
+          <tr>
+            <td><strong>MSFT</strong></td>
+            <td>Microsoft Corp</td>
+            <td style="color: #888;">US Tech</td>
+            <td class="num">30</td>
+            <td class="num">$378</td>
+            <td class="num">EUR 10,540</td>
+            <td class="num" style="color: #666;">EUR 8,876</td>
+            <td class="num positive">+18.7%</td>
+          </tr>
+          <tr>
+            <td><strong>SGLD</strong></td>
+            <td>Invesco Physical Gold</td>
+            <td style="color: #888;">Commodities</td>
+            <td class="num">50</td>
+            <td class="num">EUR 198</td>
+            <td class="num">EUR 9,925</td>
+            <td class="num" style="color: #666;">EUR 8,940</td>
+            <td class="num positive">+11.0%</td>
+          </tr>
+          <tr>
+            <td><strong>NVDA</strong></td>
+            <td>NVIDIA Corp</td>
+            <td style="color: #888;">US Tech</td>
+            <td class="num">15</td>
+            <td class="num">$520</td>
+            <td class="num">EUR 8,320</td>
+            <td class="num" style="color: #666;">EUR 5,855</td>
+            <td class="num positive">+42.1%</td>
+          </tr>
+          <tr>
+            <td><strong>AAPL</strong></td>
+            <td>Apple Inc</td>
+            <td style="color: #888;">US Tech</td>
+            <td class="num">45</td>
+            <td class="num">$182</td>
+            <td class="num">EUR 7,623</td>
+            <td class="num" style="color: #666;">EUR 6,130</td>
+            <td class="num positive">+24.3%</td>
+          </tr>
+          <tr>
+            <td><strong>AGGH</strong></td>
+            <td>iShares Global Aggregate</td>
+            <td style="color: #888;">Government</td>
+            <td class="num">200</td>
+            <td class="num">EUR 4.85</td>
+            <td class="num">EUR 970</td>
+            <td class="num" style="color: #666;">EUR 1,020</td>
+            <td class="num negative">-4.9%</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    document.querySelectorAll('.tabs button').forEach(btn => {
+      btn.addEventListener('click', function() {
+        this.parentElement.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+      });
+    });
+
+    document.querySelectorAll('.periods button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.periods button').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+      });
+    });
+
+    function selectSleeve(el, sleeve) {
+      document.querySelectorAll('.sleeve-row').forEach(r => r.classList.remove('selected'));
+      el.classList.add('selected');
+      document.getElementById('sleeve-filter').value = sleeve;
+    }
+  </script>
+</body>
+</html>

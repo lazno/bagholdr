@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mockup H: Attention First</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, sans-serif; background: #fff; padding: 20px; font-size: 14px; }
+    .container { max-width: 800px; margin: 0 auto; }
+
+    /* Header */
+    .header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 24px; }
+    .header-left { display: flex; align-items: baseline; gap: 12px; }
+    select { font-size: 13px; padding: 4px 8px; border: 1px solid #ccc; }
+    .total { font-size: 22px; font-weight: 600; }
+    .perf { color: #16a34a; }
+    .neg { color: #dc2626; }
+    .muted { color: #999; font-size: 12px; }
+
+    .periods button { padding: 4px 8px; border: 1px solid #ccc; background: #fff; cursor: pointer; font-size: 11px; margin-left: -1px; }
+    .periods button:first-child { margin-left: 0; }
+    .periods button.active { background: #333; color: #fff; border-color: #333; }
+
+    /* Sections */
+    .section { margin-bottom: 28px; }
+    .section-header { font-size: 11px; text-transform: uppercase; color: #999; letter-spacing: 0.5px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+
+    /* Attention box - only shown if issues exist */
+    .attention-box {
+      border: 1px solid #fcd34d;
+      background: #fffbeb;
+      padding: 12px 16px;
+      margin-bottom: 24px;
+    }
+    .attention-box.has-errors { border-color: #fca5a5; background: #fef2f2; }
+
+    .attention-title { font-weight: 600; font-size: 13px; margin-bottom: 8px; }
+    .attention-list { list-style: none; font-size: 13px; }
+    .attention-list li { padding: 4px 0; display: flex; align-items: center; gap: 8px; }
+    .attention-list a { color: inherit; }
+
+    .dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+    .dot-error { background: #ef4444; }
+    .dot-warn { background: #f59e0b; }
+
+    /* Sleeves needing attention - sorted by severity */
+    .sleeve-attention {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 8px;
+    }
+
+    .sleeve-chip {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 12px;
+      border: 1px solid #e5e5e5;
+      cursor: pointer;
+      font-size: 13px;
+    }
+    .sleeve-chip:hover { background: #fafafa; }
+    .sleeve-chip.warn { border-color: #fcd34d; background: #fffbeb; }
+    .sleeve-chip.error { border-color: #fca5a5; background: #fef2f2; }
+
+    .sleeve-chip .name { font-weight: 500; }
+    .sleeve-chip .dev { font-size: 12px; font-weight: 500; }
+    .sleeve-chip .dev.pos { color: #16a34a; }
+    .sleeve-chip .dev.neg { color: #dc2626; }
+    .sleeve-chip .dev.warn { color: #d97706; }
+
+    /* OK sleeves - collapsed by default */
+    .ok-sleeves { margin-top: 12px; }
+    .ok-sleeves summary {
+      font-size: 12px;
+      color: #666;
+      cursor: pointer;
+      padding: 8px 0;
+    }
+    .ok-sleeves summary:hover { color: #333; }
+    .ok-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 6px;
+      margin-top: 8px;
+    }
+    .ok-chip {
+      padding: 6px 10px;
+      border: 1px solid #e5e5e5;
+      font-size: 12px;
+      display: flex;
+      justify-content: space-between;
+      cursor: pointer;
+    }
+    .ok-chip:hover { background: #fafafa; }
+    .ok-chip .pct { color: #666; }
+
+    /* Assets */
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 8px 10px; text-align: left; border-bottom: 1px solid #eee; }
+    th { font-size: 10px; color: #999; font-weight: 500; text-transform: uppercase; }
+    .num { text-align: right; font-variant-numeric: tabular-nums; }
+    tr:hover { background: #fafafa; }
+    .ticker { font-weight: 600; }
+    .name-col { color: #666; font-size: 12px; }
+
+    /* Tabs */
+    .tabs { display: flex; gap: 0; }
+    .tabs button { padding: 6px 14px; border: 1px solid #ddd; background: #fff; cursor: pointer; font-size: 12px; margin-left: -1px; }
+    .tabs button:first-child { margin-left: 0; }
+    .tabs button.active { background: #333; color: #fff; border-color: #333; }
+
+    /* Empty state */
+    .empty-state {
+      text-align: center;
+      padding: 24px;
+      color: #666;
+      font-size: 13px;
+      border: 1px dashed #ddd;
+    }
+
+    /* Mockup label */
+    .mockup-label { position: fixed; top: 0; left: 0; right: 0; background: #f472b6; padding: 4px 16px; font-size: 12px; font-weight: 600; z-index: 100; }
+    body { padding-top: 36px; }
+  </style>
+</head>
+<body>
+  <div class="mockup-label">MOCKUP H: Attention First | <a href="index.html">All mockups</a></div>
+
+  <div class="container">
+    <div class="header">
+      <div class="header-left">
+        <select>
+          <option>Conservative Portfolio</option>
+        </select>
+        <span class="total">EUR 127,432</span>
+        <span class="perf">+12.4%</span>
+        <span class="muted">synced 3m ago</span>
+      </div>
+      <div class="periods">
+        <button>1D</button>
+        <button>1W</button>
+        <button>1M</button>
+        <button>YTD</button>
+        <button>1Y</button>
+        <button class="active">Cost</button>
+      </div>
+    </div>
+
+    <!-- Attention Box - health issues -->
+    <div class="attention-box has-errors">
+      <div class="attention-title">Needs attention</div>
+      <ul class="attention-list">
+        <li><span class="dot dot-error"></span><a href="#">EXAMPLE.MI — missing Yahoo symbol, cannot fetch price</a></li>
+        <li><span class="dot dot-warn"></span><a href="#">2 assets have stale prices (not updated in 24h+)</a></li>
+        <li><span class="dot dot-warn"></span><a href="#">BTC-EUR is not assigned to any sleeve</a></li>
+      </ul>
+    </div>
+
+    <!-- Sleeves needing rebalance -->
+    <div class="section">
+      <div class="section-header">Sleeves approaching band limits</div>
+      <div class="sleeve-attention">
+        <div class="sleeve-chip warn" onclick="filterSleeve('us-tech')">
+          <span class="name">US Tech</span>
+          <span class="dev warn">+2.1pp</span>
+        </div>
+        <div class="sleeve-chip warn" onclick="filterSleeve('emerging')">
+          <span class="name">Emerging</span>
+          <span class="dev warn">-2.2pp</span>
+        </div>
+      </div>
+
+      <!-- Sleeves in good standing - collapsible -->
+      <details class="ok-sleeves">
+        <summary>6 sleeves in good standing</summary>
+        <div class="ok-grid">
+          <div class="ok-chip" onclick="filterSleeve('equities')">
+            <span>Equities</span>
+            <span class="pct">58.2%</span>
+          </div>
+          <div class="ok-chip" onclick="filterSleeve('eu-value')">
+            <span>EU Value</span>
+            <span class="pct">18.3%</span>
+          </div>
+          <div class="ok-chip" onclick="filterSleeve('bonds')">
+            <span>Bonds</span>
+            <span class="pct">31.5%</span>
+          </div>
+          <div class="ok-chip" onclick="filterSleeve('govt')">
+            <span>Government</span>
+            <span class="pct">21.0%</span>
+          </div>
+          <div class="ok-chip" onclick="filterSleeve('corp')">
+            <span>Corporate</span>
+            <span class="pct">10.5%</span>
+          </div>
+          <div class="ok-chip" onclick="filterSleeve('commodities')">
+            <span>Commodities</span>
+            <span class="pct">10.3%</span>
+          </div>
+        </div>
+      </details>
+    </div>
+
+    <!-- Assets -->
+    <div class="section">
+      <div class="section-header">
+        <span>Assets</span>
+        <div class="tabs">
+          <button class="active">All</button>
+          <button>Gainers</button>
+          <button>Losers</button>
+          <button>Largest</button>
+        </div>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Ticker</th>
+            <th>Name</th>
+            <th>Sleeve</th>
+            <th class="num">Value</th>
+            <th class="num">Weight</th>
+            <th class="num">Return</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td class="ticker">VWCE</td><td class="name-col">Vanguard FTSE</td><td>Emerging</td><td class="num">12,960</td><td class="num">10.2%</td><td class="num perf">+8.2%</td></tr>
+          <tr><td class="ticker">MSFT</td><td class="name-col">Microsoft</td><td>US Tech</td><td class="num">10,540</td><td class="num">8.3%</td><td class="num perf">+18.7%</td></tr>
+          <tr><td class="ticker">SGLD</td><td class="name-col">Invesco Gold</td><td>Commodities</td><td class="num">9,925</td><td class="num">7.8%</td><td class="num perf">+11.0%</td></tr>
+          <tr><td class="ticker">NVDA</td><td class="name-col">NVIDIA</td><td>US Tech</td><td class="num">8,320</td><td class="num">6.5%</td><td class="num perf">+42.1%</td></tr>
+          <tr><td class="ticker">AAPL</td><td class="name-col">Apple</td><td>US Tech</td><td class="num">7,623</td><td class="num">6.0%</td><td class="num perf">+24.3%</td></tr>
+          <tr><td class="ticker">IWDA</td><td class="name-col">iShares World</td><td>EU Value</td><td class="num">6,970</td><td class="num">5.5%</td><td class="num perf">+11.4%</td></tr>
+          <tr><td class="ticker">AGGH</td><td class="name-col">iShares Agg</td><td>Govt</td><td class="num">970</td><td class="num">0.8%</td><td class="num neg">-4.9%</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    document.querySelectorAll('.periods button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.periods button').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+      });
+    });
+
+    document.querySelectorAll('.tabs button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tabs button').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+      });
+    });
+
+    function filterSleeve(s) {
+      alert('Filter by: ' + s);
+    }
+  </script>
+</body>
+</html>

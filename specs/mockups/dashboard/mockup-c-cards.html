@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mockup C: Card-Based Modular Design</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, sans-serif; background: #e5e7eb; padding: 16px; }
+
+    .container { max-width: 1400px; margin: 0 auto; }
+
+    h2 { font-size: 13px; text-transform: uppercase; color: #666; margin-bottom: 12px; letter-spacing: 0.5px; }
+    select { padding: 8px 12px; font-size: 14px; border: 1px solid #ccc; border-radius: 4px; }
+
+    .header-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: white;
+      padding: 12px 20px;
+      margin-bottom: 16px;
+      border: 1px solid #ccc;
+    }
+
+    .total-value { font-size: 28px; font-weight: bold; }
+    .performance { font-size: 16px; }
+    .positive { color: #16a34a; }
+    .negative { color: #dc2626; }
+    .sync { font-size: 11px; color: #999; }
+
+    .periods { display: flex; gap: 2px; }
+    .periods button {
+      padding: 6px 10px;
+      border: none;
+      background: #f3f4f6;
+      cursor: pointer;
+      font-size: 12px;
+    }
+    .periods button.active { background: #333; color: white; }
+    .periods button:first-child { border-radius: 4px 0 0 4px; }
+    .periods button:last-child { border-radius: 0 4px 4px 0; }
+
+    /* Grid layout for cards */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 16px;
+    }
+
+    .card {
+      background: white;
+      border: 1px solid #ccc;
+      padding: 16px;
+    }
+
+    /* Card sizes */
+    .span-3 { grid-column: span 3; }
+    .span-4 { grid-column: span 4; }
+    .span-6 { grid-column: span 6; }
+    .span-8 { grid-column: span 8; }
+    .span-12 { grid-column: span 12; }
+
+    /* Sleeve cards */
+    .sleeve-card {
+      cursor: pointer;
+      transition: box-shadow 0.15s;
+    }
+    .sleeve-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .sleeve-card.selected { border-color: #333; border-width: 2px; }
+
+    .sleeve-name { font-weight: 600; font-size: 15px; margin-bottom: 8px; }
+    .sleeve-parent { font-size: 11px; color: #999; margin-bottom: 4px; }
+
+    .sleeve-bar {
+      height: 8px;
+      background: #e5e7eb;
+      border-radius: 4px;
+      margin: 12px 0;
+      position: relative;
+    }
+
+    .sleeve-bar-fill {
+      height: 100%;
+      border-radius: 4px;
+      position: absolute;
+      left: 0;
+      top: 0;
+    }
+
+    .sleeve-bar-target {
+      position: absolute;
+      top: -4px;
+      bottom: -4px;
+      width: 2px;
+      background: #333;
+    }
+
+    .fill-ok { background: #22c55e; }
+    .fill-warn { background: #f59e0b; }
+    .fill-error { background: #ef4444; }
+
+    .sleeve-stats {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: #666;
+    }
+
+    .sleeve-stats strong { color: #333; }
+
+    /* Health card */
+    .health-card { background: #fefce8; border-color: #eab308; }
+    .health-card.healthy { background: #f0fdf4; border-color: #22c55e; }
+
+    .health-list { list-style: none; }
+    .health-list li {
+      padding: 8px 0;
+      border-bottom: 1px solid #eee;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .health-list li:last-child { border-bottom: none; }
+
+    .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .dot-error { background: #ef4444; }
+    .dot-warning { background: #f59e0b; }
+    .dot-info { background: #3b82f6; }
+
+    /* Asset mini cards */
+    .asset-mini {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid #eee;
+    }
+    .asset-mini:last-child { border-bottom: none; }
+
+    .asset-mini .left { display: flex; flex-direction: column; }
+    .asset-mini .ticker { font-weight: 600; font-size: 14px; }
+    .asset-mini .name { font-size: 11px; color: #666; }
+    .asset-mini .right { text-align: right; }
+    .asset-mini .value { font-size: 13px; }
+    .asset-mini .return { font-size: 12px; }
+
+    /* Tab pills */
+    .pills { display: flex; gap: 8px; margin-bottom: 12px; }
+    .pills button {
+      padding: 6px 12px;
+      border: 1px solid #ddd;
+      background: white;
+      border-radius: 16px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    .pills button.active {
+      background: #333;
+      color: white;
+      border-color: #333;
+    }
+
+    /* Mockup label */
+    .mockup-label {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: #34d399;
+      color: #000;
+      padding: 4px 16px;
+      font-size: 12px;
+      font-weight: 600;
+      z-index: 100;
+    }
+    body { padding-top: 40px; }
+
+    /* Full assets table (shown when clicking "View All") */
+    .full-table { display: none; }
+    .full-table.visible { display: block; }
+
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th, td { padding: 8px 10px; text-align: left; border-bottom: 1px solid #eee; }
+    th { background: #f9f9f9; font-weight: 600; font-size: 12px; }
+    .num { text-align: right; font-variant-numeric: tabular-nums; }
+  </style>
+</head>
+<body>
+  <div class="mockup-label">
+    MOCKUP C: Card-Based Modular Design | <a href="index.html">View all mockups</a>
+  </div>
+
+  <div class="container">
+    <!-- Header Bar -->
+    <div class="header-bar">
+      <div style="display: flex; align-items: center; gap: 20px;">
+        <select>
+          <option>Conservative Portfolio</option>
+          <option>Aggressive Growth</option>
+        </select>
+        <div>
+          <span class="total-value">EUR 127,432</span>
+          <span class="sync" style="margin-left: 8px;">synced 3m ago</span>
+        </div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 20px;">
+        <div>
+          <span class="performance positive" style="font-size: 20px; font-weight: 600;">+12.4%</span>
+          <span class="positive" style="font-size: 14px; margin-left: 4px;">+EUR 14,032</span>
+        </div>
+        <div class="periods">
+          <button>1D</button>
+          <button>1W</button>
+          <button>1M</button>
+          <button>YTD</button>
+          <button>1Y</button>
+          <button class="active">Cost</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Grid -->
+    <div class="grid">
+
+      <!-- Health Card - Top Right -->
+      <div class="card health-card span-4" style="grid-row: span 2;">
+        <h2>Portfolio Health</h2>
+        <ul class="health-list">
+          <li>
+            <span class="dot dot-error"></span>
+            <span><strong>EXAMPLE.MI</strong> - Missing Yahoo symbol</span>
+          </li>
+          <li>
+            <span class="dot dot-warning"></span>
+            <span><strong>2 assets</strong> have stale prices (>24h)</span>
+          </li>
+          <li>
+            <span class="dot dot-warning"></span>
+            <span><strong>BTC-EUR</strong> not assigned to any sleeve</span>
+          </li>
+          <li>
+            <span class="dot dot-info"></span>
+            <span><strong>Alt Investments</strong> sleeve is empty</span>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Sleeve Cards - Main Area -->
+      <div class="card sleeve-card span-4" onclick="selectSleeve(this)">
+        <div class="sleeve-name">Equities</div>
+        <div class="sleeve-bar">
+          <div class="sleeve-bar-fill fill-ok" style="width: 58.2%;"></div>
+          <div class="sleeve-bar-target" style="left: 60%;"></div>
+        </div>
+        <div class="sleeve-stats">
+          <span>Target: <strong>60%</strong></span>
+          <span>Actual: <strong>58.2%</strong></span>
+          <span class="positive">+15.2% return</span>
+        </div>
+      </div>
+
+      <div class="card sleeve-card span-4" onclick="selectSleeve(this)">
+        <div class="sleeve-name">Bonds</div>
+        <div class="sleeve-bar">
+          <div class="sleeve-bar-fill fill-ok" style="width: 31.5%;"></div>
+          <div class="sleeve-bar-target" style="left: 30%;"></div>
+        </div>
+        <div class="sleeve-stats">
+          <span>Target: <strong>30%</strong></span>
+          <span>Actual: <strong>31.5%</strong></span>
+          <span class="positive">+4.2% return</span>
+        </div>
+      </div>
+
+      <!-- Child sleeves row -->
+      <div class="card sleeve-card span-3" onclick="selectSleeve(this)">
+        <div class="sleeve-parent">Equities /</div>
+        <div class="sleeve-name">US Tech</div>
+        <div class="sleeve-bar">
+          <div class="sleeve-bar-fill fill-warn" style="width: 100%;"></div>
+        </div>
+        <div class="sleeve-stats">
+          <span><strong>27.1%</strong> / 25%</span>
+          <span class="positive">+22.4%</span>
+        </div>
+      </div>
+
+      <div class="card sleeve-card span-3" onclick="selectSleeve(this)">
+        <div class="sleeve-parent">Equities /</div>
+        <div class="sleeve-name">EU Value</div>
+        <div class="sleeve-bar">
+          <div class="sleeve-bar-fill fill-ok" style="width: 91.5%;"></div>
+        </div>
+        <div class="sleeve-stats">
+          <span><strong>18.3%</strong> / 20%</span>
+          <span class="positive">+8.1%</span>
+        </div>
+      </div>
+
+      <div class="card sleeve-card span-3" onclick="selectSleeve(this)">
+        <div class="sleeve-parent">Equities /</div>
+        <div class="sleeve-name">Emerging</div>
+        <div class="sleeve-bar">
+          <div class="sleeve-bar-fill fill-warn" style="width: 85.3%;"></div>
+        </div>
+        <div class="sleeve-stats">
+          <span><strong>12.8%</strong> / 15%</span>
+          <span class="negative">-3.2%</span>
+        </div>
+      </div>
+
+      <div class="card sleeve-card span-3" onclick="selectSleeve(this)">
+        <div class="sleeve-name">Commodities</div>
+        <div class="sleeve-bar">
+          <div class="sleeve-bar-fill fill-ok" style="width: 100%;"></div>
+        </div>
+        <div class="sleeve-stats">
+          <span><strong>10.3%</strong> / 10%</span>
+          <span class="positive">+11.0%</span>
+        </div>
+      </div>
+
+      <!-- Top Gainers Card -->
+      <div class="card span-4">
+        <h2>Top Gainers</h2>
+        <div class="asset-mini">
+          <div class="left">
+            <span class="ticker">NVDA</span>
+            <span class="name">NVIDIA Corp</span>
+          </div>
+          <div class="right">
+            <div class="value">EUR 8,320</div>
+            <div class="return positive">+42.1%</div>
+          </div>
+        </div>
+        <div class="asset-mini">
+          <div class="left">
+            <span class="ticker">AAPL</span>
+            <span class="name">Apple Inc</span>
+          </div>
+          <div class="right">
+            <div class="value">EUR 7,623</div>
+            <div class="return positive">+24.3%</div>
+          </div>
+        </div>
+        <div class="asset-mini">
+          <div class="left">
+            <span class="ticker">MSFT</span>
+            <span class="name">Microsoft</span>
+          </div>
+          <div class="right">
+            <div class="value">EUR 10,540</div>
+            <div class="return positive">+18.7%</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Top Losers Card -->
+      <div class="card span-4">
+        <h2>Top Losers</h2>
+        <div class="asset-mini">
+          <div class="left">
+            <span class="ticker">AGGH</span>
+            <span class="name">iShares Global Agg</span>
+          </div>
+          <div class="right">
+            <div class="value">EUR 970</div>
+            <div class="return negative">-4.9%</div>
+          </div>
+        </div>
+        <div class="asset-mini">
+          <div class="left">
+            <span class="ticker">EEM</span>
+            <span class="name">iShares Emerging</span>
+          </div>
+          <div class="right">
+            <div class="value">EUR 3,210</div>
+            <div class="return negative">-2.1%</div>
+          </div>
+        </div>
+        <div class="asset-mini">
+          <div class="left">
+            <span class="ticker">VGK</span>
+            <span class="name">Vanguard Europe</span>
+          </div>
+          <div class="right">
+            <div class="value">EUR 4,560</div>
+            <div class="return negative">-0.8%</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Largest Positions Card -->
+      <div class="card span-4">
+        <h2>Largest Positions</h2>
+        <div class="asset-mini">
+          <div class="left">
+            <span class="ticker">VWCE</span>
+            <span class="name">Vanguard FTSE All</span>
+          </div>
+          <div class="right">
+            <div class="value">EUR 12,960</div>
+            <div class="return" style="color: #666;">10.2%</div>
+          </div>
+        </div>
+        <div class="asset-mini">
+          <div class="left">
+            <span class="ticker">MSFT</span>
+            <span class="name">Microsoft</span>
+          </div>
+          <div class="right">
+            <div class="value">EUR 10,540</div>
+            <div class="return" style="color: #666;">8.3%</div>
+          </div>
+        </div>
+        <div class="asset-mini">
+          <div class="left">
+            <span class="ticker">SGLD</span>
+            <span class="name">Invesco Gold</span>
+          </div>
+          <div class="right">
+            <div class="value">EUR 9,925</div>
+            <div class="return" style="color: #666;">7.8%</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Full Assets Section -->
+      <div class="card span-12">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <h2 style="margin: 0;">All Assets</h2>
+          <div>
+            <label style="font-size: 12px; margin-right: 8px;">Filter:</label>
+            <select style="font-size: 12px; padding: 4px 8px;">
+              <option>All Sleeves</option>
+              <option>Equities</option>
+              <option>Bonds</option>
+              <option>Commodities</option>
+            </select>
+          </div>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Ticker</th>
+              <th>Name</th>
+              <th>Sleeve</th>
+              <th class="num">Qty</th>
+              <th class="num">Price</th>
+              <th class="num">Value</th>
+              <th class="num">Return</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>VWCE</strong></td>
+              <td>Vanguard FTSE All-World</td>
+              <td>Emerging</td>
+              <td class="num">120</td>
+              <td class="num">EUR 108</td>
+              <td class="num">EUR 12,960</td>
+              <td class="num positive">+8.2%</td>
+            </tr>
+            <tr>
+              <td><strong>MSFT</strong></td>
+              <td>Microsoft Corp</td>
+              <td>US Tech</td>
+              <td class="num">30</td>
+              <td class="num">$378</td>
+              <td class="num">EUR 10,540</td>
+              <td class="num positive">+18.7%</td>
+            </tr>
+            <tr>
+              <td><strong>SGLD</strong></td>
+              <td>Invesco Physical Gold</td>
+              <td>Commodities</td>
+              <td class="num">50</td>
+              <td class="num">EUR 198</td>
+              <td class="num">EUR 9,925</td>
+              <td class="num positive">+11.0%</td>
+            </tr>
+            <tr>
+              <td><strong>NVDA</strong></td>
+              <td>NVIDIA Corp</td>
+              <td>US Tech</td>
+              <td class="num">15</td>
+              <td class="num">$520</td>
+              <td class="num">EUR 8,320</td>
+              <td class="num positive">+42.1%</td>
+            </tr>
+            <tr>
+              <td><strong>AAPL</strong></td>
+              <td>Apple Inc</td>
+              <td>US Tech</td>
+              <td class="num">45</td>
+              <td class="num">$182</td>
+              <td class="num">EUR 7,623</td>
+              <td class="num positive">+24.3%</td>
+            </tr>
+            <tr>
+              <td><strong>IWDA</strong></td>
+              <td>iShares Core MSCI World</td>
+              <td>EU Value</td>
+              <td class="num">85</td>
+              <td class="num">EUR 82</td>
+              <td class="num">EUR 6,970</td>
+              <td class="num positive">+11.4%</td>
+            </tr>
+          </tbody>
+        </table>
+        <div style="text-align: center; padding-top: 12px;">
+          <button style="padding: 8px 24px; cursor: pointer;">Load More (41 remaining)</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    document.querySelectorAll('.periods button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.periods button').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+      });
+    });
+
+    document.querySelectorAll('.pills button').forEach(btn => {
+      btn.addEventListener('click', function() {
+        this.parentElement.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+      });
+    });
+
+    function selectSleeve(el) {
+      document.querySelectorAll('.sleeve-card').forEach(c => c.classList.remove('selected'));
+      el.classList.add('selected');
+    }
+  </script>
+</body>
+</html>

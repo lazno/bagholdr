@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mockup E: Proper Treemap</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, sans-serif; background: #fff; padding: 20px; font-size: 14px; }
+    .container { max-width: 1100px; margin: 0 auto; }
+
+    /* Header */
+    .header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 20px; border-bottom: 1px solid #ddd; padding-bottom: 16px; }
+    .header-left { display: flex; align-items: baseline; gap: 16px; }
+    .portfolio-name { font-size: 13px; color: #666; }
+    .total { font-size: 24px; font-weight: 600; }
+    .perf { font-size: 16px; margin-left: 12px; }
+    .pos { color: #16a34a; }
+    .neg { color: #dc2626; }
+    select { font-size: 13px; padding: 4px 8px; border: 1px solid #ccc; }
+
+    .periods { display: flex; gap: 2px; }
+    .periods button { padding: 4px 10px; border: 1px solid #ccc; background: #fff; cursor: pointer; font-size: 12px; }
+    .periods button.active { background: #333; color: #fff; border-color: #333; }
+
+    /* Health - inline and minimal */
+    .health { font-size: 12px; color: #666; margin-bottom: 16px; }
+    .health a { color: #dc2626; margin-right: 12px; }
+
+    /* Section headers */
+    .section-header { font-size: 11px; text-transform: uppercase; color: #999; letter-spacing: 0.5px; margin-bottom: 8px; }
+
+    /* TREEMAP - sizes reflect actual allocation */
+    .treemap-container { margin-bottom: 24px; }
+    .treemap {
+      display: grid;
+      grid-template-columns: repeat(100, 1fr);
+      grid-template-rows: repeat(40, 1fr);
+      gap: 2px;
+      height: 280px;
+      background: #f5f5f5;
+    }
+
+    .treemap-cell {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 8px;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+    .treemap-cell:hover { opacity: 0.9; }
+    .treemap-cell.selected { outline: 2px solid #333; outline-offset: -2px; }
+
+    .treemap-cell .label { font-weight: 600; font-size: 12px; }
+    .treemap-cell .sublabel { font-size: 10px; opacity: 0.8; }
+    .treemap-cell .deviation {
+      position: absolute;
+      top: 4px;
+      right: 6px;
+      font-size: 10px;
+      font-weight: 600;
+    }
+
+    /* Status colors - muted */
+    .status-ok { background: #d1fae5; color: #065f46; }
+    .status-warn { background: #fef3c7; color: #92400e; }
+    .status-error { background: #fee2e2; color: #991b1b; }
+
+    /* Grid positions - SIZE = ALLOCATION */
+    /* Equities 58% -> 58 cols, Bonds 32% -> 32 cols, Commodities 10% -> 10 cols */
+    .cell-equities { grid-column: 1 / 59; grid-row: 1 / 41; }
+    /* Children within equities: US Tech 27%, EU Value 18%, Emerging 13% */
+    .cell-us-tech { grid-column: 1 / 28; grid-row: 1 / 21; }
+    .cell-eu-value { grid-column: 28 / 46; grid-row: 1 / 21; }
+    .cell-emerging { grid-column: 46 / 59; grid-row: 1 / 21; }
+    .cell-equities-label { grid-column: 1 / 59; grid-row: 21 / 41; display: flex; align-items: center; justify-content: center; background: #f0fdf4; color: #166534; font-size: 11px; }
+
+    .cell-bonds { grid-column: 59 / 91; grid-row: 1 / 41; }
+    .cell-govt { grid-column: 59 / 80; grid-row: 1 / 21; }
+    .cell-corp { grid-column: 80 / 91; grid-row: 1 / 21; }
+    .cell-bonds-label { grid-column: 59 / 91; grid-row: 21 / 41; display: flex; align-items: center; justify-content: center; background: #ecfdf5; color: #166534; font-size: 11px; }
+
+    .cell-commodities { grid-column: 91 / 101; grid-row: 1 / 41; }
+
+    /* Legend */
+    .legend { display: flex; gap: 16px; font-size: 11px; color: #666; margin-top: 8px; }
+    .legend-item { display: flex; align-items: center; gap: 4px; }
+    .legend-box { width: 12px; height: 12px; }
+
+    /* Assets table */
+    .assets { margin-top: 24px; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 8px 12px; text-align: left; border-bottom: 1px solid #eee; }
+    th { font-size: 11px; color: #666; font-weight: 500; text-transform: uppercase; }
+    .num { text-align: right; font-variant-numeric: tabular-nums; }
+    tr:hover { background: #fafafa; }
+    .ticker { font-weight: 600; }
+    .sleeve-tag { font-size: 11px; color: #666; }
+
+    /* Filter */
+    .filter-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+
+    /* Mockup label */
+    .mockup-label {
+      position: fixed; top: 0; left: 0; right: 0;
+      background: #fbbf24; padding: 4px 16px; font-size: 12px; font-weight: 600; z-index: 100;
+    }
+    body { padding-top: 36px; }
+  </style>
+</head>
+<body>
+  <div class="mockup-label">MOCKUP E: Proper Treemap (size = allocation) | <a href="index.html">All mockups</a></div>
+
+  <div class="container">
+    <div class="header">
+      <div class="header-left">
+        <select>
+          <option>Conservative Portfolio</option>
+          <option>Aggressive Growth</option>
+        </select>
+        <span class="total">EUR 127,432</span>
+        <span class="perf pos">+12.4% (+EUR 14,032)</span>
+      </div>
+      <div class="periods">
+        <button>1D</button>
+        <button>1W</button>
+        <button>1M</button>
+        <button>YTD</button>
+        <button>1Y</button>
+        <button class="active">Cost</button>
+      </div>
+    </div>
+
+    <div class="health">
+      <a href="#" onclick="alert('Missing: EXAMPLE.MI')">1 error</a>
+      <a href="#" style="color: #d97706;" onclick="alert('2 stale prices, 1 unassigned')">3 warnings</a>
+      <span style="color: #999;">synced 3m ago</span>
+    </div>
+
+    <div class="treemap-container">
+      <div class="section-header">Allocation (size = actual %)</div>
+      <div class="treemap">
+        <!-- Equities children -->
+        <div class="treemap-cell cell-us-tech status-warn" onclick="filterSleeve('us-tech')">
+          <span class="label">US Tech</span>
+          <span class="sublabel">27.1%</span>
+          <span class="deviation">+2.1</span>
+        </div>
+        <div class="treemap-cell cell-eu-value status-ok" onclick="filterSleeve('eu-value')">
+          <span class="label">EU Value</span>
+          <span class="sublabel">18.3%</span>
+          <span class="deviation">-1.7</span>
+        </div>
+        <div class="treemap-cell cell-emerging status-warn" onclick="filterSleeve('emerging')">
+          <span class="label">Emerging</span>
+          <span class="sublabel">12.8%</span>
+          <span class="deviation">-2.2</span>
+        </div>
+        <div class="cell-equities-label">Equities 58.2% (target 60%)</div>
+
+        <!-- Bonds children -->
+        <div class="treemap-cell cell-govt status-ok" onclick="filterSleeve('govt')">
+          <span class="label">Govt</span>
+          <span class="sublabel">21%</span>
+          <span class="deviation">+1.0</span>
+        </div>
+        <div class="treemap-cell cell-corp status-ok" onclick="filterSleeve('corp')">
+          <span class="label">Corp</span>
+          <span class="sublabel">10.5%</span>
+          <span class="deviation">+0.5</span>
+        </div>
+        <div class="cell-bonds-label">Bonds 31.5% (target 30%)</div>
+
+        <!-- Commodities -->
+        <div class="treemap-cell cell-commodities status-ok" onclick="filterSleeve('commodities')">
+          <span class="label">Cmdty</span>
+          <span class="sublabel">10.3%</span>
+          <span class="deviation">+0.3</span>
+        </div>
+      </div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-box status-ok"></div> In band</div>
+        <div class="legend-item"><div class="legend-box status-warn"></div> Near edge</div>
+        <div class="legend-item"><div class="legend-box status-error"></div> Out of band</div>
+        <div style="margin-left: auto; color: #999;">Click sleeve to filter assets</div>
+      </div>
+    </div>
+
+    <div class="assets">
+      <div class="filter-row">
+        <div class="section-header" style="margin: 0;">Assets <span id="filter-label"></span></div>
+        <select id="sleeve-filter" onchange="updateFilter()">
+          <option value="">All sleeves</option>
+          <option value="us-tech">US Tech</option>
+          <option value="eu-value">EU Value</option>
+          <option value="emerging">Emerging</option>
+          <option value="govt">Government</option>
+          <option value="corp">Corporate</option>
+          <option value="commodities">Commodities</option>
+        </select>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Asset</th>
+            <th>Sleeve</th>
+            <th class="num">Qty</th>
+            <th class="num">Value</th>
+            <th class="num">Weight</th>
+            <th class="num">Return</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td><span class="ticker">VWCE</span> Vanguard FTSE All-World</td><td class="sleeve-tag">Emerging</td><td class="num">120</td><td class="num">12,960</td><td class="num">10.2%</td><td class="num pos">+8.2%</td></tr>
+          <tr><td><span class="ticker">MSFT</span> Microsoft</td><td class="sleeve-tag">US Tech</td><td class="num">30</td><td class="num">10,540</td><td class="num">8.3%</td><td class="num pos">+18.7%</td></tr>
+          <tr><td><span class="ticker">SGLD</span> Invesco Gold</td><td class="sleeve-tag">Commodities</td><td class="num">50</td><td class="num">9,925</td><td class="num">7.8%</td><td class="num pos">+11.0%</td></tr>
+          <tr><td><span class="ticker">NVDA</span> NVIDIA</td><td class="sleeve-tag">US Tech</td><td class="num">15</td><td class="num">8,320</td><td class="num">6.5%</td><td class="num pos">+42.1%</td></tr>
+          <tr><td><span class="ticker">AAPL</span> Apple</td><td class="sleeve-tag">US Tech</td><td class="num">45</td><td class="num">7,623</td><td class="num">6.0%</td><td class="num pos">+24.3%</td></tr>
+          <tr><td><span class="ticker">IWDA</span> iShares MSCI World</td><td class="sleeve-tag">EU Value</td><td class="num">85</td><td class="num">6,970</td><td class="num">5.5%</td><td class="num pos">+11.4%</td></tr>
+          <tr><td><span class="ticker">AGGH</span> iShares Global Agg</td><td class="sleeve-tag">Govt</td><td class="num">200</td><td class="num">970</td><td class="num">0.8%</td><td class="num neg">-4.9%</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    document.querySelectorAll('.periods button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.periods button').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+      });
+    });
+
+    function filterSleeve(sleeve) {
+      document.querySelectorAll('.treemap-cell').forEach(c => c.classList.remove('selected'));
+      event.target.closest('.treemap-cell').classList.add('selected');
+      document.getElementById('sleeve-filter').value = sleeve;
+      updateFilter();
+    }
+
+    function updateFilter() {
+      const val = document.getElementById('sleeve-filter').value;
+      document.getElementById('filter-label').textContent = val ? '(' + val + ')' : '';
+    }
+  </script>
+</body>
+</html>

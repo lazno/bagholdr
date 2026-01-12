@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mockup B: Treemap Visual Layout</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, sans-serif; background: #f5f5f5; padding: 16px; }
+
+    .container { max-width: 1400px; margin: 0 auto; }
+    .card { background: white; border: 1px solid #ccc; padding: 16px; margin-bottom: 16px; }
+    .row { display: flex; gap: 16px; }
+    .col { flex: 1; }
+
+    h2 { font-size: 14px; text-transform: uppercase; color: #666; margin-bottom: 12px; }
+    select { padding: 8px; font-size: 14px; }
+
+    .header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+    .total-value { font-size: 32px; font-weight: bold; }
+    .performance { font-size: 18px; }
+    .positive { color: #16a34a; }
+    .negative { color: #dc2626; }
+    .sync { font-size: 12px; color: #999; }
+
+    .periods { display: flex; gap: 4px; }
+    .periods button { padding: 6px 12px; border: 1px solid #ccc; background: white; cursor: pointer; }
+    .periods button.active { background: #333; color: white; border-color: #333; }
+
+    /* Treemap container */
+    .treemap {
+      display: grid;
+      grid-template-columns: repeat(10, 1fr);
+      grid-template-rows: repeat(6, 60px);
+      gap: 4px;
+      margin-bottom: 16px;
+    }
+
+    .treemap-cell {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 8px;
+      cursor: pointer;
+      transition: opacity 0.15s;
+      border: 2px solid transparent;
+    }
+
+    .treemap-cell:hover {
+      opacity: 0.85;
+      border-color: #333;
+    }
+
+    .treemap-cell.selected {
+      border-color: #333;
+      box-shadow: 0 0 0 2px #333;
+    }
+
+    .treemap-cell .name {
+      font-weight: 600;
+      font-size: 13px;
+      color: white;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+      text-align: center;
+    }
+
+    .treemap-cell .value {
+      font-size: 11px;
+      color: rgba(255,255,255,0.9);
+      text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+    }
+
+    .treemap-cell .deviation {
+      font-size: 10px;
+      background: rgba(0,0,0,0.2);
+      padding: 2px 6px;
+      border-radius: 3px;
+      margin-top: 4px;
+      color: white;
+    }
+
+    /* Color coding based on status */
+    .bg-ok { background: #22c55e; }
+    .bg-warn-high { background: #f59e0b; }
+    .bg-warn-low { background: #eab308; }
+    .bg-error { background: #ef4444; }
+
+    /* Lighter variants for children */
+    .bg-ok-light { background: #86efac; }
+    .bg-warn-high-light { background: #fcd34d; }
+    .bg-warn-low-light { background: #fde047; }
+
+    /* Grid positioning for treemap */
+    .cell-equities { grid-column: 1 / 7; grid-row: 1 / 5; }
+    .cell-us-tech { grid-column: 1 / 4; grid-row: 1 / 3; background: #4ade80 !important; }
+    .cell-eu-value { grid-column: 4 / 7; grid-row: 1 / 3; background: #86efac !important; }
+    .cell-emerging { grid-column: 1 / 7; grid-row: 3 / 5; background: #fde047 !important; }
+    .cell-bonds { grid-column: 7 / 11; grid-row: 1 / 5; }
+    .cell-govt { grid-column: 7 / 11; grid-row: 1 / 3; background: #86efac !important; }
+    .cell-corp { grid-column: 7 / 11; grid-row: 3 / 5; background: #86efac !important; }
+    .cell-commodities { grid-column: 1 / 11; grid-row: 5 / 7; }
+
+    /* Legend */
+    .legend {
+      display: flex;
+      gap: 16px;
+      font-size: 12px;
+      margin-bottom: 12px;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .legend-box {
+      width: 16px;
+      height: 16px;
+      border-radius: 2px;
+    }
+
+    /* Asset cards */
+    .asset-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px;
+    }
+
+    .asset-card {
+      border: 1px solid #ddd;
+      padding: 12px;
+      background: #fafafa;
+    }
+
+    .asset-card .ticker {
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    .asset-card .name {
+      font-size: 12px;
+      color: #666;
+      margin-bottom: 8px;
+    }
+
+    .asset-card .stats {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+    }
+
+    /* Health inline */
+    .health-strip {
+      display: flex;
+      gap: 12px;
+      padding: 8px 0;
+      border-top: 1px solid #eee;
+      margin-top: 12px;
+    }
+
+    .health-chip {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      padding: 4px 10px;
+      border-radius: 16px;
+      cursor: pointer;
+    }
+
+    .health-chip.error { background: #fee2e2; color: #dc2626; }
+    .health-chip.warning { background: #fef3c7; color: #d97706; }
+
+    /* View toggle */
+    .view-toggle {
+      display: flex;
+      gap: 0;
+    }
+    .view-toggle button {
+      padding: 6px 14px;
+      border: 1px solid #ccc;
+      background: white;
+      cursor: pointer;
+      font-size: 13px;
+    }
+    .view-toggle button:first-child { border-radius: 4px 0 0 4px; }
+    .view-toggle button:last-child { border-radius: 0 4px 4px 0; margin-left: -1px; }
+    .view-toggle button.active { background: #333; color: white; border-color: #333; }
+
+    /* Mockup label */
+    .mockup-label {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: #a78bfa;
+      color: #000;
+      padding: 4px 16px;
+      font-size: 12px;
+      font-weight: 600;
+      z-index: 100;
+    }
+    body { padding-top: 40px; }
+
+    /* Selected sleeve info */
+    .sleeve-detail {
+      background: #f0f9ff;
+      border: 1px solid #bae6fd;
+      padding: 12px;
+      margin-top: 12px;
+      display: none;
+    }
+
+    .sleeve-detail.visible { display: block; }
+
+    .sleeve-detail h3 {
+      font-size: 16px;
+      margin-bottom: 8px;
+    }
+
+    .sleeve-stats {
+      display: flex;
+      gap: 24px;
+      font-size: 14px;
+    }
+
+    .sleeve-stats dt { color: #666; font-size: 12px; }
+    .sleeve-stats dd { font-weight: 600; }
+  </style>
+</head>
+<body>
+  <div class="mockup-label">
+    MOCKUP B: Treemap Visual Layout | <a href="index.html">View all mockups</a>
+  </div>
+
+  <div class="container">
+    <!-- Header Row -->
+    <div class="card">
+      <div class="header">
+        <div style="display: flex; align-items: center; gap: 16px;">
+          <select>
+            <option>Conservative Portfolio</option>
+            <option>Aggressive Growth</option>
+          </select>
+          <div>
+            <div class="total-value">EUR 127,432.50</div>
+            <div class="sync">Last sync: 3 minutes ago</div>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 24px;">
+          <div style="text-align: right;">
+            <div class="performance positive">+12.4%</div>
+            <div class="positive" style="font-size: 14px;">+EUR 14,032</div>
+          </div>
+          <div class="periods">
+            <button>Today</button>
+            <button>1W</button>
+            <button>1M</button>
+            <button>YTD</button>
+            <button>1Y</button>
+            <button class="active">vs Cost</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Health as inline chips -->
+      <div class="health-strip">
+        <span style="font-size: 12px; color: #666; padding: 4px 0;">Health:</span>
+        <span class="health-chip error" onclick="alert('Missing Yahoo Symbol: EXAMPLE.MI')">
+          1 Error
+        </span>
+        <span class="health-chip warning" onclick="alert('2 assets with stale prices, 1 unassigned')">
+          3 Warnings
+        </span>
+      </div>
+    </div>
+
+    <!-- Treemap Section -->
+    <div class="card">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+        <h2 style="margin: 0;">Sleeve Allocations</h2>
+        <div style="display: flex; gap: 16px; align-items: center;">
+          <div class="legend">
+            <div class="legend-item"><div class="legend-box bg-ok"></div> In Band</div>
+            <div class="legend-item"><div class="legend-box bg-warn-high"></div> Approaching Limit</div>
+            <div class="legend-item"><div class="legend-box bg-error"></div> Out of Band</div>
+          </div>
+          <div class="view-toggle">
+            <button class="active">Treemap</button>
+            <button onclick="alert('Would switch to list view')">List</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="treemap" id="treemap">
+        <!-- Parent sleeves shown via nested visuals, children as sub-cells -->
+        <div class="treemap-cell cell-us-tech" data-sleeve="us-tech" onclick="selectSleeve(this, 'US Tech')">
+          <span class="name">US Tech</span>
+          <span class="value">27.1% (EUR 34,533)</span>
+          <span class="deviation">+2.1pp</span>
+        </div>
+        <div class="treemap-cell cell-eu-value" data-sleeve="eu-value" onclick="selectSleeve(this, 'EU Value')">
+          <span class="name">EU Value</span>
+          <span class="value">18.3% (EUR 23,320)</span>
+          <span class="deviation">-1.7pp</span>
+        </div>
+        <div class="treemap-cell cell-emerging" data-sleeve="emerging" onclick="selectSleeve(this, 'Emerging')">
+          <span class="name">Emerging Markets</span>
+          <span class="value">12.8% (EUR 16,311)</span>
+          <span class="deviation">-2.2pp</span>
+        </div>
+        <div class="treemap-cell cell-govt" data-sleeve="govt" onclick="selectSleeve(this, 'Government Bonds')">
+          <span class="name">Govt Bonds</span>
+          <span class="value">21.0% (EUR 26,760)</span>
+          <span class="deviation">+1.0pp</span>
+        </div>
+        <div class="treemap-cell cell-corp" data-sleeve="corp" onclick="selectSleeve(this, 'Corporate Bonds')">
+          <span class="name">Corp Bonds</span>
+          <span class="value">10.5% (EUR 13,380)</span>
+          <span class="deviation">+0.5pp</span>
+        </div>
+        <div class="treemap-cell cell-commodities bg-ok" data-sleeve="commodities" onclick="selectSleeve(this, 'Commodities')">
+          <span class="name">Commodities</span>
+          <span class="value">10.3% (EUR 13,125)</span>
+          <span class="deviation">+0.3pp</span>
+        </div>
+      </div>
+
+      <!-- Detail for selected sleeve -->
+      <div class="sleeve-detail" id="sleeve-detail">
+        <h3 id="sleeve-name">US Tech</h3>
+        <div class="sleeve-stats">
+          <dl>
+            <dt>Target</dt>
+            <dd>25%</dd>
+          </dl>
+          <dl>
+            <dt>Actual</dt>
+            <dd>27.1%</dd>
+          </dl>
+          <dl>
+            <dt>Value</dt>
+            <dd>EUR 34,533</dd>
+          </dl>
+          <dl>
+            <dt>Return</dt>
+            <dd class="positive">+22.4%</dd>
+          </dl>
+          <dl>
+            <dt>Assets</dt>
+            <dd>8</dd>
+          </dl>
+        </div>
+      </div>
+    </div>
+
+    <!-- Assets Section -->
+    <div class="card">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+        <h2 style="margin: 0;">Assets <span id="filter-label" style="font-weight: normal; color: #333;"></span></h2>
+        <div class="view-toggle">
+          <button class="active">All</button>
+          <button>Gainers</button>
+          <button>Losers</button>
+          <button>Largest</button>
+        </div>
+      </div>
+
+      <div class="asset-grid">
+        <div class="asset-card">
+          <div class="ticker">AAPL</div>
+          <div class="name">Apple Inc</div>
+          <div class="stats">
+            <span>EUR 7,623</span>
+            <span class="positive">+24.3%</span>
+          </div>
+        </div>
+        <div class="asset-card">
+          <div class="ticker">MSFT</div>
+          <div class="name">Microsoft Corp</div>
+          <div class="stats">
+            <span>EUR 10,540</span>
+            <span class="positive">+18.7%</span>
+          </div>
+        </div>
+        <div class="asset-card">
+          <div class="ticker">NVDA</div>
+          <div class="name">NVIDIA Corp</div>
+          <div class="stats">
+            <span>EUR 8,320</span>
+            <span class="positive">+42.1%</span>
+          </div>
+        </div>
+        <div class="asset-card">
+          <div class="ticker">GOOGL</div>
+          <div class="name">Alphabet Inc</div>
+          <div class="stats">
+            <span>EUR 5,890</span>
+            <span class="positive">+15.2%</span>
+          </div>
+        </div>
+        <div class="asset-card">
+          <div class="ticker">VWCE</div>
+          <div class="name">Vanguard FTSE All-World</div>
+          <div class="stats">
+            <span>EUR 12,960</span>
+            <span class="positive">+8.2%</span>
+          </div>
+        </div>
+        <div class="asset-card">
+          <div class="ticker">IWDA</div>
+          <div class="name">iShares Core MSCI World</div>
+          <div class="stats">
+            <span>EUR 6,970</span>
+            <span class="positive">+11.4%</span>
+          </div>
+        </div>
+        <div class="asset-card">
+          <div class="ticker">SGLD</div>
+          <div class="name">Invesco Physical Gold</div>
+          <div class="stats">
+            <span>EUR 9,925</span>
+            <span class="positive">+11.0%</span>
+          </div>
+        </div>
+        <div class="asset-card">
+          <div class="ticker">AGGH</div>
+          <div class="name">iShares Global Aggregate</div>
+          <div class="stats">
+            <span>EUR 970</span>
+            <span class="negative">-4.9%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.querySelectorAll('.view-toggle button').forEach(btn => {
+      btn.addEventListener('click', function() {
+        this.parentElement.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+      });
+    });
+
+    document.querySelectorAll('.periods button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.periods button').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+      });
+    });
+
+    function selectSleeve(el, name) {
+      document.querySelectorAll('.treemap-cell').forEach(c => c.classList.remove('selected'));
+      el.classList.add('selected');
+      document.getElementById('sleeve-detail').classList.add('visible');
+      document.getElementById('sleeve-name').textContent = name;
+      document.getElementById('filter-label').textContent = '- ' + name;
+    }
+  </script>
+</body>
+</html>

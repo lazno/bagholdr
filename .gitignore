@@ -51,3 +51,6 @@ coverage/
 
 # Misc
 .cache/
+
+# we use AGENTS.md
+CLAUDE.MD

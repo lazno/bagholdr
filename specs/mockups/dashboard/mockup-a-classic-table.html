@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mockup A: Classic Table Layout</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, sans-serif; background: #f5f5f5; padding: 16px; }
+
+    /* Lo-fi styling */
+    .container { max-width: 1200px; margin: 0 auto; }
+    .card { background: white; border: 1px solid #ccc; padding: 16px; margin-bottom: 16px; }
+    .row { display: flex; gap: 16px; }
+    .col { flex: 1; }
+    .col-narrow { flex: 0 0 280px; }
+
+    h1, h2, h3 { margin-bottom: 12px; font-weight: 600; }
+    h1 { font-size: 18px; }
+    h2 { font-size: 14px; text-transform: uppercase; color: #666; }
+
+    select { padding: 8px; font-size: 14px; }
+
+    /* Header */
+    .header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+    .total-value { font-size: 32px; font-weight: bold; }
+    .performance { font-size: 18px; }
+    .positive { color: #16a34a; }
+    .negative { color: #dc2626; }
+    .neutral { color: #666; }
+    .sync { font-size: 12px; color: #999; }
+
+    /* Time periods */
+    .periods { display: flex; gap: 4px; }
+    .periods button { padding: 6px 12px; border: 1px solid #ccc; background: white; cursor: pointer; }
+    .periods button.active { background: #333; color: white; border-color: #333; }
+    .periods button:hover:not(.active) { background: #eee; }
+
+    /* Tables */
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    th, td { padding: 8px 12px; text-align: left; border-bottom: 1px solid #eee; }
+    th { background: #f9f9f9; font-weight: 600; }
+    tr:hover { background: #f5f5f5; }
+    .num { text-align: right; font-variant-numeric: tabular-nums; }
+
+    /* Sleeve indentation */
+    .indent-1 { padding-left: 28px !important; }
+    .indent-2 { padding-left: 44px !important; }
+
+    /* Status badges */
+    .status {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .status-ok { background: #dcfce7; color: #16a34a; }
+    .status-warn { background: #fef3c7; color: #d97706; }
+    .status-error { background: #fee2e2; color: #dc2626; }
+
+    /* Health panel */
+    .health-item {
+      padding: 8px;
+      margin-bottom: 8px;
+      border-left: 3px solid;
+      background: #f9f9f9;
+    }
+    .health-item.error { border-color: #dc2626; }
+    .health-item.warning { border-color: #d97706; }
+    .health-item.info { border-color: #3b82f6; }
+    .health-item strong { display: block; font-size: 13px; }
+    .health-item span { font-size: 12px; color: #666; }
+
+    /* Tabs */
+    .tabs { display: flex; gap: 0; margin-bottom: 16px; }
+    .tabs button {
+      padding: 8px 16px;
+      border: 1px solid #ccc;
+      background: white;
+      cursor: pointer;
+      margin-right: -1px;
+    }
+    .tabs button.active { background: #333; color: white; border-color: #333; }
+
+    /* Filter row */
+    .filter-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+
+    /* Clickable rows */
+    .clickable { cursor: pointer; }
+    .clickable:hover { background: #e5e7eb !important; }
+
+    /* Badge */
+    .badge {
+      background: #ef4444;
+      color: white;
+      padding: 2px 6px;
+      border-radius: 10px;
+      font-size: 11px;
+      margin-left: 4px;
+    }
+
+    /* Mockup label */
+    .mockup-label {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: #fbbf24;
+      color: #000;
+      padding: 4px 16px;
+      font-size: 12px;
+      font-weight: 600;
+      z-index: 100;
+    }
+    body { padding-top: 40px; }
+  </style>
+</head>
+<body>
+  <div class="mockup-label">
+    MOCKUP A: Classic Table Layout | <a href="index.html">View all mockups</a>
+  </div>
+
+  <div class="container">
+    <!-- Portfolio Selector & Time Period -->
+    <div class="card">
+      <div class="header">
+        <div>
+          <select id="portfolio-select">
+            <option>Conservative Portfolio</option>
+            <option>Aggressive Growth</option>
+            <option>Dividend Focus</option>
+          </select>
+        </div>
+        <div class="periods">
+          <button>Today</button>
+          <button>1W</button>
+          <button>1M</button>
+          <button>YTD</button>
+          <button>1Y</button>
+          <button class="active">vs Cost</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Portfolio Header -->
+    <div class="card">
+      <div class="header">
+        <div>
+          <div class="total-value">EUR 127,432.50</div>
+          <div class="sync">Last sync: 3 minutes ago</div>
+        </div>
+        <div style="text-align: right;">
+          <div class="performance positive">+12.4%</div>
+          <div class="positive">+EUR 14,032.00</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content Row -->
+    <div class="row">
+      <!-- Sleeves Column -->
+      <div class="col">
+        <div class="card">
+          <h2>Sleeve Balance</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Sleeve</th>
+                <th class="num">Target</th>
+                <th class="num">Actual</th>
+                <th class="num">Dev</th>
+                <th>Status</th>
+                <th class="num">Return</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="clickable" onclick="filterBySleeve('equities')">
+                <td><strong>Equities</strong></td>
+                <td class="num">60%</td>
+                <td class="num">58.2%</td>
+                <td class="num neutral">-1.8pp</td>
+                <td><span class="status status-ok">In Band</span></td>
+                <td class="num positive">+15.2%</td>
+              </tr>
+              <tr class="clickable" onclick="filterBySleeve('us-tech')">
+                <td class="indent-1">US Tech</td>
+                <td class="num">25%</td>
+                <td class="num">27.1%</td>
+                <td class="num positive">+2.1pp</td>
+                <td><span class="status status-warn">High</span></td>
+                <td class="num positive">+22.4%</td>
+              </tr>
+              <tr class="clickable" onclick="filterBySleeve('eu-value')">
+                <td class="indent-1">EU Value</td>
+                <td class="num">20%</td>
+                <td class="num">18.3%</td>
+                <td class="num negative">-1.7pp</td>
+                <td><span class="status status-ok">In Band</span></td>
+                <td class="num positive">+8.1%</td>
+              </tr>
+              <tr class="clickable" onclick="filterBySleeve('emerging')">
+                <td class="indent-1">Emerging</td>
+                <td class="num">15%</td>
+                <td class="num">12.8%</td>
+                <td class="num negative">-2.2pp</td>
+                <td><span class="status status-warn">Low</span></td>
+                <td class="num negative">-3.2%</td>
+              </tr>
+              <tr class="clickable" onclick="filterBySleeve('bonds')">
+                <td><strong>Bonds</strong></td>
+                <td class="num">30%</td>
+                <td class="num">31.5%</td>
+                <td class="num positive">+1.5pp</td>
+                <td><span class="status status-ok">In Band</span></td>
+                <td class="num positive">+4.2%</td>
+              </tr>
+              <tr class="clickable" onclick="filterBySleeve('govt')">
+                <td class="indent-1">Government</td>
+                <td class="num">20%</td>
+                <td class="num">21.0%</td>
+                <td class="num positive">+1.0pp</td>
+                <td><span class="status status-ok">In Band</span></td>
+                <td class="num positive">+3.1%</td>
+              </tr>
+              <tr class="clickable" onclick="filterBySleeve('corp')">
+                <td class="indent-1">Corporate</td>
+                <td class="num">10%</td>
+                <td class="num">10.5%</td>
+                <td class="num positive">+0.5pp</td>
+                <td><span class="status status-ok">In Band</span></td>
+                <td class="num positive">+5.8%</td>
+              </tr>
+              <tr class="clickable" onclick="filterBySleeve('commodities')">
+                <td><strong>Commodities</strong></td>
+                <td class="num">10%</td>
+                <td class="num">10.3%</td>
+                <td class="num positive">+0.3pp</td>
+                <td><span class="status status-ok">In Band</span></td>
+                <td class="num positive">+11.0%</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Health Panel Column -->
+      <div class="col-narrow">
+        <div class="card">
+          <h2>Health <span class="badge">3</span></h2>
+          <div class="health-item error">
+            <strong>Missing Yahoo Symbol</strong>
+            <span>EXAMPLE.MI - Cannot fetch price</span>
+          </div>
+          <div class="health-item warning">
+            <strong>Stale Prices</strong>
+            <span>2 assets not updated in 24h+</span>
+          </div>
+          <div class="health-item warning">
+            <strong>Unassigned Asset</strong>
+            <span>BTC-EUR not in any sleeve</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Asset Performance Section -->
+    <div class="card">
+      <div class="filter-row">
+        <div class="tabs">
+          <button class="active">All Assets</button>
+          <button>Top Gainers</button>
+          <button>Top Losers</button>
+          <button>Largest</button>
+        </div>
+        <div>
+          <label>Sleeve: </label>
+          <select id="sleeve-filter">
+            <option value="">All Sleeves</option>
+            <option value="equities">Equities</option>
+            <option value="us-tech">  US Tech</option>
+            <option value="eu-value">  EU Value</option>
+            <option value="emerging">  Emerging</option>
+            <option value="bonds">Bonds</option>
+            <option value="commodities">Commodities</option>
+          </select>
+        </div>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Ticker</th>
+            <th>Name</th>
+            <th>Sleeve</th>
+            <th class="num">Qty</th>
+            <th class="num">Price</th>
+            <th class="num">Value</th>
+            <th class="num">Cost Basis</th>
+            <th class="num">Return</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>AAPL</strong></td>
+            <td>Apple Inc</td>
+            <td>US Tech</td>
+            <td class="num">45</td>
+            <td class="num">$182.50</td>
+            <td class="num">EUR 7,623</td>
+            <td class="num">EUR 6,130</td>
+            <td class="num positive">+24.3%</td>
+          </tr>
+          <tr>
+            <td><strong>MSFT</strong></td>
+            <td>Microsoft Corp</td>
+            <td>US Tech</td>
+            <td class="num">30</td>
+            <td class="num">$378.20</td>
+            <td class="num">EUR 10,540</td>
+            <td class="num">EUR 8,876</td>
+            <td class="num positive">+18.7%</td>
+          </tr>
+          <tr>
+            <td><strong>VWCE</strong></td>
+            <td>Vanguard FTSE All-World</td>
+            <td>Emerging</td>
+            <td class="num">120</td>
+            <td class="num">EUR 108.00</td>
+            <td class="num">EUR 12,960</td>
+            <td class="num">EUR 11,980</td>
+            <td class="num positive">+8.2%</td>
+          </tr>
+          <tr>
+            <td><strong>IWDA</strong></td>
+            <td>iShares Core MSCI World</td>
+            <td>EU Value</td>
+            <td class="num">85</td>
+            <td class="num">EUR 82.00</td>
+            <td class="num">EUR 6,970</td>
+            <td class="num">EUR 6,258</td>
+            <td class="num positive">+11.4%</td>
+          </tr>
+          <tr>
+            <td><strong>AGGH</strong></td>
+            <td>iShares Global Aggregate</td>
+            <td>Government</td>
+            <td class="num">200</td>
+            <td class="num">EUR 4.85</td>
+            <td class="num">EUR 970</td>
+            <td class="num">EUR 1,020</td>
+            <td class="num negative">-4.9%</td>
+          </tr>
+          <tr>
+            <td><strong>SGLD</strong></td>
+            <td>Invesco Physical Gold</td>
+            <td>Commodities</td>
+            <td class="num">50</td>
+            <td class="num">EUR 198.50</td>
+            <td class="num">EUR 9,925</td>
+            <td class="num">EUR 8,940</td>
+            <td class="num positive">+11.0%</td>
+          </tr>
+        </tbody>
+      </table>
+      <div style="text-align: right; padding-top: 12px; color: #666; font-size: 13px;">
+        Showing 6 of 47 assets
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // Simple interactivity for the mockup
+    document.querySelectorAll('.tabs button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tabs button').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+      });
+    });
+
+    document.querySelectorAll('.periods button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.periods button').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+      });
+    });
+
+    function filterBySleeve(sleeve) {
+      document.getElementById('sleeve-filter').value = sleeve;
+      alert('Filter by sleeve: ' + sleeve);
+    }
+  </script>
+</body>
+</html>
