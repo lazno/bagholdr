@@ -17,7 +17,12 @@ import 'dart:async' as _i3;
 import 'package:serverpod_auth_core_client/serverpod_auth_core_client.dart'
     as _i4;
 import 'package:bagholdr_client/src/protocol/portfolio.dart' as _i5;
-import 'protocol.dart' as _i6;
+import 'package:bagholdr_client/src/protocol/portfolio_valuation.dart' as _i6;
+import 'package:bagholdr_client/src/protocol/chart_data_result.dart' as _i7;
+import 'package:bagholdr_client/src/protocol/chart_range.dart' as _i8;
+import 'package:bagholdr_client/src/protocol/historical_returns_result.dart'
+    as _i9;
+import 'protocol.dart' as _i10;
 
 /// By extending [EmailIdpBaseEndpoint], the email identity provider endpoints
 /// are made available on the server and enable the corresponding sign-in widget
@@ -250,6 +255,59 @@ class EndpointPortfolio extends _i2.EndpointRef {
       );
 }
 
+/// Endpoint for portfolio valuation and allocation calculations.
+///
+/// Calculates portfolio valuation and allocation percentages.
+/// Uses cached prices if available, falls back to cost basis.
+/// Supports n-ary tree structure for sleeves - parent sleeves include
+/// the value of all their descendants.
+///
+/// Key concepts:
+/// - Cash is NOT a sleeve - it's shown separately
+/// - "Invested Only" view: percentages relative to assigned holdings only
+/// - "Total Portfolio" view: percentages relative to holdings + cash
+/// - Band evaluation only applies to Invested view
+/// {@category Endpoint}
+class EndpointValuation extends _i2.EndpointRef {
+  EndpointValuation(_i2.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'valuation';
+
+  /// Get full portfolio valuation with allocation breakdown
+  _i3.Future<_i6.PortfolioValuation> getPortfolioValuation(
+    _i2.UuidValue portfolioId,
+  ) => caller.callServerEndpoint<_i6.PortfolioValuation>(
+    'valuation',
+    'getPortfolioValuation',
+    {'portfolioId': portfolioId},
+  );
+
+  /// Get historical chart data for portfolio value visualization.
+  /// Returns daily data points with portfolio value and cost basis over time.
+  _i3.Future<_i7.ChartDataResult> getChartData(
+    _i2.UuidValue portfolioId,
+    _i8.ChartRange range,
+  ) => caller.callServerEndpoint<_i7.ChartDataResult>(
+    'valuation',
+    'getChartData',
+    {
+      'portfolioId': portfolioId,
+      'range': range,
+    },
+  );
+
+  /// Get historical returns for different time periods.
+  /// Calculates portfolio value at historical dates and compares to current value.
+  _i3.Future<_i9.HistoricalReturnsResult> getHistoricalReturns(
+    _i2.UuidValue portfolioId,
+  ) => caller.callServerEndpoint<_i9.HistoricalReturnsResult>(
+    'valuation',
+    'getHistoricalReturns',
+    {'portfolioId': portfolioId},
+  );
+}
+
 class Modules {
   Modules(Client client) {
     serverpod_auth_idp = _i1.Caller(client);
@@ -281,7 +339,7 @@ class Client extends _i2.ServerpodClientShared {
     bool? disconnectStreamsOnLostInternetConnection,
   }) : super(
          host,
-         _i6.Protocol(),
+         _i10.Protocol(),
          securityContext: securityContext,
          streamingConnectionTimeout: streamingConnectionTimeout,
          connectionTimeout: connectionTimeout,
@@ -293,6 +351,7 @@ class Client extends _i2.ServerpodClientShared {
     emailIdp = EndpointEmailIdp(this);
     jwtRefresh = EndpointJwtRefresh(this);
     portfolio = EndpointPortfolio(this);
+    valuation = EndpointValuation(this);
     modules = Modules(this);
   }
 
@@ -302,6 +361,8 @@ class Client extends _i2.ServerpodClientShared {
 
   late final EndpointPortfolio portfolio;
 
+  late final EndpointValuation valuation;
+
   late final Modules modules;
 
   @override
@@ -309,6 +370,7 @@ class Client extends _i2.ServerpodClientShared {
     'emailIdp': emailIdp,
     'jwtRefresh': jwtRefresh,
     'portfolio': portfolio,
+    'valuation': valuation,
   };
 
   @override

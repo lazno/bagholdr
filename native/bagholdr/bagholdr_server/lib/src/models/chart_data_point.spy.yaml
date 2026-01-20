@@ -1,0 +1,12 @@
+### ChartDataPoint - Single data point for portfolio chart
+class: ChartDataPoint
+
+fields:
+  ### Date in YYYY-MM-DD format
+  date: String
+
+  ### Portfolio invested value on this date
+  investedValue: double
+
+  ### Portfolio cost basis on this date
+  costBasis: double

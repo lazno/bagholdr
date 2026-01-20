@@ -1,0 +1,66 @@
+### PortfolioValuation - Full portfolio valuation response
+class: PortfolioValuation
+
+fields:
+  ### Portfolio ID (UUID)
+  portfolioId: String
+
+  ### Portfolio display name
+  portfolioName: String
+
+  ### Cash balance in EUR
+  cashEur: double
+
+  ### Total holdings value in EUR (all holdings)
+  totalHoldingsValueEur: double
+
+  ### Assigned holdings value in EUR (holdings in sleeves)
+  assignedHoldingsValueEur: double
+
+  ### Unassigned holdings value in EUR
+  unassignedValueEur: double
+
+  ### Invested value in EUR (= assignedHoldingsValueEur, the "100%" for invested view)
+  investedValueEur: double
+
+  ### Total portfolio value in EUR (holdings + cash)
+  totalValueEur: double
+
+  ### Total cost basis in EUR (for return calculation)
+  totalCostBasisEur: double
+
+  ### Sleeves with allocation info (excluding cash sleeves)
+  sleeves: List<SleeveAllocation>
+
+  ### Assets not assigned to any sleeve
+  unassignedAssets: List<AssetValuation>
+
+  ### Band configuration used for this portfolio
+  bandConfig: BandConfig
+
+  ### Number of sleeves with band violations
+  violationCount: int
+
+  ### Whether all assets have current prices
+  hasAllPrices: bool
+
+  ### Assets missing Yahoo symbols
+  missingSymbolAssets: List<MissingSymbolAsset>
+
+  ### Assets with stale prices
+  stalePriceAssets: List<StalePriceAsset>
+
+  ### Threshold for stale prices in hours
+  stalePriceThresholdHours: int
+
+  ### Concentration rule violations
+  concentrationViolations: List<ConcentrationViolation>
+
+  ### Number of concentration rule violations
+  concentrationViolationCount: int
+
+  ### Total violations (sleeves + concentration)
+  totalViolationCount: int
+
+  ### Most recent price sync time (null if no prices)
+  lastSyncAt: DateTime?

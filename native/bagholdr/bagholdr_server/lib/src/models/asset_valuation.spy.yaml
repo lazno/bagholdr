@@ -1,0 +1,45 @@
+### AssetValuation - Valuation details for a single asset
+class: AssetValuation
+
+fields:
+  ### ISIN identifier
+  isin: String
+
+  ### Broker ticker symbol
+  ticker: String
+
+  ### Human-readable name
+  name: String
+
+  ### Asset classification
+  assetType: AssetType
+
+  ### Current quantity held
+  quantity: double
+
+  ### Current price in EUR (null if no cached price)
+  priceEur: double?
+
+  ### Total cost basis in EUR
+  costBasisEur: double
+
+  ### Current value in EUR (uses price if available, else cost basis)
+  valueEur: double
+
+  ### Whether this valuation is using cost basis instead of market price
+  usingCostBasis: bool
+
+  ### Percentage of invested portfolio
+  percentOfInvested: double
+
+  ### Asset's base currency (e.g., EUR, USD)
+  currency: String
+
+  ### Price in native currency (null if not available)
+  priceNative: double?
+
+  ### Cost basis in native currency (from orders)
+  costBasisNative: double
+
+  ### Implied FX rate at time of purchase (EUR per 1 unit of native)
+  impliedHistoricalFxRate: double?

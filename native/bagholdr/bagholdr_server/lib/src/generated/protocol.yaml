@@ -10,3 +10,7 @@ jwtRefresh:
   - refreshAccessToken:
 portfolio:
   - getPortfolios:
+valuation:
+  - getPortfolioValuation:
+  - getChartData:
+  - getHistoricalReturns:

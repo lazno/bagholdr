@@ -1,0 +1,12 @@
+### BandConfig - Portfolio-level band configuration
+class: BandConfig
+
+fields:
+  ### Relative tolerance as percentage of target (e.g., 20 means ±20% of target)
+  relativeTolerance: double
+
+  ### Minimum half-width in percentage points (e.g., 2 means at least ±2pp)
+  absoluteFloor: double
+
+  ### Maximum half-width in percentage points (e.g., 10 means at most ±10pp)
+  absoluteCap: double

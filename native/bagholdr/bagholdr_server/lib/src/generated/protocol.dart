@@ -16,37 +16,69 @@ import 'package:serverpod_auth_idp_server/serverpod_auth_idp_server.dart'
     as _i3;
 import 'package:serverpod_auth_core_server/serverpod_auth_core_server.dart'
     as _i4;
-import 'asset.dart' as _i5;
-import 'asset_type.dart' as _i6;
-import 'daily_price.dart' as _i7;
-import 'dividend_event.dart' as _i8;
-import 'fx_cache.dart' as _i9;
-import 'global_cash.dart' as _i10;
-import 'holding.dart' as _i11;
-import 'intraday_price.dart' as _i12;
-import 'order.dart' as _i13;
-import 'portfolio.dart' as _i14;
-import 'portfolio_rule.dart' as _i15;
-import 'price_cache.dart' as _i16;
-import 'sleeve.dart' as _i17;
-import 'sleeve_asset.dart' as _i18;
-import 'ticker_metadata.dart' as _i19;
-import 'yahoo_symbol.dart' as _i20;
-import 'package:bagholdr_server/src/generated/portfolio.dart' as _i21;
+import 'allocation_status.dart' as _i5;
+import 'asset.dart' as _i6;
+import 'asset_period_return.dart' as _i7;
+import 'asset_type.dart' as _i8;
+import 'asset_valuation.dart' as _i9;
+import 'band.dart' as _i10;
+import 'band_config.dart' as _i11;
+import 'chart_data_point.dart' as _i12;
+import 'chart_data_result.dart' as _i13;
+import 'chart_range.dart' as _i14;
+import 'concentration_violation.dart' as _i15;
+import 'daily_price.dart' as _i16;
+import 'dividend_event.dart' as _i17;
+import 'fx_cache.dart' as _i18;
+import 'global_cash.dart' as _i19;
+import 'historical_returns_result.dart' as _i20;
+import 'holding.dart' as _i21;
+import 'intraday_price.dart' as _i22;
+import 'missing_symbol_asset.dart' as _i23;
+import 'order.dart' as _i24;
+import 'period_return.dart' as _i25;
+import 'portfolio.dart' as _i26;
+import 'portfolio_rule.dart' as _i27;
+import 'portfolio_valuation.dart' as _i28;
+import 'price_cache.dart' as _i29;
+import 'return_period.dart' as _i30;
+import 'sleeve.dart' as _i31;
+import 'sleeve_allocation.dart' as _i32;
+import 'sleeve_asset.dart' as _i33;
+import 'stale_price_asset.dart' as _i34;
+import 'ticker_metadata.dart' as _i35;
+import 'yahoo_symbol.dart' as _i36;
+import 'package:bagholdr_server/src/generated/portfolio.dart' as _i37;
+export 'allocation_status.dart';
 export 'asset.dart';
+export 'asset_period_return.dart';
 export 'asset_type.dart';
+export 'asset_valuation.dart';
+export 'band.dart';
+export 'band_config.dart';
+export 'chart_data_point.dart';
+export 'chart_data_result.dart';
+export 'chart_range.dart';
+export 'concentration_violation.dart';
 export 'daily_price.dart';
 export 'dividend_event.dart';
 export 'fx_cache.dart';
 export 'global_cash.dart';
+export 'historical_returns_result.dart';
 export 'holding.dart';
 export 'intraday_price.dart';
+export 'missing_symbol_asset.dart';
 export 'order.dart';
+export 'period_return.dart';
 export 'portfolio.dart';
 export 'portfolio_rule.dart';
+export 'portfolio_valuation.dart';
 export 'price_cache.dart';
+export 'return_period.dart';
 export 'sleeve.dart';
+export 'sleeve_allocation.dart';
 export 'sleeve_asset.dart';
+export 'stale_price_asset.dart';
 export 'ticker_metadata.dart';
 export 'yahoo_symbol.dart';
 
@@ -1454,104 +1486,267 @@ class Protocol extends _i1.SerializationManagerServer {
       }
     }
 
-    if (t == _i5.Asset) {
-      return _i5.Asset.fromJson(data) as T;
+    if (t == _i5.AllocationStatus) {
+      return _i5.AllocationStatus.fromJson(data) as T;
     }
-    if (t == _i6.AssetType) {
-      return _i6.AssetType.fromJson(data) as T;
+    if (t == _i6.Asset) {
+      return _i6.Asset.fromJson(data) as T;
     }
-    if (t == _i7.DailyPrice) {
-      return _i7.DailyPrice.fromJson(data) as T;
+    if (t == _i7.AssetPeriodReturn) {
+      return _i7.AssetPeriodReturn.fromJson(data) as T;
     }
-    if (t == _i8.DividendEvent) {
-      return _i8.DividendEvent.fromJson(data) as T;
+    if (t == _i8.AssetType) {
+      return _i8.AssetType.fromJson(data) as T;
     }
-    if (t == _i9.FxCache) {
-      return _i9.FxCache.fromJson(data) as T;
+    if (t == _i9.AssetValuation) {
+      return _i9.AssetValuation.fromJson(data) as T;
     }
-    if (t == _i10.GlobalCash) {
-      return _i10.GlobalCash.fromJson(data) as T;
+    if (t == _i10.Band) {
+      return _i10.Band.fromJson(data) as T;
     }
-    if (t == _i11.Holding) {
-      return _i11.Holding.fromJson(data) as T;
+    if (t == _i11.BandConfig) {
+      return _i11.BandConfig.fromJson(data) as T;
     }
-    if (t == _i12.IntradayPrice) {
-      return _i12.IntradayPrice.fromJson(data) as T;
+    if (t == _i12.ChartDataPoint) {
+      return _i12.ChartDataPoint.fromJson(data) as T;
     }
-    if (t == _i13.Order) {
-      return _i13.Order.fromJson(data) as T;
+    if (t == _i13.ChartDataResult) {
+      return _i13.ChartDataResult.fromJson(data) as T;
     }
-    if (t == _i14.Portfolio) {
-      return _i14.Portfolio.fromJson(data) as T;
+    if (t == _i14.ChartRange) {
+      return _i14.ChartRange.fromJson(data) as T;
     }
-    if (t == _i15.PortfolioRule) {
-      return _i15.PortfolioRule.fromJson(data) as T;
+    if (t == _i15.ConcentrationViolation) {
+      return _i15.ConcentrationViolation.fromJson(data) as T;
     }
-    if (t == _i16.PriceCache) {
-      return _i16.PriceCache.fromJson(data) as T;
+    if (t == _i16.DailyPrice) {
+      return _i16.DailyPrice.fromJson(data) as T;
     }
-    if (t == _i17.Sleeve) {
-      return _i17.Sleeve.fromJson(data) as T;
+    if (t == _i17.DividendEvent) {
+      return _i17.DividendEvent.fromJson(data) as T;
     }
-    if (t == _i18.SleeveAsset) {
-      return _i18.SleeveAsset.fromJson(data) as T;
+    if (t == _i18.FxCache) {
+      return _i18.FxCache.fromJson(data) as T;
     }
-    if (t == _i19.TickerMetadata) {
-      return _i19.TickerMetadata.fromJson(data) as T;
+    if (t == _i19.GlobalCash) {
+      return _i19.GlobalCash.fromJson(data) as T;
     }
-    if (t == _i20.YahooSymbol) {
-      return _i20.YahooSymbol.fromJson(data) as T;
+    if (t == _i20.HistoricalReturnsResult) {
+      return _i20.HistoricalReturnsResult.fromJson(data) as T;
     }
-    if (t == _i1.getType<_i5.Asset?>()) {
-      return (data != null ? _i5.Asset.fromJson(data) : null) as T;
+    if (t == _i21.Holding) {
+      return _i21.Holding.fromJson(data) as T;
     }
-    if (t == _i1.getType<_i6.AssetType?>()) {
-      return (data != null ? _i6.AssetType.fromJson(data) : null) as T;
+    if (t == _i22.IntradayPrice) {
+      return _i22.IntradayPrice.fromJson(data) as T;
     }
-    if (t == _i1.getType<_i7.DailyPrice?>()) {
-      return (data != null ? _i7.DailyPrice.fromJson(data) : null) as T;
+    if (t == _i23.MissingSymbolAsset) {
+      return _i23.MissingSymbolAsset.fromJson(data) as T;
     }
-    if (t == _i1.getType<_i8.DividendEvent?>()) {
-      return (data != null ? _i8.DividendEvent.fromJson(data) : null) as T;
+    if (t == _i24.Order) {
+      return _i24.Order.fromJson(data) as T;
     }
-    if (t == _i1.getType<_i9.FxCache?>()) {
-      return (data != null ? _i9.FxCache.fromJson(data) : null) as T;
+    if (t == _i25.PeriodReturn) {
+      return _i25.PeriodReturn.fromJson(data) as T;
     }
-    if (t == _i1.getType<_i10.GlobalCash?>()) {
-      return (data != null ? _i10.GlobalCash.fromJson(data) : null) as T;
+    if (t == _i26.Portfolio) {
+      return _i26.Portfolio.fromJson(data) as T;
     }
-    if (t == _i1.getType<_i11.Holding?>()) {
-      return (data != null ? _i11.Holding.fromJson(data) : null) as T;
+    if (t == _i27.PortfolioRule) {
+      return _i27.PortfolioRule.fromJson(data) as T;
     }
-    if (t == _i1.getType<_i12.IntradayPrice?>()) {
-      return (data != null ? _i12.IntradayPrice.fromJson(data) : null) as T;
+    if (t == _i28.PortfolioValuation) {
+      return _i28.PortfolioValuation.fromJson(data) as T;
     }
-    if (t == _i1.getType<_i13.Order?>()) {
-      return (data != null ? _i13.Order.fromJson(data) : null) as T;
+    if (t == _i29.PriceCache) {
+      return _i29.PriceCache.fromJson(data) as T;
     }
-    if (t == _i1.getType<_i14.Portfolio?>()) {
-      return (data != null ? _i14.Portfolio.fromJson(data) : null) as T;
+    if (t == _i30.ReturnPeriod) {
+      return _i30.ReturnPeriod.fromJson(data) as T;
     }
-    if (t == _i1.getType<_i15.PortfolioRule?>()) {
-      return (data != null ? _i15.PortfolioRule.fromJson(data) : null) as T;
+    if (t == _i31.Sleeve) {
+      return _i31.Sleeve.fromJson(data) as T;
     }
-    if (t == _i1.getType<_i16.PriceCache?>()) {
-      return (data != null ? _i16.PriceCache.fromJson(data) : null) as T;
+    if (t == _i32.SleeveAllocation) {
+      return _i32.SleeveAllocation.fromJson(data) as T;
     }
-    if (t == _i1.getType<_i17.Sleeve?>()) {
-      return (data != null ? _i17.Sleeve.fromJson(data) : null) as T;
+    if (t == _i33.SleeveAsset) {
+      return _i33.SleeveAsset.fromJson(data) as T;
     }
-    if (t == _i1.getType<_i18.SleeveAsset?>()) {
-      return (data != null ? _i18.SleeveAsset.fromJson(data) : null) as T;
+    if (t == _i34.StalePriceAsset) {
+      return _i34.StalePriceAsset.fromJson(data) as T;
     }
-    if (t == _i1.getType<_i19.TickerMetadata?>()) {
-      return (data != null ? _i19.TickerMetadata.fromJson(data) : null) as T;
+    if (t == _i35.TickerMetadata) {
+      return _i35.TickerMetadata.fromJson(data) as T;
     }
-    if (t == _i1.getType<_i20.YahooSymbol?>()) {
-      return (data != null ? _i20.YahooSymbol.fromJson(data) : null) as T;
+    if (t == _i36.YahooSymbol) {
+      return _i36.YahooSymbol.fromJson(data) as T;
     }
-    if (t == List<_i21.Portfolio>) {
-      return (data as List).map((e) => deserialize<_i21.Portfolio>(e)).toList()
+    if (t == _i1.getType<_i5.AllocationStatus?>()) {
+      return (data != null ? _i5.AllocationStatus.fromJson(data) : null) as T;
+    }
+    if (t == _i1.getType<_i6.Asset?>()) {
+      return (data != null ? _i6.Asset.fromJson(data) : null) as T;
+    }
+    if (t == _i1.getType<_i7.AssetPeriodReturn?>()) {
+      return (data != null ? _i7.AssetPeriodReturn.fromJson(data) : null) as T;
+    }
+    if (t == _i1.getType<_i8.AssetType?>()) {
+      return (data != null ? _i8.AssetType.fromJson(data) : null) as T;
+    }
+    if (t == _i1.getType<_i9.AssetValuation?>()) {
+      return (data != null ? _i9.AssetValuation.fromJson(data) : null) as T;
+    }
+    if (t == _i1.getType<_i10.Band?>()) {
+      return (data != null ? _i10.Band.fromJson(data) : null) as T;
+    }
+    if (t == _i1.getType<_i11.BandConfig?>()) {
+      return (data != null ? _i11.BandConfig.fromJson(data) : null) as T;
+    }
+    if (t == _i1.getType<_i12.ChartDataPoint?>()) {
+      return (data != null ? _i12.ChartDataPoint.fromJson(data) : null) as T;
+    }
+    if (t == _i1.getType<_i13.ChartDataResult?>()) {
+      return (data != null ? _i13.ChartDataResult.fromJson(data) : null) as T;
+    }
+    if (t == _i1.getType<_i14.ChartRange?>()) {
+      return (data != null ? _i14.ChartRange.fromJson(data) : null) as T;
+    }
+    if (t == _i1.getType<_i15.ConcentrationViolation?>()) {
+      return (data != null ? _i15.ConcentrationViolation.fromJson(data) : null)
+          as T;
+    }
+    if (t == _i1.getType<_i16.DailyPrice?>()) {
+      return (data != null ? _i16.DailyPrice.fromJson(data) : null) as T;
+    }
+    if (t == _i1.getType<_i17.DividendEvent?>()) {
+      return (data != null ? _i17.DividendEvent.fromJson(data) : null) as T;
+    }
+    if (t == _i1.getType<_i18.FxCache?>()) {
+      return (data != null ? _i18.FxCache.fromJson(data) : null) as T;
+    }
+    if (t == _i1.getType<_i19.GlobalCash?>()) {
+      return (data != null ? _i19.GlobalCash.fromJson(data) : null) as T;
+    }
+    if (t == _i1.getType<_i20.HistoricalReturnsResult?>()) {
+      return (data != null ? _i20.HistoricalReturnsResult.fromJson(data) : null)
+          as T;
+    }
+    if (t == _i1.getType<_i21.Holding?>()) {
+      return (data != null ? _i21.Holding.fromJson(data) : null) as T;
+    }
+    if (t == _i1.getType<_i22.IntradayPrice?>()) {
+      return (data != null ? _i22.IntradayPrice.fromJson(data) : null) as T;
+    }
+    if (t == _i1.getType<_i23.MissingSymbolAsset?>()) {
+      return (data != null ? _i23.MissingSymbolAsset.fromJson(data) : null)
+          as T;
+    }
+    if (t == _i1.getType<_i24.Order?>()) {
+      return (data != null ? _i24.Order.fromJson(data) : null) as T;
+    }
+    if (t == _i1.getType<_i25.PeriodReturn?>()) {
+      return (data != null ? _i25.PeriodReturn.fromJson(data) : null) as T;
+    }
+    if (t == _i1.getType<_i26.Portfolio?>()) {
+      return (data != null ? _i26.Portfolio.fromJson(data) : null) as T;
+    }
+    if (t == _i1.getType<_i27.PortfolioRule?>()) {
+      return (data != null ? _i27.PortfolioRule.fromJson(data) : null) as T;
+    }
+    if (t == _i1.getType<_i28.PortfolioValuation?>()) {
+      return (data != null ? _i28.PortfolioValuation.fromJson(data) : null)
+          as T;
+    }
+    if (t == _i1.getType<_i29.PriceCache?>()) {
+      return (data != null ? _i29.PriceCache.fromJson(data) : null) as T;
+    }
+    if (t == _i1.getType<_i30.ReturnPeriod?>()) {
+      return (data != null ? _i30.ReturnPeriod.fromJson(data) : null) as T;
+    }
+    if (t == _i1.getType<_i31.Sleeve?>()) {
+      return (data != null ? _i31.Sleeve.fromJson(data) : null) as T;
+    }
+    if (t == _i1.getType<_i32.SleeveAllocation?>()) {
+      return (data != null ? _i32.SleeveAllocation.fromJson(data) : null) as T;
+    }
+    if (t == _i1.getType<_i33.SleeveAsset?>()) {
+      return (data != null ? _i33.SleeveAsset.fromJson(data) : null) as T;
+    }
+    if (t == _i1.getType<_i34.StalePriceAsset?>()) {
+      return (data != null ? _i34.StalePriceAsset.fromJson(data) : null) as T;
+    }
+    if (t == _i1.getType<_i35.TickerMetadata?>()) {
+      return (data != null ? _i35.TickerMetadata.fromJson(data) : null) as T;
+    }
+    if (t == _i1.getType<_i36.YahooSymbol?>()) {
+      return (data != null ? _i36.YahooSymbol.fromJson(data) : null) as T;
+    }
+    if (t == List<_i12.ChartDataPoint>) {
+      return (data as List)
+              .map((e) => deserialize<_i12.ChartDataPoint>(e))
+              .toList()
+          as T;
+    }
+    if (t == Map<String, _i25.PeriodReturn>) {
+      return (data as Map).map(
+            (k, v) => MapEntry(
+              deserialize<String>(k),
+              deserialize<_i25.PeriodReturn>(v),
+            ),
+          )
+          as T;
+    }
+    if (t == Map<String, Map<String, _i7.AssetPeriodReturn>>) {
+      return (data as Map).map(
+            (k, v) => MapEntry(
+              deserialize<String>(k),
+              deserialize<Map<String, _i7.AssetPeriodReturn>>(v),
+            ),
+          )
+          as T;
+    }
+    if (t == Map<String, _i7.AssetPeriodReturn>) {
+      return (data as Map).map(
+            (k, v) => MapEntry(
+              deserialize<String>(k),
+              deserialize<_i7.AssetPeriodReturn>(v),
+            ),
+          )
+          as T;
+    }
+    if (t == List<_i32.SleeveAllocation>) {
+      return (data as List)
+              .map((e) => deserialize<_i32.SleeveAllocation>(e))
+              .toList()
+          as T;
+    }
+    if (t == List<_i9.AssetValuation>) {
+      return (data as List)
+              .map((e) => deserialize<_i9.AssetValuation>(e))
+              .toList()
+          as T;
+    }
+    if (t == List<_i23.MissingSymbolAsset>) {
+      return (data as List)
+              .map((e) => deserialize<_i23.MissingSymbolAsset>(e))
+              .toList()
+          as T;
+    }
+    if (t == List<_i34.StalePriceAsset>) {
+      return (data as List)
+              .map((e) => deserialize<_i34.StalePriceAsset>(e))
+              .toList()
+          as T;
+    }
+    if (t == List<_i15.ConcentrationViolation>) {
+      return (data as List)
+              .map((e) => deserialize<_i15.ConcentrationViolation>(e))
+              .toList()
+          as T;
+    }
+    if (t == List<_i37.Portfolio>) {
+      return (data as List).map((e) => deserialize<_i37.Portfolio>(e)).toList()
           as T;
     }
     try {
@@ -1568,22 +1763,38 @@ class Protocol extends _i1.SerializationManagerServer {
 
   static String? getClassNameForType(Type type) {
     return switch (type) {
-      _i5.Asset => 'Asset',
-      _i6.AssetType => 'AssetType',
-      _i7.DailyPrice => 'DailyPrice',
-      _i8.DividendEvent => 'DividendEvent',
-      _i9.FxCache => 'FxCache',
-      _i10.GlobalCash => 'GlobalCash',
-      _i11.Holding => 'Holding',
-      _i12.IntradayPrice => 'IntradayPrice',
-      _i13.Order => 'Order',
-      _i14.Portfolio => 'Portfolio',
-      _i15.PortfolioRule => 'PortfolioRule',
-      _i16.PriceCache => 'PriceCache',
-      _i17.Sleeve => 'Sleeve',
-      _i18.SleeveAsset => 'SleeveAsset',
-      _i19.TickerMetadata => 'TickerMetadata',
-      _i20.YahooSymbol => 'YahooSymbol',
+      _i5.AllocationStatus => 'AllocationStatus',
+      _i6.Asset => 'Asset',
+      _i7.AssetPeriodReturn => 'AssetPeriodReturn',
+      _i8.AssetType => 'AssetType',
+      _i9.AssetValuation => 'AssetValuation',
+      _i10.Band => 'Band',
+      _i11.BandConfig => 'BandConfig',
+      _i12.ChartDataPoint => 'ChartDataPoint',
+      _i13.ChartDataResult => 'ChartDataResult',
+      _i14.ChartRange => 'ChartRange',
+      _i15.ConcentrationViolation => 'ConcentrationViolation',
+      _i16.DailyPrice => 'DailyPrice',
+      _i17.DividendEvent => 'DividendEvent',
+      _i18.FxCache => 'FxCache',
+      _i19.GlobalCash => 'GlobalCash',
+      _i20.HistoricalReturnsResult => 'HistoricalReturnsResult',
+      _i21.Holding => 'Holding',
+      _i22.IntradayPrice => 'IntradayPrice',
+      _i23.MissingSymbolAsset => 'MissingSymbolAsset',
+      _i24.Order => 'Order',
+      _i25.PeriodReturn => 'PeriodReturn',
+      _i26.Portfolio => 'Portfolio',
+      _i27.PortfolioRule => 'PortfolioRule',
+      _i28.PortfolioValuation => 'PortfolioValuation',
+      _i29.PriceCache => 'PriceCache',
+      _i30.ReturnPeriod => 'ReturnPeriod',
+      _i31.Sleeve => 'Sleeve',
+      _i32.SleeveAllocation => 'SleeveAllocation',
+      _i33.SleeveAsset => 'SleeveAsset',
+      _i34.StalePriceAsset => 'StalePriceAsset',
+      _i35.TickerMetadata => 'TickerMetadata',
+      _i36.YahooSymbol => 'YahooSymbol',
       _ => null,
     };
   }
@@ -1598,37 +1809,69 @@ class Protocol extends _i1.SerializationManagerServer {
     }
 
     switch (data) {
-      case _i5.Asset():
+      case _i5.AllocationStatus():
+        return 'AllocationStatus';
+      case _i6.Asset():
         return 'Asset';
-      case _i6.AssetType():
+      case _i7.AssetPeriodReturn():
+        return 'AssetPeriodReturn';
+      case _i8.AssetType():
         return 'AssetType';
-      case _i7.DailyPrice():
+      case _i9.AssetValuation():
+        return 'AssetValuation';
+      case _i10.Band():
+        return 'Band';
+      case _i11.BandConfig():
+        return 'BandConfig';
+      case _i12.ChartDataPoint():
+        return 'ChartDataPoint';
+      case _i13.ChartDataResult():
+        return 'ChartDataResult';
+      case _i14.ChartRange():
+        return 'ChartRange';
+      case _i15.ConcentrationViolation():
+        return 'ConcentrationViolation';
+      case _i16.DailyPrice():
         return 'DailyPrice';
-      case _i8.DividendEvent():
+      case _i17.DividendEvent():
         return 'DividendEvent';
-      case _i9.FxCache():
+      case _i18.FxCache():
         return 'FxCache';
-      case _i10.GlobalCash():
+      case _i19.GlobalCash():
         return 'GlobalCash';
-      case _i11.Holding():
+      case _i20.HistoricalReturnsResult():
+        return 'HistoricalReturnsResult';
+      case _i21.Holding():
         return 'Holding';
-      case _i12.IntradayPrice():
+      case _i22.IntradayPrice():
         return 'IntradayPrice';
-      case _i13.Order():
+      case _i23.MissingSymbolAsset():
+        return 'MissingSymbolAsset';
+      case _i24.Order():
         return 'Order';
-      case _i14.Portfolio():
+      case _i25.PeriodReturn():
+        return 'PeriodReturn';
+      case _i26.Portfolio():
         return 'Portfolio';
-      case _i15.PortfolioRule():
+      case _i27.PortfolioRule():
         return 'PortfolioRule';
-      case _i16.PriceCache():
+      case _i28.PortfolioValuation():
+        return 'PortfolioValuation';
+      case _i29.PriceCache():
         return 'PriceCache';
-      case _i17.Sleeve():
+      case _i30.ReturnPeriod():
+        return 'ReturnPeriod';
+      case _i31.Sleeve():
         return 'Sleeve';
-      case _i18.SleeveAsset():
+      case _i32.SleeveAllocation():
+        return 'SleeveAllocation';
+      case _i33.SleeveAsset():
         return 'SleeveAsset';
-      case _i19.TickerMetadata():
+      case _i34.StalePriceAsset():
+        return 'StalePriceAsset';
+      case _i35.TickerMetadata():
         return 'TickerMetadata';
-      case _i20.YahooSymbol():
+      case _i36.YahooSymbol():
         return 'YahooSymbol';
     }
     className = _i2.Protocol().getClassNameForObject(data);
@@ -1652,53 +1895,101 @@ class Protocol extends _i1.SerializationManagerServer {
     if (dataClassName is! String) {
       return super.deserializeByClassName(data);
     }
+    if (dataClassName == 'AllocationStatus') {
+      return deserialize<_i5.AllocationStatus>(data['data']);
+    }
     if (dataClassName == 'Asset') {
-      return deserialize<_i5.Asset>(data['data']);
+      return deserialize<_i6.Asset>(data['data']);
+    }
+    if (dataClassName == 'AssetPeriodReturn') {
+      return deserialize<_i7.AssetPeriodReturn>(data['data']);
     }
     if (dataClassName == 'AssetType') {
-      return deserialize<_i6.AssetType>(data['data']);
+      return deserialize<_i8.AssetType>(data['data']);
+    }
+    if (dataClassName == 'AssetValuation') {
+      return deserialize<_i9.AssetValuation>(data['data']);
+    }
+    if (dataClassName == 'Band') {
+      return deserialize<_i10.Band>(data['data']);
+    }
+    if (dataClassName == 'BandConfig') {
+      return deserialize<_i11.BandConfig>(data['data']);
+    }
+    if (dataClassName == 'ChartDataPoint') {
+      return deserialize<_i12.ChartDataPoint>(data['data']);
+    }
+    if (dataClassName == 'ChartDataResult') {
+      return deserialize<_i13.ChartDataResult>(data['data']);
+    }
+    if (dataClassName == 'ChartRange') {
+      return deserialize<_i14.ChartRange>(data['data']);
+    }
+    if (dataClassName == 'ConcentrationViolation') {
+      return deserialize<_i15.ConcentrationViolation>(data['data']);
     }
     if (dataClassName == 'DailyPrice') {
-      return deserialize<_i7.DailyPrice>(data['data']);
+      return deserialize<_i16.DailyPrice>(data['data']);
     }
     if (dataClassName == 'DividendEvent') {
-      return deserialize<_i8.DividendEvent>(data['data']);
+      return deserialize<_i17.DividendEvent>(data['data']);
     }
     if (dataClassName == 'FxCache') {
-      return deserialize<_i9.FxCache>(data['data']);
+      return deserialize<_i18.FxCache>(data['data']);
     }
     if (dataClassName == 'GlobalCash') {
-      return deserialize<_i10.GlobalCash>(data['data']);
+      return deserialize<_i19.GlobalCash>(data['data']);
+    }
+    if (dataClassName == 'HistoricalReturnsResult') {
+      return deserialize<_i20.HistoricalReturnsResult>(data['data']);
     }
     if (dataClassName == 'Holding') {
-      return deserialize<_i11.Holding>(data['data']);
+      return deserialize<_i21.Holding>(data['data']);
     }
     if (dataClassName == 'IntradayPrice') {
-      return deserialize<_i12.IntradayPrice>(data['data']);
+      return deserialize<_i22.IntradayPrice>(data['data']);
+    }
+    if (dataClassName == 'MissingSymbolAsset') {
+      return deserialize<_i23.MissingSymbolAsset>(data['data']);
     }
     if (dataClassName == 'Order') {
-      return deserialize<_i13.Order>(data['data']);
+      return deserialize<_i24.Order>(data['data']);
+    }
+    if (dataClassName == 'PeriodReturn') {
+      return deserialize<_i25.PeriodReturn>(data['data']);
     }
     if (dataClassName == 'Portfolio') {
-      return deserialize<_i14.Portfolio>(data['data']);
+      return deserialize<_i26.Portfolio>(data['data']);
     }
     if (dataClassName == 'PortfolioRule') {
-      return deserialize<_i15.PortfolioRule>(data['data']);
+      return deserialize<_i27.PortfolioRule>(data['data']);
+    }
+    if (dataClassName == 'PortfolioValuation') {
+      return deserialize<_i28.PortfolioValuation>(data['data']);
     }
     if (dataClassName == 'PriceCache') {
-      return deserialize<_i16.PriceCache>(data['data']);
+      return deserialize<_i29.PriceCache>(data['data']);
+    }
+    if (dataClassName == 'ReturnPeriod') {
+      return deserialize<_i30.ReturnPeriod>(data['data']);
     }
     if (dataClassName == 'Sleeve') {
-      return deserialize<_i17.Sleeve>(data['data']);
+      return deserialize<_i31.Sleeve>(data['data']);
+    }
+    if (dataClassName == 'SleeveAllocation') {
+      return deserialize<_i32.SleeveAllocation>(data['data']);
     }
     if (dataClassName == 'SleeveAsset') {
-      return deserialize<_i18.SleeveAsset>(data['data']);
+      return deserialize<_i33.SleeveAsset>(data['data']);
+    }
+    if (dataClassName == 'StalePriceAsset') {
+      return deserialize<_i34.StalePriceAsset>(data['data']);
     }
     if (dataClassName == 'TickerMetadata') {
-      return deserialize<_i19.TickerMetadata>(data['data']);
+      return deserialize<_i35.TickerMetadata>(data['data']);
     }
     if (dataClassName == 'YahooSymbol') {
-      return deserialize<_i20.YahooSymbol>(data['data']);
+      return deserialize<_i36.YahooSymbol>(data['data']);
     }
     if (dataClassName.startsWith('serverpod.')) {
       data['className'] = dataClassName.substring(10);
@@ -1736,36 +2027,36 @@ class Protocol extends _i1.SerializationManagerServer {
       }
     }
     switch (t) {
-      case _i5.Asset:
-        return _i5.Asset.t;
-      case _i7.DailyPrice:
-        return _i7.DailyPrice.t;
-      case _i8.DividendEvent:
-        return _i8.DividendEvent.t;
-      case _i9.FxCache:
-        return _i9.FxCache.t;
-      case _i10.GlobalCash:
-        return _i10.GlobalCash.t;
-      case _i11.Holding:
-        return _i11.Holding.t;
-      case _i12.IntradayPrice:
-        return _i12.IntradayPrice.t;
-      case _i13.Order:
-        return _i13.Order.t;
-      case _i14.Portfolio:
-        return _i14.Portfolio.t;
-      case _i15.PortfolioRule:
-        return _i15.PortfolioRule.t;
-      case _i16.PriceCache:
-        return _i16.PriceCache.t;
-      case _i17.Sleeve:
-        return _i17.Sleeve.t;
-      case _i18.SleeveAsset:
-        return _i18.SleeveAsset.t;
-      case _i19.TickerMetadata:
-        return _i19.TickerMetadata.t;
-      case _i20.YahooSymbol:
-        return _i20.YahooSymbol.t;
+      case _i6.Asset:
+        return _i6.Asset.t;
+      case _i16.DailyPrice:
+        return _i16.DailyPrice.t;
+      case _i17.DividendEvent:
+        return _i17.DividendEvent.t;
+      case _i18.FxCache:
+        return _i18.FxCache.t;
+      case _i19.GlobalCash:
+        return _i19.GlobalCash.t;
+      case _i21.Holding:
+        return _i21.Holding.t;
+      case _i22.IntradayPrice:
+        return _i22.IntradayPrice.t;
+      case _i24.Order:
+        return _i24.Order.t;
+      case _i26.Portfolio:
+        return _i26.Portfolio.t;
+      case _i27.PortfolioRule:
+        return _i27.PortfolioRule.t;
+      case _i29.PriceCache:
+        return _i29.PriceCache.t;
+      case _i31.Sleeve:
+        return _i31.Sleeve.t;
+      case _i33.SleeveAsset:
+        return _i33.SleeveAsset.t;
+      case _i35.TickerMetadata:
+        return _i35.TickerMetadata.t;
+      case _i36.YahooSymbol:
+        return _i36.YahooSymbol.t;
     }
     return null;
   }

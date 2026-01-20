@@ -1,0 +1,18 @@
+### StalePriceAsset - Asset with stale price data (health issue)
+class: StalePriceAsset
+
+fields:
+  ### ISIN identifier
+  isin: String
+
+  ### Broker ticker symbol
+  ticker: String
+
+  ### Human-readable name
+  name: String
+
+  ### When the price was last fetched
+  lastFetchedAt: DateTime
+
+  ### How many hours stale
+  hoursStale: int

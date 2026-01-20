@@ -1,0 +1,12 @@
+### Band - Calculated band bounds for a target allocation
+class: Band
+
+fields:
+  ### Lower bound in percentage points
+  lower: double
+
+  ### Upper bound in percentage points
+  upper: double
+
+  ### Half-width used (for display purposes)
+  halfWidth: double

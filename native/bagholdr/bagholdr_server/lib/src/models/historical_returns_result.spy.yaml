@@ -1,0 +1,12 @@
+### HistoricalReturnsResult - Historical returns response
+class: HistoricalReturnsResult
+
+fields:
+  ### Current portfolio value
+  currentValue: double
+
+  ### Returns by period (today, 1w, 1m, etc.)
+  returns: Map<String, PeriodReturn>
+
+  ### Per-asset returns keyed by period, then by ISIN
+  assetReturns: Map<String, Map<String, AssetPeriodReturn>>

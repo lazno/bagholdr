@@ -1,0 +1,6 @@
+### AllocationStatus - Band evaluation result
+enum: AllocationStatus
+
+values:
+  - ok
+  - warning

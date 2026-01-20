@@ -1075,7 +1075,7 @@ Understand the existing valuation logic before porting. **No code changes — ju
 
 ### NAPP-015: Port Valuation Endpoint `[port]`
 
-**Priority**: High | **Status**: `[ ]`
+**Priority**: High | **Status**: `[x]`
 **Blocked by**: None (NAPP-014 complete)
 
 Translate valuation logic from TypeScript to Dart. Powers the Hero section of the dashboard.
@@ -1091,14 +1091,14 @@ Translate valuation logic from TypeScript to Dart. Powers the Hero section of th
 ---
 
 **Tasks**:
-- [ ] Create `ValuationEndpoint` class
-- [ ] Port `getPortfolioValuation` — sleeve hierarchy, band violations, health issues
-- [ ] Port `getHistoricalReturns` — MWR returns by period
-- [ ] Port `getChartData` — historical value + cost basis series
-- [ ] Port helper functions: `calculateSleeveTotal`, `calculateMWR`, `formatPeriodLabel`
-- [ ] Port or find XIRR implementation for Dart
-- [ ] Run `serverpod generate`
-- [ ] Validate against existing backend (same inputs → same outputs)
+- [x] Create `ValuationEndpoint` class
+- [x] Port `getPortfolioValuation` — sleeve hierarchy, band violations, health issues
+- [x] Port `getHistoricalReturns` — MWR returns by period
+- [x] Port `getChartData` — historical value + cost basis series
+- [x] Port helper functions: `calculateSleeveTotal`, `calculateMWR`, `formatPeriodLabel`
+- [x] Port or find XIRR implementation for Dart
+- [x] Run `serverpod generate`
+- [x] Validate against existing backend (same inputs → same outputs)
 
 **Acceptance Criteria**:
 - [ ] Returns correct portfolio value

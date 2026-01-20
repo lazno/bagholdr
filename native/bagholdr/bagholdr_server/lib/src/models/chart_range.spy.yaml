@@ -1,0 +1,9 @@
+### ChartRange - Time range for chart data
+enum: ChartRange
+
+values:
+  - oneMonth
+  - threeMonths
+  - sixMonths
+  - oneYear
+  - all

@@ -1,0 +1,39 @@
+### SleeveAllocation - Sleeve with allocation and band info
+class: SleeveAllocation
+
+fields:
+  ### Sleeve ID (UUID)
+  sleeveId: String
+
+  ### Sleeve display name
+  sleeveName: String
+
+  ### Parent sleeve ID (null for top-level)
+  parentSleeveId: String?
+
+  ### Target allocation percentage
+  budgetPercent: double
+
+  ### Direct assets assigned to this sleeve
+  directAssets: List<AssetValuation>
+
+  ### Value of direct assets in EUR
+  directValueEur: double
+
+  ### Total value including all descendants in EUR
+  totalValueEur: double
+
+  ### Percentage of invested holdings (primary)
+  actualPercentInvested: double
+
+  ### Percentage of total including cash (informational)
+  actualPercentTotal: double
+
+  ### Calculated band bounds
+  band: Band
+
+  ### Band evaluation status
+  status: AllocationStatus
+
+  ### Deviation from target (percentage points)
+  deltaPercent: double

@@ -1,0 +1,33 @@
+### PeriodReturn - Return calculation for a specific time period
+class: PeriodReturn
+
+fields:
+  ### The period this return covers
+  period: ReturnPeriod
+
+  ### Current portfolio value
+  currentValue: double
+
+  ### Portfolio value at period start
+  startValue: double
+
+  ### Absolute return (profit) in EUR
+  absoluteReturn: double
+
+  ### Total percentage return over period (MWR)
+  compoundedReturn: double
+
+  ### Annualized percentage return (p.a.)
+  annualizedReturn: double
+
+  ### Length of period in years
+  periodYears: double
+
+  ### Comparison date (period start)
+  comparisonDate: String
+
+  ### Net cash flows during period (deposits - withdrawals)
+  netCashFlow: double
+
+  ### Number of cash flow events in period
+  cashFlowCount: int

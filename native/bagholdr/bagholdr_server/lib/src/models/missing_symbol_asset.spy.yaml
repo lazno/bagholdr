@@ -1,0 +1,12 @@
+### MissingSymbolAsset - Asset without Yahoo symbol (health issue)
+class: MissingSymbolAsset
+
+fields:
+  ### ISIN identifier
+  isin: String
+
+  ### Broker ticker symbol
+  ticker: String
+
+  ### Human-readable name
+  name: String

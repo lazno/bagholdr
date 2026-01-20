@@ -1,0 +1,9 @@
+### ChartDataResult - Chart data response
+class: ChartDataResult
+
+fields:
+  ### Data points for the chart
+  dataPoints: List<ChartDataPoint>
+
+  ### Whether there is data to display
+  hasData: bool

@@ -1,0 +1,11 @@
+### ReturnPeriod - Time periods for historical returns
+enum: ReturnPeriod
+
+values:
+  - today
+  - oneWeek
+  - oneMonth
+  - sixMonths
+  - ytd
+  - oneYear
+  - all

@@ -14,10 +14,12 @@ import 'package:serverpod/serverpod.dart' as _i1;
 import '../auth/email_idp_endpoint.dart' as _i2;
 import '../auth/jwt_refresh_endpoint.dart' as _i3;
 import '../endpoints/portfolio_endpoint.dart' as _i4;
+import '../endpoints/valuation_endpoint.dart' as _i5;
+import 'package:bagholdr_server/src/generated/chart_range.dart' as _i6;
 import 'package:serverpod_auth_idp_server/serverpod_auth_idp_server.dart'
-    as _i5;
+    as _i7;
 import 'package:serverpod_auth_core_server/serverpod_auth_core_server.dart'
-    as _i6;
+    as _i8;
 
 class Endpoints extends _i1.EndpointDispatch {
   @override
@@ -39,6 +41,12 @@ class Endpoints extends _i1.EndpointDispatch {
         ..initialize(
           server,
           'portfolio',
+          null,
+        ),
+      'valuation': _i5.ValuationEndpoint()
+        ..initialize(
+          server,
+          'valuation',
           null,
         ),
     };
@@ -252,9 +260,78 @@ class Endpoints extends _i1.EndpointDispatch {
         ),
       },
     );
-    modules['serverpod_auth_idp'] = _i5.Endpoints()
+    connectors['valuation'] = _i1.EndpointConnector(
+      name: 'valuation',
+      endpoint: endpoints['valuation']!,
+      methodConnectors: {
+        'getPortfolioValuation': _i1.MethodConnector(
+          name: 'getPortfolioValuation',
+          params: {
+            'portfolioId': _i1.ParameterDescription(
+              name: 'portfolioId',
+              type: _i1.getType<_i1.UuidValue>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['valuation'] as _i5.ValuationEndpoint)
+                  .getPortfolioValuation(
+                    session,
+                    params['portfolioId'],
+                  ),
+        ),
+        'getChartData': _i1.MethodConnector(
+          name: 'getChartData',
+          params: {
+            'portfolioId': _i1.ParameterDescription(
+              name: 'portfolioId',
+              type: _i1.getType<_i1.UuidValue>(),
+              nullable: false,
+            ),
+            'range': _i1.ParameterDescription(
+              name: 'range',
+              type: _i1.getType<_i6.ChartRange>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['valuation'] as _i5.ValuationEndpoint)
+                  .getChartData(
+                    session,
+                    params['portfolioId'],
+                    params['range'],
+                  ),
+        ),
+        'getHistoricalReturns': _i1.MethodConnector(
+          name: 'getHistoricalReturns',
+          params: {
+            'portfolioId': _i1.ParameterDescription(
+              name: 'portfolioId',
+              type: _i1.getType<_i1.UuidValue>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['valuation'] as _i5.ValuationEndpoint)
+                  .getHistoricalReturns(
+                    session,
+                    params['portfolioId'],
+                  ),
+        ),
+      },
+    );
+    modules['serverpod_auth_idp'] = _i7.Endpoints()
       ..initializeEndpoints(server);
-    modules['serverpod_auth_core'] = _i6.Endpoints()
+    modules['serverpod_auth_core'] = _i8.Endpoints()
       ..initializeEndpoints(server);
   }
 }

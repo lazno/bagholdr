@@ -1,0 +1,27 @@
+### ConcentrationViolation - Single asset concentration rule violation
+class: ConcentrationViolation
+
+fields:
+  ### Rule ID
+  ruleId: String
+
+  ### Rule display name
+  ruleName: String
+
+  ### ISIN of the violating asset
+  assetIsin: String
+
+  ### Name of the violating asset
+  assetName: String
+
+  ### Ticker of the violating asset
+  assetTicker: String
+
+  ### Asset type
+  assetType: AssetType
+
+  ### Actual percentage of portfolio
+  actualPercent: double
+
+  ### Maximum allowed percentage
+  maxPercent: double

@@ -1,0 +1,33 @@
+### AssetPeriodReturn - Return calculation for a single asset over a period
+class: AssetPeriodReturn
+
+fields:
+  ### ISIN identifier
+  isin: String
+
+  ### Broker ticker symbol
+  ticker: String
+
+  ### Current price in EUR (null if not available)
+  currentPrice: double?
+
+  ### Historical price in EUR at period start (null if not available)
+  historicalPrice: double?
+
+  ### Absolute return (profit/loss) in EUR for the period
+  absoluteReturn: double?
+
+  ### Total percentage return over period
+  compoundedReturn: double?
+
+  ### Annualized percentage return (p.a.)
+  annualizedReturn: double?
+
+  ### Actual period in years (may be shorter if recently purchased)
+  periodYears: double?
+
+  ### Whether this asset was purchased after period start
+  isShortHolding: bool
+
+  ### Holding period label for short holdings (e.g., "6mo", "3mo")
+  holdingPeriodLabel: String?
