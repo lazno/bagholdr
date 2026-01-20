@@ -1,0 +1,32 @@
+### PortfolioRule - Flexible rule system for portfolio constraints
+### Stores concentration limits, exposure rules, and other constraints
+class: PortfolioRule
+table: portfolio_rules
+
+fields:
+  ### UUID primary key (v7 for lexicographic sorting)
+  id: UuidValue?, defaultPersist=random_v7
+
+  ### Reference to the portfolio (UUID)
+  portfolioId: UuidValue, relation(parent=portfolios)
+
+  ### Type of rule (e.g., "concentration", "exposure", "custom")
+  ruleType: String
+
+  ### Human-readable rule name
+  name: String
+
+  ### JSON configuration for rule-specific parameters
+  ### e.g., {"maxPercent": 10, "asset": "AAPL"} for concentration
+  config: String?
+
+  ### Whether the rule is currently active
+  enabled: bool
+
+  ### When the rule was created
+  createdAt: DateTime
+
+indexes:
+  ### Index for efficient lookups by portfolio
+  portfolio_rule_portfolio_idx:
+    fields: portfolioId

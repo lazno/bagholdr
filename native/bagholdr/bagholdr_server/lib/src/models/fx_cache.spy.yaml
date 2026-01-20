@@ -1,0 +1,23 @@
+### FxCache - Cached foreign exchange rates
+### Used for currency conversion (e.g., USD/EUR, GBP/EUR)
+class: FxCache
+table: fx_cache
+
+fields:
+  ### UUID primary key (v7 for lexicographic sorting)
+  id: UuidValue?, defaultPersist=random_v7
+
+  ### Currency pair identifier (e.g., "USDEUR", "GBPEUR")
+  pair: String
+
+  ### Exchange rate (e.g., 0.92 for USD/EUR)
+  rate: double
+
+  ### When this rate was fetched
+  fetchedAt: DateTime
+
+indexes:
+  ### Unique index on pair - one rate per currency pair
+  fx_cache_pair_idx:
+    fields: pair
+    unique: true

@@ -53,9 +53,14 @@
 
 <div class="min-h-screen bg-gray-50">
 	<header class="bg-white shadow">
-		<div class="mx-auto max-w-7xl px-4 py-6">
-			<h1 class="text-3xl font-bold text-gray-900">FinancePal</h1>
-			<p class="mt-1 text-gray-600">Portfolio Rebalancing</p>
+		<div class="mx-auto max-w-7xl px-4 py-6 flex items-center justify-between">
+			<div>
+				<h1 class="text-3xl font-bold text-gray-900">Bagholdr</h1>
+				<p class="mt-1 text-gray-600">Portfolio Rebalancing</p>
+			</div>
+			<a href="/dashboard-v2" class="rounded-lg bg-blue-600 px-4 py-2 text-white font-medium hover:bg-blue-700 transition-colors">
+				Open Dashboard
+			</a>
 		</div>
 	</header>
 
@@ -163,6 +168,9 @@
 
 			<!-- Quick Links -->
 			<div class="mt-8 flex gap-4">
+				<a href="/dashboard-v2" class="rounded bg-blue-100 px-4 py-2 text-blue-700 hover:bg-blue-200">
+					Dashboard
+				</a>
 				<a href="/import" class="rounded bg-gray-100 px-4 py-2 text-gray-700 hover:bg-gray-200">
 					Import Orders
 				</a>

@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exposure - Split Comparison View</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: #f8fafc;
+      color: #1e293b;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .header h1 { font-size: 20px; font-weight: 600; }
+    .header-actions { display: flex; gap: 12px; }
+    .btn {
+      padding: 8px 16px;
+      border-radius: 6px;
+      border: 1px solid #e2e8f0;
+      background: white;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .btn:hover { background: #f8fafc; }
+    .btn.primary { background: #3b82f6; color: white; border-color: #3b82f6; }
+
+    /* Scope bar */
+    .scope-bar {
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .scope-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #64748b;
+    }
+    .scope-pills { display: flex; gap: 8px; }
+    .scope-pill {
+      padding: 6px 12px;
+      border-radius: 16px;
+      font-size: 12px;
+      cursor: pointer;
+      background: #f1f5f9;
+      border: 1px solid transparent;
+    }
+    .scope-pill:hover { background: #e2e8f0; }
+    .scope-pill.active {
+      background: #eff6ff;
+      border-color: #3b82f6;
+      color: #3b82f6;
+    }
+
+    /* Violations bar */
+    .violations-bar {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      border-radius: 8px;
+      padding: 10px 16px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 13px;
+    }
+    .violations-bar .icon { color: #dc2626; font-weight: 600; }
+    .violation-chip {
+      background: white;
+      border: 1px solid #fecaca;
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-size: 12px;
+      color: #dc2626;
+      cursor: pointer;
+    }
+
+    /* Split panels */
+    .split-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .panel {
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .panel-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .panel-header select {
+      padding: 8px 12px;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      background: white;
+      cursor: pointer;
+    }
+    .panel-header select:hover { border-color: #3b82f6; }
+    .panel-header .violation-count {
+      background: #dc2626;
+      color: white;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 11px;
+      margin-left: 8px;
+    }
+    .panel-stats {
+      font-size: 12px;
+      color: #64748b;
+    }
+
+    .panel-content {
+      flex: 1;
+      padding: 16px 20px;
+      overflow-y: auto;
+      max-height: 450px;
+    }
+
+    /* Bar list */
+    .bar-list { display: flex; flex-direction: column; gap: 8px; }
+    .bar-row {
+      display: grid;
+      grid-template-columns: 120px 1fr 45px;
+      align-items: center;
+      gap: 12px;
+      padding: 6px 8px;
+      margin: -6px -8px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .bar-row:hover { background: #f8fafc; }
+    .bar-row.selected { background: #eff6ff; }
+    .bar-row.violation { background: #fef2f2; }
+    .bar-label {
+      font-size: 12px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .bar-label .alert { color: #dc2626; font-size: 10px; }
+    .bar-track {
+      height: 16px;
+      background: #f1f5f9;
+      border-radius: 3px;
+      position: relative;
+      overflow: hidden;
+    }
+    .bar-fill {
+      height: 100%;
+      background: #3b82f6;
+      border-radius: 3px;
+    }
+    .bar-fill.violation { background: #dc2626; }
+    .bar-fill.l { background: #0ea5e9; }
+    .bar-fill.r { background: #8b5cf6; }
+    .bar-limit {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: #1e293b;
+    }
+    .bar-value {
+      font-size: 12px;
+      font-weight: 500;
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Linked selection indicator */
+    .link-indicator {
+      text-align: center;
+      padding: 12px;
+      border-top: 1px solid #e2e8f0;
+      font-size: 12px;
+      color: #64748b;
+      background: #f8fafc;
+    }
+    .link-indicator strong { color: #1e293b; }
+
+    /* Bottom panel: detail view */
+    .detail-panel {
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      margin-top: 20px;
+    }
+    .detail-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .detail-header h3 {
+      font-size: 14px;
+      font-weight: 500;
+    }
+    .detail-header .close-btn {
+      background: none;
+      border: none;
+      color: #64748b;
+      cursor: pointer;
+    }
+    .detail-content {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      padding: 20px;
+    }
+    .detail-section h4 {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #64748b;
+      margin-bottom: 12px;
+    }
+    .asset-list { font-size: 13px; }
+    .asset-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .asset-item:last-child { border-bottom: none; }
+    .asset-name { display: flex; align-items: center; gap: 8px; }
+    .asset-type {
+      font-size: 9px;
+      padding: 2px 5px;
+      background: #f1f5f9;
+      border-radius: 3px;
+      color: #64748b;
+    }
+    .asset-contrib { font-variant-numeric: tabular-nums; color: #64748b; }
+
+    /* Rules footer */
+    .rules-footer {
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      margin-top: 20px;
+      padding: 16px 20px;
+    }
+    .rules-footer h3 {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #64748b;
+      margin-bottom: 12px;
+    }
+    .rules-list {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .rule-tag {
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+    }
+    .rule-tag.violated {
+      background: #fef2f2;
+      border-color: #fecaca;
+      color: #dc2626;
+    }
+    .rule-tag .dim {
+      color: #64748b;
+      margin-right: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <h1>Exposure Analysis</h1>
+      <div class="header-actions">
+        <button class="btn">Refresh Metadata</button>
+        <button class="btn primary">+ Add Rule</button>
+      </div>
+    </div>
+
+    <!-- Scope bar -->
+    <div class="scope-bar">
+      <span class="scope-label">Scope:</span>
+      <div class="scope-pills">
+        <div class="scope-pill active">Portfolio</div>
+        <div class="scope-pill">Core</div>
+        <div class="scope-pill">Satellite</div>
+        <div class="scope-pill">Growth</div>
+      </div>
+      <span style="flex:1"></span>
+      <span class="scope-label">Total Value:</span>
+      <span style="font-weight: 500;">$164,500</span>
+    </div>
+
+    <!-- Violations bar -->
+    <div class="violations-bar">
+      <span class="icon">!</span>
+      <span>2 exposure violations:</span>
+      <span class="violation-chip">Sector: Tech 32% > 25%</span>
+      <span class="violation-chip">Country: US 65% > 60%</span>
+    </div>
+
+    <!-- Split panels -->
+    <div class="split-container">
+      <!-- Left panel -->
+      <div class="panel">
+        <div class="panel-header">
+          <div>
+            <select>
+              <option selected>Sector</option>
+              <option>Industry</option>
+              <option>Country</option>
+              <option>Market Cap</option>
+            </select>
+            <span class="violation-count">1</span>
+          </div>
+          <span class="panel-stats">11 categories</span>
+        </div>
+        <div class="panel-content">
+          <div class="bar-list">
+            <div class="bar-row violation selected">
+              <div class="bar-label">Technology <span class="alert">!</span></div>
+              <div class="bar-track">
+                <div class="bar-fill violation" style="width: 32%;"></div>
+                <div class="bar-limit" style="left: 25%;"></div>
+              </div>
+              <div class="bar-value">32%</div>
+            </div>
+            <div class="bar-row">
+              <div class="bar-label">Healthcare</div>
+              <div class="bar-track">
+                <div class="bar-fill l" style="width: 22%;"></div>
+              </div>
+              <div class="bar-value">22%</div>
+            </div>
+            <div class="bar-row">
+              <div class="bar-label">Financials</div>
+              <div class="bar-track">
+                <div class="bar-fill l" style="width: 18%;"></div>
+              </div>
+              <div class="bar-value">18%</div>
+            </div>
+            <div class="bar-row">
+              <div class="bar-label">Consumer Cycl.</div>
+              <div class="bar-track">
+                <div class="bar-fill l" style="width: 12%;"></div>
+              </div>
+              <div class="bar-value">12%</div>
+            </div>
+            <div class="bar-row">
+              <div class="bar-label">Industrials</div>
+              <div class="bar-track">
+                <div class="bar-fill l" style="width: 8%;"></div>
+              </div>
+              <div class="bar-value">8%</div>
+            </div>
+            <div class="bar-row">
+              <div class="bar-label">Energy</div>
+              <div class="bar-track">
+                <div class="bar-fill l" style="width: 4%;"></div>
+              </div>
+              <div class="bar-value">4%</div>
+            </div>
+            <div class="bar-row">
+              <div class="bar-label">Comm. Services</div>
+              <div class="bar-track">
+                <div class="bar-fill l" style="width: 2%;"></div>
+              </div>
+              <div class="bar-value">2%</div>
+            </div>
+            <div class="bar-row">
+              <div class="bar-label">Other + Cash</div>
+              <div class="bar-track">
+                <div class="bar-fill" style="width: 2%; background: #94a3b8;"></div>
+              </div>
+              <div class="bar-value">2%</div>
+            </div>
+          </div>
+        </div>
+        <div class="link-indicator">
+          Showing: <strong>Technology</strong> - click a category to see assets
+        </div>
+      </div>
+
+      <!-- Right panel -->
+      <div class="panel">
+        <div class="panel-header">
+          <div>
+            <select>
+              <option>Sector</option>
+              <option>Industry</option>
+              <option selected>Country</option>
+              <option>Market Cap</option>
+            </select>
+            <span class="violation-count">1</span>
+          </div>
+          <span class="panel-stats">12 countries</span>
+        </div>
+        <div class="panel-content">
+          <div class="bar-list">
+            <div class="bar-row violation">
+              <div class="bar-label">United States <span class="alert">!</span></div>
+              <div class="bar-track">
+                <div class="bar-fill violation" style="width: 65%;"></div>
+                <div class="bar-limit" style="left: 60%;"></div>
+              </div>
+              <div class="bar-value">65%</div>
+            </div>
+            <div class="bar-row">
+              <div class="bar-label">Germany</div>
+              <div class="bar-track">
+                <div class="bar-fill r" style="width: 12%;"></div>
+              </div>
+              <div class="bar-value">12%</div>
+            </div>
+            <div class="bar-row">
+              <div class="bar-label">Japan</div>
+              <div class="bar-track">
+                <div class="bar-fill r" style="width: 8%;"></div>
+              </div>
+              <div class="bar-value">8%</div>
+            </div>
+            <div class="bar-row">
+              <div class="bar-label">United Kingdom</div>
+              <div class="bar-track">
+                <div class="bar-fill r" style="width: 5%;"></div>
+              </div>
+              <div class="bar-value">5%</div>
+            </div>
+            <div class="bar-row">
+              <div class="bar-label">France</div>
+              <div class="bar-track">
+                <div class="bar-fill r" style="width: 4%;"></div>
+              </div>
+              <div class="bar-value">4%</div>
+            </div>
+            <div class="bar-row">
+              <div class="bar-label">Switzerland</div>
+              <div class="bar-track">
+                <div class="bar-fill r" style="width: 3%;"></div>
+              </div>
+              <div class="bar-value">3%</div>
+            </div>
+            <div class="bar-row">
+              <div class="bar-label">Other</div>
+              <div class="bar-track">
+                <div class="bar-fill" style="width: 3%; background: #94a3b8;"></div>
+              </div>
+              <div class="bar-value">3%</div>
+            </div>
+          </div>
+        </div>
+        <div class="link-indicator">
+          Compare: see how <strong>Technology</strong> breaks down by country
+        </div>
+      </div>
+    </div>
+
+    <!-- Detail panel -->
+    <div class="detail-panel">
+      <div class="detail-header">
+        <h3>Technology (32%) - Asset Breakdown</h3>
+        <button class="close-btn">x close</button>
+      </div>
+      <div class="detail-content">
+        <div class="detail-section">
+          <h4>Direct Holdings (Stocks)</h4>
+          <div class="asset-list">
+            <div class="asset-item">
+              <span class="asset-name">AAPL <span class="asset-type">Stock</span></span>
+              <span class="asset-contrib">7.6%</span>
+            </div>
+            <div class="asset-item">
+              <span class="asset-name">MSFT <span class="asset-type">Stock</span></span>
+              <span class="asset-contrib">5.6%</span>
+            </div>
+            <div class="asset-item">
+              <span class="asset-name">NVDA <span class="asset-type">Stock</span></span>
+              <span class="asset-contrib">3.5%</span>
+            </div>
+            <div class="asset-item">
+              <span class="asset-name">GOOGL <span class="asset-type">Stock</span></span>
+              <span class="asset-contrib">2.1%</span>
+            </div>
+          </div>
+        </div>
+        <div class="detail-section">
+          <h4>ETF Look-Through</h4>
+          <div class="asset-list">
+            <div class="asset-item">
+              <span class="asset-name">VWCE <span class="asset-type">ETF @ 25%</span></span>
+              <span class="asset-contrib">8.0%</span>
+            </div>
+            <div class="asset-item">
+              <span class="asset-name">QQQ <span class="asset-type">ETF @ 50%</span></span>
+              <span class="asset-contrib">5.2%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Rules footer -->
+    <div class="rules-footer">
+      <h3>Active Exposure Rules</h3>
+      <div class="rules-list">
+        <div class="rule-tag violated">
+          <span class="dim">Sector:</span> Max any 25%
+        </div>
+        <div class="rule-tag violated">
+          <span class="dim">Country:</span> US max 60%
+        </div>
+        <div class="rule-tag">
+          <span class="dim">Market Cap:</span> Mega max 50%
+        </div>
+        <div class="rule-tag" style="border-style: dashed; color: #64748b;">
+          + Add Rule
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

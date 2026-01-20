@@ -1,0 +1,25 @@
+### Portfolio - Configuration/strategy container
+### Each portfolio organizes global holdings differently with its own band settings
+class: Portfolio
+table: portfolios
+
+fields:
+  ### UUID primary key (v7 for lexicographic sorting)
+  id: UuidValue?, defaultPersist=random_v7
+
+  ### Portfolio display name
+  name: String
+
+  ### Band configuration (applies to all sleeves in portfolio)
+  ### Relative tolerance as percentage (e.g., 20 means +/-20% of target)
+  bandRelativeTolerance: double
+
+  ### Minimum band width in percentage points
+  bandAbsoluteFloor: double
+
+  ### Maximum band width in percentage points
+  bandAbsoluteCap: double
+
+  ### Timestamps
+  createdAt: DateTime
+  updatedAt: DateTime

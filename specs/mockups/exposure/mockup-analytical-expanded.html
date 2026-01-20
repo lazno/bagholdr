@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exposure - Sector Expanded</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>body { font-family: 'Inter', sans-serif; }</style>
+</head>
+<body class="bg-slate-100 min-h-screen">
+  <div class="mx-auto max-w-[1200px] px-6 py-6">
+
+    <!-- Header with breadcrumb -->
+    <div class="flex items-center justify-between mb-6">
+      <div class="flex items-center gap-2">
+        <a href="mockup-analytical.html" class="text-sm text-blue-500 hover:underline">Exposure</a>
+        <span class="text-slate-300">/</span>
+        <span class="text-sm font-semibold text-slate-900">Sector</span>
+        <span class="text-slate-300">/</span>
+        <button class="flex items-center gap-1.5 text-sm text-slate-600 hover:text-slate-900">
+          <span>All Sleeves</span>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+          </svg>
+        </button>
+      </div>
+      <span class="text-xs text-slate-500">9 sectors · 119.950 €</span>
+    </div>
+
+    <!-- Violation callout for this dimension -->
+    <div class="rounded-xl border border-red-200 bg-red-50 p-4 mb-6">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center">
+            <span class="text-red-600 font-bold text-sm">!</span>
+          </div>
+          <div>
+            <div class="font-medium text-red-900">Technology exceeds limit</div>
+            <div class="text-sm text-red-700">38% current · 25% limit · <span class="font-medium">13pp over</span></div>
+          </div>
+        </div>
+        <a href="/rebalancing?focus=sector.technology" class="px-3 py-1.5 bg-red-600 text-white text-xs font-medium rounded-lg hover:bg-red-700">
+          Fix this →
+        </a>
+      </div>
+    </div>
+
+    <!-- Full breakdown -->
+    <div class="rounded-xl border border-slate-200 bg-white overflow-hidden mb-6">
+      <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+        <span class="text-sm font-medium text-slate-900">All Sectors</span>
+        <div class="flex items-center gap-4 text-xs">
+          <label class="flex items-center gap-1.5 text-slate-500">
+            <input type="checkbox" class="rounded border-slate-300" checked>
+            Show rules
+          </label>
+          <select class="border border-slate-200 rounded px-2 py-1 text-slate-600">
+            <option>Sort by allocation</option>
+            <option>Sort by change</option>
+            <option>Sort by name</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="divide-y divide-slate-100">
+        <!-- Technology - VIOLATION -->
+        <div class="px-5 py-3 bg-red-50/50">
+          <div class="flex items-center gap-4 mb-2">
+            <span class="w-28 text-sm font-medium text-slate-900">Technology</span>
+            <div class="flex-1 h-3 bg-slate-100 rounded-full overflow-hidden relative">
+              <div class="absolute h-full w-px bg-red-400" style="left: 25%"></div>
+              <div class="h-full bg-red-400 rounded-full" style="width: 38%"></div>
+            </div>
+            <span class="w-16 text-sm text-right font-semibold text-red-600">38%</span>
+            <span class="w-20 text-xs text-right text-slate-500">45.500 €</span>
+            <span class="w-16 text-xs text-right text-red-500">+2.1pp ↑</span>
+          </div>
+          <div class="flex items-center gap-4 ml-28 text-xs text-slate-500">
+            <span class="text-red-600">Limit: 25%</span>
+            <span class="text-slate-300">·</span>
+            <span>Contributors: AAPL 7.6pp, QQQ 10pp, VWCE 8pp, MSFT 6pp</span>
+          </div>
+        </div>
+
+        <!-- Healthcare - OK -->
+        <div class="px-5 py-3">
+          <div class="flex items-center gap-4 mb-2">
+            <span class="w-28 text-sm font-medium text-slate-900">Healthcare</span>
+            <div class="flex-1 h-3 bg-slate-100 rounded-full overflow-hidden relative">
+              <div class="absolute h-full w-px bg-slate-300" style="left: 30%"></div>
+              <div class="h-full bg-blue-400 rounded-full" style="width: 18%"></div>
+            </div>
+            <span class="w-16 text-sm text-right font-medium text-slate-700">18%</span>
+            <span class="w-20 text-xs text-right text-slate-500">21.600 €</span>
+            <span class="w-16 text-xs text-right text-slate-400">—</span>
+          </div>
+          <div class="flex items-center gap-4 ml-28 text-xs text-slate-400">
+            <span>Limit: 30%</span>
+            <span class="text-slate-300">·</span>
+            <span>12pp headroom</span>
+          </div>
+        </div>
+
+        <!-- Financials - OK -->
+        <div class="px-5 py-3">
+          <div class="flex items-center gap-4 mb-2">
+            <span class="w-28 text-sm font-medium text-slate-900">Financials</span>
+            <div class="flex-1 h-3 bg-slate-100 rounded-full overflow-hidden relative">
+              <div class="absolute h-full w-px bg-slate-300" style="left: 20%"></div>
+              <div class="h-full bg-blue-400 rounded-full" style="width: 14%"></div>
+            </div>
+            <span class="w-16 text-sm text-right font-medium text-slate-700">14%</span>
+            <span class="w-20 text-xs text-right text-slate-500">16.800 €</span>
+            <span class="w-16 text-xs text-right text-green-500">-3.2pp ↓</span>
+          </div>
+          <div class="flex items-center gap-4 ml-28 text-xs text-slate-400">
+            <span>Limit: 20%</span>
+            <span class="text-slate-300">·</span>
+            <span>6pp headroom</span>
+          </div>
+        </div>
+
+        <!-- Consumer - OK -->
+        <div class="px-5 py-3">
+          <div class="flex items-center gap-4 mb-2">
+            <span class="w-28 text-sm font-medium text-slate-900">Consumer Discr.</span>
+            <div class="flex-1 h-3 bg-slate-100 rounded-full overflow-hidden">
+              <div class="h-full bg-blue-400 rounded-full" style="width: 12%"></div>
+            </div>
+            <span class="w-16 text-sm text-right font-medium text-slate-700">12%</span>
+            <span class="w-20 text-xs text-right text-slate-500">14.400 €</span>
+            <span class="w-16 text-xs text-right text-slate-400">+0.5pp</span>
+          </div>
+          <div class="flex items-center gap-4 ml-28 text-xs text-slate-400">
+            <span class="text-slate-300">No rule set</span>
+          </div>
+        </div>
+
+        <!-- Energy - OK -->
+        <div class="px-5 py-3">
+          <div class="flex items-center gap-4 mb-2">
+            <span class="w-28 text-sm font-medium text-slate-900">Energy</span>
+            <div class="flex-1 h-3 bg-slate-100 rounded-full overflow-hidden">
+              <div class="h-full bg-blue-400 rounded-full" style="width: 8%"></div>
+            </div>
+            <span class="w-16 text-sm text-right font-medium text-slate-700">8%</span>
+            <span class="w-20 text-xs text-right text-slate-500">9.600 €</span>
+            <span class="w-16 text-xs text-right text-slate-400">—</span>
+          </div>
+        </div>
+
+        <!-- Industrials -->
+        <div class="px-5 py-3">
+          <div class="flex items-center gap-4 mb-2">
+            <span class="w-28 text-sm font-medium text-slate-900">Industrials</span>
+            <div class="flex-1 h-3 bg-slate-100 rounded-full overflow-hidden">
+              <div class="h-full bg-blue-400 rounded-full" style="width: 5%"></div>
+            </div>
+            <span class="w-16 text-sm text-right font-medium text-slate-700">5%</span>
+            <span class="w-20 text-xs text-right text-slate-500">6.000 €</span>
+            <span class="w-16 text-xs text-right text-slate-400">—</span>
+          </div>
+        </div>
+
+        <!-- Materials -->
+        <div class="px-5 py-3">
+          <div class="flex items-center gap-4 mb-2">
+            <span class="w-28 text-sm font-medium text-slate-900">Materials</span>
+            <div class="flex-1 h-3 bg-slate-100 rounded-full overflow-hidden">
+              <div class="h-full bg-blue-400 rounded-full" style="width: 3%"></div>
+            </div>
+            <span class="w-16 text-sm text-right font-medium text-slate-700">3%</span>
+            <span class="w-20 text-xs text-right text-slate-500">3.600 €</span>
+            <span class="w-16 text-xs text-right text-green-500">-0.8pp</span>
+          </div>
+        </div>
+
+        <!-- Utilities -->
+        <div class="px-5 py-3">
+          <div class="flex items-center gap-4 mb-2">
+            <span class="w-28 text-sm font-medium text-slate-900">Utilities</span>
+            <div class="flex-1 h-3 bg-slate-100 rounded-full overflow-hidden">
+              <div class="h-full bg-blue-400 rounded-full" style="width: 1.5%"></div>
+            </div>
+            <span class="w-16 text-sm text-right font-medium text-slate-700">1.5%</span>
+            <span class="w-20 text-xs text-right text-slate-500">1.800 €</span>
+            <span class="w-16 text-xs text-right text-slate-400">—</span>
+          </div>
+        </div>
+
+        <!-- Real Estate -->
+        <div class="px-5 py-3">
+          <div class="flex items-center gap-4 mb-2">
+            <span class="w-28 text-sm font-medium text-slate-900">Real Estate</span>
+            <div class="flex-1 h-3 bg-slate-100 rounded-full overflow-hidden">
+              <div class="h-full bg-blue-400 rounded-full" style="width: 0.5%"></div>
+            </div>
+            <span class="w-16 text-sm text-right font-medium text-slate-700">0.5%</span>
+            <span class="w-20 text-xs text-right text-slate-500">600 €</span>
+            <span class="w-16 text-xs text-right text-slate-400">—</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Contributing Assets (expanded from Technology row) -->
+    <div class="rounded-xl border border-slate-200 bg-white overflow-hidden">
+      <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+        <div class="flex items-center gap-2">
+          <span class="text-sm font-medium text-slate-900">Technology</span>
+          <span class="text-xs text-slate-500">→ Contributing assets</span>
+        </div>
+        <button class="text-xs text-slate-400 hover:text-slate-600">Collapse ↑</button>
+      </div>
+
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="text-xs text-slate-400 border-b border-slate-100">
+            <th class="px-5 py-2 text-left font-medium">Asset</th>
+            <th class="px-5 py-2 text-left font-medium">Sleeve</th>
+            <th class="px-5 py-2 text-right font-medium">Value</th>
+            <th class="px-5 py-2 text-right font-medium">% of Portfolio</th>
+            <th class="px-5 py-2 text-right font-medium">Tech Weight</th>
+            <th class="px-5 py-2 text-right font-medium">Contribution</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          <tr class="hover:bg-slate-50">
+            <td class="px-5 py-3">
+              <div class="font-medium text-slate-900">QQQ</div>
+              <div class="text-xs text-slate-500">Invesco QQQ Trust</div>
+            </td>
+            <td class="px-5 py-3 text-slate-600">Satellite / Growth</td>
+            <td class="px-5 py-3 text-right tabular-nums text-slate-600">24.000 €</td>
+            <td class="px-5 py-3 text-right tabular-nums text-slate-600">20.0%</td>
+            <td class="px-5 py-3 text-right tabular-nums text-slate-600">50%</td>
+            <td class="px-5 py-3 text-right tabular-nums font-medium text-red-600">+10.0pp</td>
+          </tr>
+          <tr class="hover:bg-slate-50">
+            <td class="px-5 py-3">
+              <div class="font-medium text-slate-900">VWCE</div>
+              <div class="text-xs text-slate-500">Vanguard FTSE All-World</div>
+            </td>
+            <td class="px-5 py-3 text-slate-600">Core</td>
+            <td class="px-5 py-3 text-right tabular-nums text-slate-600">52.600 €</td>
+            <td class="px-5 py-3 text-right tabular-nums text-slate-600">43.8%</td>
+            <td class="px-5 py-3 text-right tabular-nums text-slate-600">18%</td>
+            <td class="px-5 py-3 text-right tabular-nums font-medium text-red-600">+7.9pp</td>
+          </tr>
+          <tr class="hover:bg-slate-50">
+            <td class="px-5 py-3">
+              <div class="font-medium text-slate-900">AAPL</div>
+              <div class="text-xs text-slate-500">Apple Inc.</div>
+            </td>
+            <td class="px-5 py-3 text-slate-600">Satellite / Growth</td>
+            <td class="px-5 py-3 text-right tabular-nums text-slate-600">12.500 €</td>
+            <td class="px-5 py-3 text-right tabular-nums text-slate-600">10.4%</td>
+            <td class="px-5 py-3 text-right tabular-nums text-slate-600">100%</td>
+            <td class="px-5 py-3 text-right tabular-nums font-medium text-red-600">+10.4pp</td>
+          </tr>
+          <tr class="hover:bg-slate-50">
+            <td class="px-5 py-3">
+              <div class="font-medium text-slate-900">MSFT</div>
+              <div class="text-xs text-slate-500">Microsoft Corporation</div>
+            </td>
+            <td class="px-5 py-3 text-slate-600">Core</td>
+            <td class="px-5 py-3 text-right tabular-nums text-slate-600">8.400 €</td>
+            <td class="px-5 py-3 text-right tabular-nums text-slate-600">7.0%</td>
+            <td class="px-5 py-3 text-right tabular-nums text-slate-600">100%</td>
+            <td class="px-5 py-3 text-right tabular-nums font-medium text-red-600">+7.0pp</td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr class="bg-slate-50 border-t border-slate-200">
+            <td class="px-5 py-3 font-medium text-slate-700" colspan="5">Total Technology exposure</td>
+            <td class="px-5 py-3 text-right font-bold text-red-600">38.0%</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+
+  </div>
+</body>
+</html>

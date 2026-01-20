@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exposure - Tabs + Bars (Dashboard V2 Style)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+  </style>
+</head>
+<body class="bg-slate-100 min-h-screen">
+  <div class="mx-auto max-w-[1200px] px-6 py-6">
+
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-6">
+      <div>
+        <h1 class="text-sm font-semibold text-slate-900">Exposure Analysis</h1>
+        <div class="text-xs text-slate-500 mt-0.5">
+          <a href="#" class="text-blue-500 hover:underline">Portfolio</a>
+          <span class="mx-1">›</span>
+          <a href="#" class="text-blue-500 hover:underline">Satellite</a>
+          <span class="mx-1">›</span>
+          <span class="text-slate-700">Growth</span>
+        </div>
+      </div>
+      <button class="px-3 py-1.5 text-xs font-medium border border-slate-200 rounded-lg bg-white hover:bg-slate-50">
+        Refresh Metadata
+      </button>
+    </div>
+
+    <!-- Issues Bar -->
+    <div class="flex items-center gap-2.5 px-3.5 py-2.5 bg-amber-50 border border-amber-200 rounded-xl mb-6 text-sm flex-wrap">
+      <span class="font-semibold text-amber-800 whitespace-nowrap flex items-center gap-1.5">
+        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="8" x2="12" y2="12"/>
+          <line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        5 Issues
+      </span>
+      <span class="w-px h-5 bg-amber-200"></span>
+      <button class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs bg-indigo-50 border border-indigo-200 hover:bg-indigo-100">
+        <span class="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
+        Technology 38% > 25%
+      </button>
+      <button class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs bg-indigo-50 border border-indigo-200 hover:bg-indigo-100">
+        <span class="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
+        Sw-Infrastructure 22% > 15%
+      </button>
+      <button class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs bg-indigo-50 border border-indigo-200 hover:bg-indigo-100">
+        <span class="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
+        Semiconductors 18% > 15%
+      </button>
+      <button class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs bg-indigo-50 border border-indigo-200 hover:bg-indigo-100">
+        <span class="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
+        United States 72% > 60%
+      </button>
+      <button class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs bg-indigo-50 border border-indigo-200 hover:bg-indigo-100">
+        <span class="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
+        Mega Cap 58% > 50%
+      </button>
+    </div>
+
+    <!-- Main Layout -->
+    <div class="grid grid-cols-[200px_1fr] gap-6">
+
+      <!-- Scope Sidebar (styled like Sleeves card) -->
+      <div class="rounded-xl border border-slate-200 bg-white overflow-hidden">
+        <div class="px-5 py-3.5 border-b border-slate-100">
+          <span class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Scope</span>
+        </div>
+        <div class="divide-y divide-slate-100">
+          <button class="w-full px-4 py-2 text-left text-[13px] hover:bg-slate-50 text-slate-700">
+            Portfolio (all)
+          </button>
+          <button class="w-full px-4 py-2 text-left text-[13px] hover:bg-slate-50 text-slate-700 pl-6">
+            Core
+          </button>
+          <button class="w-full px-4 py-2 text-left text-[13px] hover:bg-slate-50 text-slate-500 pl-10">
+            <span class="text-slate-300 mr-1">└</span>Fixed Income
+          </button>
+          <button class="w-full px-4 py-2 text-left text-[13px] hover:bg-slate-50 text-slate-500 pl-10">
+            <span class="text-slate-300 mr-1">└</span>Large Cap
+          </button>
+          <button class="w-full px-4 py-2 text-left text-[13px] hover:bg-slate-50 text-slate-700 pl-6">
+            Satellite
+          </button>
+          <button class="w-full px-4 py-2 text-left text-[13px] bg-slate-100 font-medium text-slate-900 pl-10">
+            <span class="text-slate-400 mr-1">└</span>Growth
+          </button>
+          <button class="w-full px-4 py-2 text-left text-[13px] hover:bg-slate-50 text-slate-500 pl-10">
+            <span class="text-slate-300 mr-1">└</span>Speculative
+          </button>
+        </div>
+      </div>
+
+      <!-- Main Content -->
+      <div class="rounded-xl border border-slate-200 bg-white overflow-hidden">
+        <!-- Dimension Tabs -->
+        <div class="flex border-b border-slate-100 px-5">
+          <button class="px-4 py-3 text-[13px] font-medium text-blue-600 border-b-2 border-blue-600 -mb-px">
+            Sector
+            <span class="ml-1.5 px-1.5 py-0.5 bg-slate-100 rounded text-[10px] text-slate-500">11</span>
+          </button>
+          <button class="px-4 py-3 text-[13px] text-slate-500 hover:text-slate-700">
+            Industry
+            <span class="ml-1.5 w-1.5 h-1.5 inline-block rounded-full bg-red-500"></span>
+            <span class="ml-1 px-1.5 py-0.5 bg-slate-100 rounded text-[10px] text-slate-500">28</span>
+          </button>
+          <button class="px-4 py-3 text-[13px] text-slate-500 hover:text-slate-700">
+            Country
+            <span class="ml-1.5 w-1.5 h-1.5 inline-block rounded-full bg-red-500"></span>
+            <span class="ml-1 px-1.5 py-0.5 bg-slate-100 rounded text-[10px] text-slate-500">15</span>
+          </button>
+          <button class="px-4 py-3 text-[13px] text-slate-500 hover:text-slate-700">
+            Market Cap
+            <span class="ml-1.5 w-1.5 h-1.5 inline-block rounded-full bg-red-500"></span>
+            <span class="ml-1 px-1.5 py-0.5 bg-slate-100 rounded text-[10px] text-slate-500">5</span>
+          </button>
+        </div>
+
+        <!-- Content -->
+        <div class="p-5">
+          <!-- Summary row -->
+          <div class="flex gap-6 mb-4 pb-4 border-b border-slate-100 text-xs text-slate-500">
+            <span>Total Value: <span class="font-semibold text-slate-700">284.600 €</span></span>
+            <span>Assets: <span class="font-semibold text-slate-700">34</span></span>
+            <span>Unknown: <span class="font-semibold text-slate-700">4%</span></span>
+          </div>
+
+          <!-- Bar rows -->
+          <div class="space-y-2">
+            <div class="grid grid-cols-[160px_1fr_50px] items-center gap-3 p-2 -mx-2 rounded-lg bg-red-50 cursor-pointer">
+              <span class="text-[13px] text-slate-800 truncate flex items-center gap-1.5">
+                Technology <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>
+              </span>
+              <div class="h-5 bg-white rounded relative overflow-hidden border border-red-200">
+                <div class="h-full bg-red-500 rounded-l" style="width: 38%"></div>
+                <div class="absolute top-0 bottom-0 w-0.5 bg-slate-700" style="left: 25%"></div>
+              </div>
+              <span class="text-[13px] font-semibold tabular-nums text-right text-red-600">38%</span>
+            </div>
+
+            <div class="grid grid-cols-[160px_1fr_50px] items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-slate-50 cursor-pointer">
+              <span class="text-[13px] text-slate-700 truncate">Healthcare</span>
+              <div class="h-5 bg-slate-100 rounded overflow-hidden">
+                <div class="h-full bg-blue-500 rounded" style="width: 18%"></div>
+              </div>
+              <span class="text-[13px] font-semibold tabular-nums text-right">18%</span>
+            </div>
+
+            <div class="grid grid-cols-[160px_1fr_50px] items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-slate-50 cursor-pointer">
+              <span class="text-[13px] text-slate-700 truncate">Financials</span>
+              <div class="h-5 bg-slate-100 rounded overflow-hidden">
+                <div class="h-full bg-blue-500 rounded" style="width: 14%"></div>
+              </div>
+              <span class="text-[13px] font-semibold tabular-nums text-right">14%</span>
+            </div>
+
+            <div class="grid grid-cols-[160px_1fr_50px] items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-slate-50 cursor-pointer">
+              <span class="text-[13px] text-slate-700 truncate">Consumer Cyclical</span>
+              <div class="h-5 bg-slate-100 rounded overflow-hidden">
+                <div class="h-full bg-blue-500 rounded" style="width: 10%"></div>
+              </div>
+              <span class="text-[13px] font-semibold tabular-nums text-right">10%</span>
+            </div>
+
+            <div class="grid grid-cols-[160px_1fr_50px] items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-slate-50 cursor-pointer">
+              <span class="text-[13px] text-slate-700 truncate">Industrials</span>
+              <div class="h-5 bg-slate-100 rounded overflow-hidden">
+                <div class="h-full bg-blue-500 rounded" style="width: 8%"></div>
+              </div>
+              <span class="text-[13px] font-semibold tabular-nums text-right">8%</span>
+            </div>
+
+            <div class="grid grid-cols-[160px_1fr_50px] items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-slate-50 cursor-pointer">
+              <span class="text-[13px] text-slate-700 truncate">Energy</span>
+              <div class="h-5 bg-slate-100 rounded overflow-hidden">
+                <div class="h-full bg-blue-500 rounded" style="width: 5%"></div>
+              </div>
+              <span class="text-[13px] font-semibold tabular-nums text-right">5%</span>
+            </div>
+
+            <div class="grid grid-cols-[160px_1fr_50px] items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-slate-50 cursor-pointer">
+              <span class="text-[13px] text-slate-400 truncate">Other + Cash</span>
+              <div class="h-5 bg-slate-100 rounded overflow-hidden">
+                <div class="h-full bg-slate-400 rounded" style="width: 7%"></div>
+              </div>
+              <span class="text-[13px] font-semibold tabular-nums text-right text-slate-400">7%</span>
+            </div>
+          </div>
+
+          <!-- Drilldown -->
+          <div class="mt-5 border border-slate-200 rounded-lg overflow-hidden">
+            <div class="flex items-center justify-between px-4 py-2.5 bg-slate-50 border-b border-slate-200">
+              <span class="text-[13px] font-medium text-slate-700">Technology (38%) — 6 assets</span>
+              <button class="text-xs text-slate-400 hover:text-slate-600">× close</button>
+            </div>
+            <table class="w-full text-[13px]">
+              <thead>
+                <tr class="border-b border-slate-100">
+                  <th class="px-4 py-2 text-left text-[10px] font-semibold uppercase tracking-wider text-slate-400">Asset</th>
+                  <th class="px-4 py-2 text-left text-[10px] font-semibold uppercase tracking-wider text-slate-400">Type</th>
+                  <th class="px-4 py-2 text-right text-[10px] font-semibold uppercase tracking-wider text-slate-400">Value</th>
+                  <th class="px-4 py-2 text-right text-[10px] font-semibold uppercase tracking-wider text-slate-400">Contrib.</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100">
+                <tr class="hover:bg-slate-50">
+                  <td class="px-4 py-2 font-medium text-slate-900">AAPL</td>
+                  <td class="px-4 py-2"><span class="px-1.5 py-0.5 bg-slate-100 rounded text-[11px] text-slate-500">Stock</span></td>
+                  <td class="px-4 py-2 text-right tabular-nums text-slate-500">12.500 €</td>
+                  <td class="px-4 py-2 text-right tabular-nums font-semibold">7.6%</td>
+                </tr>
+                <tr class="hover:bg-slate-50">
+                  <td class="px-4 py-2 font-medium text-slate-900">MSFT</td>
+                  <td class="px-4 py-2"><span class="px-1.5 py-0.5 bg-slate-100 rounded text-[11px] text-slate-500">Stock</span></td>
+                  <td class="px-4 py-2 text-right tabular-nums text-slate-500">9.200 €</td>
+                  <td class="px-4 py-2 text-right tabular-nums font-semibold">5.6%</td>
+                </tr>
+                <tr class="hover:bg-slate-50">
+                  <td class="px-4 py-2 font-medium text-slate-900">VWCE</td>
+                  <td class="px-4 py-2"><span class="px-1.5 py-0.5 bg-blue-50 border border-blue-200 rounded text-[11px] text-blue-600">ETF 25%</span></td>
+                  <td class="px-4 py-2 text-right tabular-nums text-slate-500">52.600 €</td>
+                  <td class="px-4 py-2 text-right tabular-nums font-semibold">8.0%</td>
+                </tr>
+                <tr class="hover:bg-slate-50">
+                  <td class="px-4 py-2 font-medium text-slate-900">QQQ</td>
+                  <td class="px-4 py-2"><span class="px-1.5 py-0.5 bg-blue-50 border border-blue-200 rounded text-[11px] text-blue-600">ETF 50%</span></td>
+                  <td class="px-4 py-2 text-right tabular-nums text-slate-500">24.000 €</td>
+                  <td class="px-4 py-2 text-right tabular-nums font-semibold">7.3%</td>
+                </tr>
+                <tr class="hover:bg-slate-50">
+                  <td class="px-4 py-2 font-medium text-slate-900">NVDA</td>
+                  <td class="px-4 py-2"><span class="px-1.5 py-0.5 bg-slate-100 rounded text-[11px] text-slate-500">Stock</span></td>
+                  <td class="px-4 py-2 text-right tabular-nums text-slate-500">5.800 €</td>
+                  <td class="px-4 py-2 text-right tabular-nums font-semibold">3.5%</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Rules -->
+          <div class="mt-5 pt-4 border-t border-slate-100">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Sector Rules</span>
+              <button class="text-xs text-blue-500 hover:text-blue-600">+ Add Rule</button>
+            </div>
+            <div class="flex gap-2">
+              <span class="px-2.5 py-1 bg-red-50 border border-red-200 rounded text-xs text-red-600">
+                Max any sector: 25%
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>

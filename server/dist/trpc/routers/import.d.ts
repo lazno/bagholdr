@@ -50,7 +50,7 @@ export declare const importRouter: import("@trpc/server").TRPCBuiltRouter<{
                 ticker: string;
                 name: string;
                 transactionDate: unknown;
-                transactionType: "Buy" | "Sell";
+                transactionType: "Buy" | "Sell" | "Commission";
                 quantity: number;
                 amountEur: number;
                 currencyAmount: number;

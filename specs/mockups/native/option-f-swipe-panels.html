@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=375, initial-scale=1.0">
+  <title>Option F: Swipeable Panels (Overview ↔ Holdings)</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f8f9fa;
+      max-width: 375px;
+      margin: 0 auto;
+      min-height: 812px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Header with integrated time range */
+    .header {
+      background: white;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .header-top {
+      padding: 10px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .hamburger {
+      width: 20px;
+      height: 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 4px;
+    }
+    .hamburger span {
+      display: block;
+      height: 2px;
+      background: #111;
+    }
+    .portfolio-selector {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 16px;
+      font-weight: 600;
+      color: #111;
+    }
+    .chevron { font-size: 12px; color: #6b7280; }
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .icon-btn { font-size: 18px; opacity: 0.5; }
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #22c55e;
+    }
+
+    /* Time range in header */
+    .header-range {
+      display: flex;
+      padding: 0 16px 10px;
+      gap: 4px;
+    }
+    .range-pill {
+      flex: 1;
+      padding: 6px 0;
+      font-size: 12px;
+      border-radius: 6px;
+      background: #f3f4f6;
+      border: none;
+      color: #6b7280;
+      font-weight: 500;
+      text-align: center;
+    }
+    .range-pill.active {
+      background: #111;
+      color: white;
+    }
+
+    /* Panel switcher tabs */
+    .panel-tabs {
+      display: flex;
+      background: white;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .panel-tab {
+      flex: 1;
+      padding: 12px 16px;
+      text-align: center;
+      font-size: 14px;
+      font-weight: 500;
+      color: #6b7280;
+      border-bottom: 2px solid transparent;
+    }
+    .panel-tab.active {
+      color: #111;
+      border-bottom-color: #111;
+    }
+
+    /* Swipe indicator */
+    .swipe-hint {
+      text-align: center;
+      padding: 6px;
+      font-size: 10px;
+      color: #9ca3af;
+      background: #f9fafb;
+    }
+
+    /* Main content - shows one panel at a time */
+    .content {
+      flex: 1;
+      overflow-y: auto;
+    }
+
+    /* OVERVIEW PANEL */
+    .panel-overview {
+      display: block;
+    }
+
+    .value-section {
+      background: white;
+      padding: 20px 16px;
+      text-align: center;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .value-label { font-size: 11px; color: #6b7280; text-transform: uppercase; margin-bottom: 4px; }
+    .value-amount { font-size: 36px; font-weight: 700; color: #111; }
+    .value-return {
+      display: inline-flex;
+      align-items: baseline;
+      gap: 6px;
+      margin-top: 8px;
+      background: #dcfce7;
+      padding: 6px 14px;
+      border-radius: 16px;
+    }
+    .return-pct { font-size: 16px; font-weight: 600; color: #16a34a; }
+    .return-abs { font-size: 14px; color: #16a34a; }
+    .return-ann { font-size: 11px; color: #6b7280; }
+    .value-cash {
+      margin-top: 12px;
+      font-size: 13px;
+      color: #6b7280;
+    }
+    .cash-amount { font-weight: 600; color: #374151; }
+
+    .issues-row {
+      background: #fffbeb;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-bottom: 1px solid #fde68a;
+    }
+    .issues-icon { font-size: 16px; }
+    .issues-text { flex: 1; font-size: 13px; color: #92400e; }
+    .issues-chevron { color: #d97706; }
+
+    .chart-section {
+      background: white;
+      padding: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .chart-title { font-size: 13px; font-weight: 600; color: #111; margin-bottom: 10px; }
+    .chart-area {
+      height: 140px;
+      background: linear-gradient(180deg, #f0fdf4 0%, #fff 100%);
+      border-radius: 8px;
+      position: relative;
+      border: 1px solid #e5e7eb;
+    }
+    .chart-svg { position: absolute; inset: 12px; }
+    .chart-legend {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-top: 8px;
+      font-size: 11px;
+      color: #6b7280;
+    }
+    .legend-item { display: flex; align-items: center; gap: 4px; }
+    .legend-line { width: 14px; height: 2px; }
+    .legend-line.invested { background: #22c55e; }
+    .legend-line.cost { background: repeating-linear-gradient(90deg, #9ca3af 0, #9ca3af 3px, transparent 3px, transparent 6px); }
+
+    /* Sleeves summary cards */
+    .sleeves-grid {
+      padding: 16px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .sleeve-card {
+      background: white;
+      border-radius: 10px;
+      padding: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+      border: 1px solid #e5e7eb;
+    }
+    .sleeve-card.has-issue {
+      border-color: #fcd34d;
+      background: #fffbeb;
+    }
+    .sleeve-card-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: #111;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .sleeve-badge {
+      font-size: 9px;
+      padding: 2px 4px;
+      border-radius: 3px;
+      font-weight: 600;
+    }
+    .sleeve-badge.over { background: #fed7aa; color: #c2410c; }
+    .sleeve-badge.under { background: #dbeafe; color: #1d4ed8; }
+    .sleeve-card-value { font-size: 15px; font-weight: 600; color: #111; }
+    .sleeve-card-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: #6b7280;
+      margin-top: 4px;
+    }
+    .sleeve-card-return { color: #16a34a; font-weight: 500; }
+
+    /* HOLDINGS PANEL - hidden by default */
+    .panel-holdings {
+      display: none;
+    }
+
+    /* Search + filter row */
+    .filter-row {
+      background: white;
+      padding: 12px 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .search-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #f3f4f6;
+      border-radius: 8px;
+      padding: 10px 12px;
+    }
+    .search-icon { font-size: 14px; opacity: 0.4; }
+    .search-input {
+      flex: 1;
+      border: none;
+      background: none;
+      font-size: 14px;
+      outline: none;
+    }
+    .search-input::placeholder { color: #9ca3af; }
+
+    /* Sleeve filter pills */
+    .sleeve-pills {
+      display: flex;
+      gap: 6px;
+      padding: 12px 16px;
+      background: white;
+      border-bottom: 1px solid #e5e7eb;
+      overflow-x: auto;
+    }
+    .sleeve-pill {
+      padding: 6px 12px;
+      font-size: 12px;
+      border-radius: 14px;
+      background: #f3f4f6;
+      border: none;
+      color: #6b7280;
+      white-space: nowrap;
+    }
+    .sleeve-pill.active {
+      background: #111;
+      color: white;
+    }
+    .sleeve-pill.has-issue {
+      background: #fffbeb;
+      border: 1px solid #fcd34d;
+      color: #92400e;
+    }
+
+    /* Assets list */
+    .assets-list {
+      background: white;
+    }
+    .asset-row {
+      display: flex;
+      align-items: center;
+      padding: 12px 16px;
+      border-bottom: 1px solid #f3f4f6;
+    }
+    .asset-info { flex: 1; }
+    .asset-symbol { font-size: 14px; font-weight: 600; color: #111; }
+    .asset-name { font-size: 11px; color: #6b7280; }
+    .asset-sleeve-tag {
+      font-size: 10px;
+      background: #f3f4f6;
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: #6b7280;
+      margin-left: 6px;
+    }
+    .asset-metrics { text-align: right; }
+    .asset-value { font-size: 14px; font-weight: 600; color: #111; }
+    .asset-sub {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      font-size: 11px;
+      margin-top: 2px;
+    }
+    .asset-weight { color: #6b7280; }
+    .asset-return { font-weight: 500; }
+    .asset-return.positive { color: #16a34a; }
+    .asset-return.negative { color: #dc2626; }
+    .asset-pl { font-size: 10px; color: #6b7280; margin-top: 1px; }
+    .asset-pl.positive { color: #16a34a; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="header-top">
+      <div class="header-left">
+        <div class="hamburger">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+        <div class="portfolio-selector">
+          Mine <span class="chevron">▼</span>
+        </div>
+      </div>
+      <div class="header-right">
+        <span class="icon-btn">👁</span>
+        <span class="status-dot"></span>
+      </div>
+    </div>
+    <div class="header-range">
+      <button class="range-pill">1D</button>
+      <button class="range-pill">1W</button>
+      <button class="range-pill">1M</button>
+      <button class="range-pill">YTD</button>
+      <button class="range-pill">1Y</button>
+      <button class="range-pill active">All</button>
+    </div>
+  </div>
+
+  <!-- Panel switcher -->
+  <div class="panel-tabs">
+    <div class="panel-tab active">Overview</div>
+    <div class="panel-tab">Holdings</div>
+  </div>
+  <div class="swipe-hint">← Swipe to switch panels →</div>
+
+  <div class="content">
+    <!-- OVERVIEW PANEL -->
+    <div class="panel-overview">
+      <div class="value-section">
+        <div class="value-label">Invested</div>
+        <div class="value-amount">113.534 €</div>
+        <div class="value-return">
+          <span class="return-pct">+12.2%</span>
+          <span class="return-abs">+12.344 €</span>
+          <span class="return-ann">(51% p.a.)</span>
+        </div>
+        <div class="value-cash">
+          Cash: <span class="cash-amount">6.400 €</span>
+        </div>
+      </div>
+
+      <div class="issues-row">
+        <span class="issues-icon">⚠️</span>
+        <span class="issues-text">3 issues need attention</span>
+        <span class="issues-chevron">›</span>
+      </div>
+
+      <div class="chart-section">
+        <div class="chart-title">Performance</div>
+        <div class="chart-area">
+          <svg class="chart-svg" viewBox="0 0 340 110" preserveAspectRatio="none">
+            <path d="M0,100 Q40,95 80,80 T160,60 T240,35 T320,15" stroke="#22c55e" stroke-width="2" fill="none"/>
+            <path d="M0,105 L320,55" stroke="#9ca3af" stroke-width="1" stroke-dasharray="4,4" fill="none"/>
+          </svg>
+        </div>
+        <div class="chart-legend">
+          <span class="legend-item"><span class="legend-line invested"></span> Invested Value</span>
+          <span class="legend-item"><span class="legend-line cost"></span> Cost Basis</span>
+        </div>
+      </div>
+
+      <div class="sleeves-grid">
+        <div class="sleeve-card">
+          <div class="sleeve-card-name">Core</div>
+          <div class="sleeve-card-value">84.715 €</div>
+          <div class="sleeve-card-meta">
+            <span class="sleeve-card-return">+10.3%</span>
+            <span>74.6%</span>
+          </div>
+        </div>
+        <div class="sleeve-card">
+          <div class="sleeve-card-name">Satellite</div>
+          <div class="sleeve-card-value">28.819 €</div>
+          <div class="sleeve-card-meta">
+            <span class="sleeve-card-return">+18.1%</span>
+            <span>25.4%</span>
+          </div>
+        </div>
+        <div class="sleeve-card has-issue">
+          <div class="sleeve-card-name">Safe Haven <span class="sleeve-badge under">-2pp</span></div>
+          <div class="sleeve-card-value">8.874 €</div>
+          <div class="sleeve-card-meta">
+            <span class="sleeve-card-return">+21.9%</span>
+            <span>7.8%</span>
+          </div>
+        </div>
+        <div class="sleeve-card has-issue">
+          <div class="sleeve-card-name">Growth <span class="sleeve-badge over">+8pp</span></div>
+          <div class="sleeve-card-value">19.945 €</div>
+          <div class="sleeve-card-meta">
+            <span class="sleeve-card-return">+16.5%</span>
+            <span>17.6%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- HOLDINGS PANEL (shown when "Holdings" tab active) -->
+    <!--
+    <div class="panel-holdings">
+      <div class="filter-row">
+        <div class="search-bar">
+          <span class="search-icon">🔍</span>
+          <input type="text" class="search-input" placeholder="Search assets...">
+        </div>
+      </div>
+
+      <div class="sleeve-pills">
+        <button class="sleeve-pill active">All (20)</button>
+        <button class="sleeve-pill">Core (8)</button>
+        <button class="sleeve-pill">Satellite (12)</button>
+        <button class="sleeve-pill has-issue">Safe Haven (4)</button>
+        <button class="sleeve-pill has-issue">Growth (6)</button>
+      </div>
+
+      <div class="assets-list">
+        ... assets here ...
+      </div>
+    </div>
+    -->
+  </div>
+</body>
+</html>

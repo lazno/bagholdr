@@ -1,0 +1,10 @@
+### AssetType - Classification of financial instruments
+enum: AssetType
+
+values:
+  - stock
+  - etf
+  - bond
+  - fund
+  - commodity
+  - other

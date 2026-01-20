@@ -1,0 +1,43 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pkill:*)",
+      "Bash(curl:*)",
+      "Bash(pnpm screenshot:*)",
+      "Bash(npx tsx:*)",
+      "Bash(lsof:*)",
+      "Bash(xargs:*)",
+      "Bash(npx playwright test:*)",
+      "Bash(npx svelte-kit:*)",
+      "Bash(sqlite3:*)",
+      "Bash(./export-xirr.sh:*)",
+      "Bash(flutter --version:*)",
+      "Bash(dart:*)",
+      "Bash(serverpod version:*)",
+      "Bash(docker:*)",
+      "Bash(flutter doctor:*)",
+      "Bash(flutter devices:*)",
+      "Bash(serverpod create:*)",
+      "Bash(flutter pub get:*)",
+      "Bash(flutter analyze:*)",
+      "Bash(flutter emulators:*)",
+      "Bash(./native/scripts/start.sh:*)",
+      "Bash(./native/scripts/stop.sh:*)",
+      "Bash(/Users/norbertlazzeri/dev/priv/portfolio-tracker-spikes/typescript/backholdr/native/scripts/start.sh:*)",
+      "Bash(/Users/norbertlazzeri/dev/priv/portfolio-tracker-spikes/typescript/backholdr/native/scripts/stop.sh)",
+      "Bash(flutter test:*)",
+      "Bash(serverpod generate:*)",
+      "Bash(\"$HOME/.pub-cache/bin/serverpod\" generate)",
+      "Bash(\"$HOME/.pub-cache/bin/serverpod\" create-migration)",
+      "Bash(ls:*)",
+      "Bash(pgrep:*)",
+      "Bash(./start.sh:*)",
+      "Bash(./stop.sh)",
+      "Bash(npx playwright screenshot:*)",
+      "Bash(flutter run:*)",
+      "Bash(# Check Flutter logs for reload message tail -20 /tmp/flutter-web.log)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
+    ]
+  }
+}

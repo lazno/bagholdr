@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=375, initial-scale=1.0">
+  <title>Option U: Sunburst + Cards</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f5f5f5;
+      max-width: 375px;
+      margin: 0 auto;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .header {
+      background: white;
+      padding: 10px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .header-left { display: flex; align-items: center; gap: 12px; }
+    .hamburger { width: 20px; height: 20px; display: flex; flex-direction: column; justify-content: center; gap: 4px; }
+    .hamburger span { display: block; height: 2px; background: #111; }
+    .portfolio-selector { display: flex; align-items: center; gap: 4px; font-size: 16px; font-weight: 600; }
+    .chevron { font-size: 12px; color: #6b7280; }
+    .header-right { display: flex; align-items: center; gap: 12px; }
+    .icon-btn { font-size: 18px; opacity: 0.5; }
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; }
+
+    .time-range-bar {
+      background: white;
+      padding: 8px 16px;
+      display: flex;
+      gap: 4px;
+      border-bottom: 1px solid #e5e7eb;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .range-btn {
+      flex: 1;
+      padding: 8px 0;
+      font-size: 12px;
+      border-radius: 6px;
+      background: #f3f4f6;
+      border: none;
+      color: #6b7280;
+      font-weight: 500;
+      cursor: pointer;
+    }
+    .range-btn.active { background: #111; color: white; }
+
+    .content { flex: 1; overflow-y: auto; }
+
+    .value-section {
+      background: white;
+      padding: 20px 16px;
+      margin-bottom: 8px;
+    }
+    .value-row { display: flex; justify-content: space-between; align-items: flex-start; }
+    .value-main {}
+    .value-label { font-size: 11px; color: #6b7280; text-transform: uppercase; margin-bottom: 2px; }
+    .value-amount { font-size: 28px; font-weight: 700; color: #111; }
+    .value-return { display: flex; align-items: baseline; gap: 6px; margin-top: 4px; }
+    .return-pct { font-size: 15px; font-weight: 600; color: #16a34a; }
+    .return-abs { font-size: 13px; color: #16a34a; }
+    .value-side { text-align: right; }
+    .side-item { margin-bottom: 6px; }
+    .side-label { font-size: 10px; color: #9ca3af; text-transform: uppercase; }
+    .side-value { font-size: 13px; font-weight: 600; color: #111; }
+
+    .chart-section {
+      background: white;
+      padding: 12px 0 0 0;
+      margin-bottom: 8px;
+    }
+    .chart-container { position: relative; height: 130px; margin: 0 8px; }
+    .chart-svg { width: 100%; height: 100%; }
+    .chart-time-axis {
+      display: flex;
+      justify-content: space-between;
+      padding: 4px 12px 0;
+      font-size: 9px;
+      color: #9ca3af;
+    }
+    .chart-footer {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      padding: 8px 8px 12px;
+      font-size: 10px;
+      color: #6b7280;
+    }
+    .legend-item { display: flex; align-items: center; gap: 4px; }
+    .legend-line { width: 14px; height: 2px; }
+    .legend-line.value { background: #22c55e; }
+    .legend-line.cost { background: repeating-linear-gradient(90deg, #9ca3af 0, #9ca3af 3px, transparent 3px, transparent 6px); }
+
+    /* Issues */
+    .issues-section { background: #fffbeb; margin-bottom: 8px; }
+    .issues-header {
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+    }
+    .issues-badge {
+      background: #facc15;
+      color: #713f12;
+      padding: 4px 10px;
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .issues-summary { flex: 1; font-size: 13px; color: #92400e; }
+    .issues-chevron { font-size: 14px; color: #d97706; transition: transform 0.2s; }
+    .issues-chevron.expanded { transform: rotate(90deg); }
+    .issues-panel {
+      display: none;
+      padding: 0 16px 12px;
+      max-height: 180px;
+      overflow-y: auto;
+    }
+    .issues-panel.expanded { display: block; }
+    .issue-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 0;
+      font-size: 12px;
+      color: #78350f;
+      border-bottom: 1px solid #fde68a;
+    }
+    .issue-item:last-child { border-bottom: none; }
+    .issue-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .issue-dot.warning { background: #f59e0b; }
+    .issue-dot.over { background: #f97316; }
+    .issue-dot.under { background: #3b82f6; }
+    .issue-dot.info { background: #6b7280; }
+    .issue-text { flex: 1; }
+    .issue-action { font-size: 11px; color: #b45309; font-weight: 500; }
+
+    /* ========== ALLOCATION SECTION ========== */
+    .allocation-section {
+      background: white;
+      margin-bottom: 8px;
+    }
+
+    .allocation-header {
+      padding: 16px 16px 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .allocation-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #111;
+    }
+    .allocation-status {
+      font-size: 11px;
+      font-weight: 500;
+      padding: 4px 8px;
+      border-radius: 4px;
+    }
+    .allocation-status.ok { background: #dcfce7; color: #166534; }
+    .allocation-status.warning { background: #fef3c7; color: #92400e; }
+
+    /* Sunburst chart - larger, more prominent */
+    .sunburst-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 24px 16px;
+    }
+    .sunburst-wrapper {
+      position: relative;
+      width: 220px;
+      height: 220px;
+    }
+    .sunburst-svg {
+      width: 100%;
+      height: 100%;
+      transform: rotate(-90deg);
+    }
+    .sunburst-segment {
+      fill: none;
+      cursor: pointer;
+      transition: opacity 0.15s, stroke-width 0.15s;
+    }
+    .sunburst-segment:hover { opacity: 0.8; }
+    .sunburst-segment.selected { stroke-width: 26 !important; }
+    .sunburst-segment.dimmed { opacity: 0.2; }
+
+    .sunburst-center {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      pointer-events: none;
+    }
+    .sunburst-center-icon {
+      font-size: 24px;
+      margin-bottom: 4px;
+    }
+    .sunburst-center-value {
+      font-size: 22px;
+      font-weight: 700;
+      color: #111;
+    }
+    .sunburst-center-label {
+      font-size: 12px;
+      color: #6b7280;
+      margin-top: 2px;
+    }
+    .sunburst-center-sub {
+      font-size: 10px;
+      color: #9ca3af;
+      margin-top: 1px;
+    }
+
+    /* Sleeve cards - 2 column grid */
+    .sleeve-cards {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      padding: 0 16px 16px;
+    }
+    .sleeve-card {
+      background: #f9fafb;
+      border-radius: 10px;
+      padding: 12px;
+      cursor: pointer;
+      transition: all 0.15s;
+      border: 2px solid transparent;
+    }
+    .sleeve-card:hover { background: #f3f4f6; }
+    .sleeve-card.selected { border-color: #374151; background: white; }
+    .sleeve-card.has-issue { background: #fffbeb; }
+    .sleeve-card.has-issue.selected { background: #fef3c7; }
+    .sleeve-card.full-width {
+      grid-column: span 2;
+    }
+
+    .sleeve-card-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .sleeve-card-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 3px;
+    }
+    .sleeve-card-dot.core { background: #3b82f6; }
+    .sleeve-card-dot.equities { background: #60a5fa; }
+    .sleeve-card-dot.bonds { background: #93c5fd; }
+    .sleeve-card-dot.satellite { background: #f59e0b; }
+    .sleeve-card-dot.safehaven { background: #fbbf24; }
+    .sleeve-card-dot.growth { background: #fcd34d; }
+    .sleeve-card-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: #111;
+      flex: 1;
+    }
+    .sleeve-card-badge {
+      font-size: 9px;
+      padding: 2px 5px;
+      border-radius: 3px;
+      font-weight: 600;
+    }
+    .sleeve-card-badge.over { background: #fed7aa; color: #c2410c; }
+    .sleeve-card-badge.under { background: #dbeafe; color: #1d4ed8; }
+
+    .sleeve-card-stats {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+    }
+    .sleeve-card-alloc {
+      font-size: 20px;
+      font-weight: 700;
+      color: #111;
+    }
+    .sleeve-card-target {
+      font-size: 11px;
+      color: #6b7280;
+    }
+    .sleeve-card-target .target { color: #9ca3af; }
+    .sleeve-card-meta {
+      text-align: right;
+    }
+    .sleeve-card-value {
+      font-size: 12px;
+      font-weight: 600;
+      color: #374151;
+    }
+    .sleeve-card-return {
+      font-size: 11px;
+      font-weight: 500;
+    }
+    .sleeve-card-return.positive { color: #16a34a; }
+    .sleeve-card-return.negative { color: #dc2626; }
+
+    /* Assets */
+    .assets-section { background: white; padding: 16px; }
+    .assets-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .assets-title { font-size: 13px; font-weight: 600; color: #111; }
+    .assets-count { font-size: 11px; color: #6b7280; background: #f3f4f6; padding: 4px 8px; border-radius: 4px; }
+    .search-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #f3f4f6;
+      border-radius: 8px;
+      padding: 10px 12px;
+      margin-bottom: 12px;
+    }
+    .search-icon { font-size: 14px; opacity: 0.4; }
+    .search-input { flex: 1; border: none; background: none; font-size: 14px; outline: none; }
+
+    .asset-row {
+      display: flex;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid #f3f4f6;
+    }
+    .asset-row:last-child { border-bottom: none; }
+    .asset-info { flex: 1; }
+    .asset-symbol { font-size: 14px; font-weight: 600; color: #111; }
+    .asset-name { font-size: 11px; color: #6b7280; }
+    .asset-sleeve { font-size: 10px; color: #9ca3af; margin-top: 1px; }
+    .asset-metrics { text-align: right; }
+    .asset-value { font-size: 14px; font-weight: 500; color: #111; }
+    .asset-sub { display: flex; justify-content: flex-end; gap: 8px; font-size: 11px; }
+    .asset-weight { color: #6b7280; }
+    .asset-return { color: #16a34a; }
+    .asset-return.negative { color: #dc2626; }
+
+    .load-more {
+      text-align: center;
+      padding: 16px;
+      color: #6b7280;
+      font-size: 13px;
+      cursor: pointer;
+      background: #f9fafb;
+      border-radius: 8px;
+      margin-top: 12px;
+    }
+    .no-results { text-align: center; padding: 32px; color: #9ca3af; font-size: 14px; }
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="header-left">
+      <div class="hamburger"><span></span><span></span><span></span></div>
+      <div class="portfolio-selector">Main Portfolio <span class="chevron">▼</span></div>
+    </div>
+    <div class="header-right">
+      <span class="icon-btn">⟳</span>
+      <span class="status-dot"></span>
+    </div>
+  </div>
+
+  <div class="time-range-bar">
+    <button class="range-btn">1M</button>
+    <button class="range-btn">3M</button>
+    <button class="range-btn">6M</button>
+    <button class="range-btn">YTD</button>
+    <button class="range-btn active">1Y</button>
+    <button class="range-btn">ALL</button>
+  </div>
+
+  <div class="content">
+    <div class="value-section">
+      <div class="value-row">
+        <div class="value-main">
+          <div class="value-label">Total Value</div>
+          <div class="value-amount">€113,482</div>
+          <div class="value-return">
+            <span class="return-pct">+12.2%</span>
+            <span class="return-abs">+€12,348</span>
+          </div>
+        </div>
+        <div class="value-side">
+          <div class="side-item"><div class="side-label">Invested</div><div class="side-value">€101,134</div></div>
+          <div class="side-item"><div class="side-label">XIRR</div><div class="side-value">8.4%</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="chart-section">
+      <div class="chart-container">
+        <svg class="chart-svg" viewBox="0 0 359 130" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#22c55e" stop-opacity="0.25"/>
+              <stop offset="100%" stop-color="#22c55e" stop-opacity="0.02"/>
+            </linearGradient>
+          </defs>
+          <line x1="0" y1="32" x2="359" y2="32" stroke="#f3f4f6" stroke-width="1"/>
+          <line x1="0" y1="65" x2="359" y2="65" stroke="#f3f4f6" stroke-width="1"/>
+          <line x1="0" y1="98" x2="359" y2="98" stroke="#f3f4f6" stroke-width="1"/>
+          <path d="M0,115 Q30,112 60,105 T120,88 T180,70 T240,50 T300,38 T359,22" fill="none" stroke="#9ca3af" stroke-width="1.5" stroke-dasharray="4,3" opacity="0.5"/>
+          <path d="M0,110 Q30,107 60,98 T120,80 T180,62 T240,42 T300,32 T359,18 L359,130 L0,130 Z" fill="url(#chartGradient)"/>
+          <path d="M0,110 Q30,107 60,98 T120,80 T180,62 T240,42 T300,32 T359,18" fill="none" stroke="#22c55e" stroke-width="2"/>
+        </svg>
+      </div>
+      <div class="chart-time-axis">
+        <span>Jan</span><span>Mar</span><span>May</span><span>Jul</span><span>Sep</span><span>Nov</span><span>Now</span>
+      </div>
+      <div class="chart-footer">
+        <div class="legend-item"><div class="legend-line value"></div> Value</div>
+        <div class="legend-item"><div class="legend-line cost"></div> Cost basis</div>
+      </div>
+    </div>
+
+    <div class="issues-section">
+      <div class="issues-header" onclick="toggleIssues()">
+        <span class="issues-badge">4</span>
+        <span class="issues-summary">Issues need attention</span>
+        <span class="issues-chevron" id="issuesChevron">▶</span>
+      </div>
+      <div class="issues-panel" id="issuesPanel">
+        <div class="issue-item">
+          <span class="issue-dot over"></span>
+          <span class="issue-text">Growth +5pp over target</span>
+          <span class="issue-action">Rebalance →</span>
+        </div>
+        <div class="issue-item">
+          <span class="issue-dot under"></span>
+          <span class="issue-text">Bonds -3pp under target</span>
+          <span class="issue-action">Rebalance →</span>
+        </div>
+        <div class="issue-item">
+          <span class="issue-dot warning"></span>
+          <span class="issue-text">3 assets have stale prices</span>
+          <span class="issue-action">Refresh →</span>
+        </div>
+        <div class="issue-item">
+          <span class="issue-dot info"></span>
+          <span class="issue-text">Last sync: 2 hours ago</span>
+          <span class="issue-action">Sync →</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ALLOCATION SECTION -->
+    <div class="allocation-section">
+      <div class="allocation-header">
+        <div class="allocation-title">Strategy Allocation</div>
+        <div class="allocation-status warning">2 drifts</div>
+      </div>
+
+      <div class="sunburst-container">
+        <div class="sunburst-wrapper">
+          <svg class="sunburst-svg" viewBox="0 0 220 220">
+            <!-- Inner ring: Core/Satellite (r=55, circ=345.6) -->
+            <circle class="sunburst-segment" data-sleeve="core" cx="110" cy="110" r="55"
+              stroke="#3b82f6" stroke-width="22" stroke-dasharray="259.2 345.6" stroke-dashoffset="0"
+              onclick="selectSleeve('core')"/>
+            <circle class="sunburst-segment" data-sleeve="satellite" cx="110" cy="110" r="55"
+              stroke="#f59e0b" stroke-width="22" stroke-dasharray="86.4 345.6" stroke-dashoffset="-259.2"
+              onclick="selectSleeve('satellite')"/>
+
+            <!-- Outer ring: Children (r=82, circ=515.2) -->
+            <!-- Equities 55% = 283.4, Bonds 20% = 103 -->
+            <circle class="sunburst-segment" data-sleeve="equities" cx="110" cy="110" r="82"
+              stroke="#60a5fa" stroke-width="18" stroke-dasharray="283.4 515.2" stroke-dashoffset="0"
+              onclick="selectSleeve('equities')"/>
+            <circle class="sunburst-segment" data-sleeve="bonds" cx="110" cy="110" r="82"
+              stroke="#93c5fd" stroke-width="18" stroke-dasharray="103 515.2" stroke-dashoffset="-283.4"
+              onclick="selectSleeve('bonds')"/>
+            <!-- Safe Haven 10% = 51.5, Growth 15% = 77.3 -->
+            <circle class="sunburst-segment" data-sleeve="safehaven" cx="110" cy="110" r="82"
+              stroke="#fbbf24" stroke-width="18" stroke-dasharray="51.5 515.2" stroke-dashoffset="-386.4"
+              onclick="selectSleeve('safehaven')"/>
+            <circle class="sunburst-segment" data-sleeve="growth" cx="110" cy="110" r="82"
+              stroke="#fcd34d" stroke-width="18" stroke-dasharray="77.3 515.2" stroke-dashoffset="-437.9"
+              onclick="selectSleeve('growth')"/>
+          </svg>
+          <div class="sunburst-center">
+            <div class="sunburst-center-value" id="sunburstValue">€113k</div>
+            <div class="sunburst-center-label" id="sunburstLabel">Total Value</div>
+            <div class="sunburst-center-sub" id="sunburstSub">32 assets</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sleeve-cards" id="sleeveCards">
+        <div class="sleeve-card selected full-width" data-sleeve="all" onclick="selectSleeve('all')">
+          <div class="sleeve-card-header">
+            <span class="sleeve-card-name">All Sleeves</span>
+          </div>
+          <div class="sleeve-card-stats">
+            <div>
+              <div class="sleeve-card-alloc">100%</div>
+              <div class="sleeve-card-target">6 sleeves</div>
+            </div>
+            <div class="sleeve-card-meta">
+              <div class="sleeve-card-value">€113,482</div>
+              <div class="sleeve-card-return positive">+12.2%</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="sleeve-card" data-sleeve="core" onclick="selectSleeve('core')">
+          <div class="sleeve-card-header">
+            <span class="sleeve-card-dot core"></span>
+            <span class="sleeve-card-name">Core</span>
+          </div>
+          <div class="sleeve-card-stats">
+            <div>
+              <div class="sleeve-card-alloc">75%</div>
+              <div class="sleeve-card-target"><span class="target">/ 75%</span></div>
+            </div>
+            <div class="sleeve-card-meta">
+              <div class="sleeve-card-value">€85,112</div>
+              <div class="sleeve-card-return positive">+8.2%</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="sleeve-card" data-sleeve="satellite" onclick="selectSleeve('satellite')">
+          <div class="sleeve-card-header">
+            <span class="sleeve-card-dot satellite"></span>
+            <span class="sleeve-card-name">Satellite</span>
+          </div>
+          <div class="sleeve-card-stats">
+            <div>
+              <div class="sleeve-card-alloc">25%</div>
+              <div class="sleeve-card-target"><span class="target">/ 25%</span></div>
+            </div>
+            <div class="sleeve-card-meta">
+              <div class="sleeve-card-value">€28,370</div>
+              <div class="sleeve-card-return positive">+22.4%</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="sleeve-card" data-sleeve="equities" onclick="selectSleeve('equities')">
+          <div class="sleeve-card-header">
+            <span class="sleeve-card-dot equities"></span>
+            <span class="sleeve-card-name">Equities</span>
+          </div>
+          <div class="sleeve-card-stats">
+            <div>
+              <div class="sleeve-card-alloc">55%</div>
+              <div class="sleeve-card-target"><span class="target">/ 55%</span></div>
+            </div>
+            <div class="sleeve-card-meta">
+              <div class="sleeve-card-value">€62,415</div>
+              <div class="sleeve-card-return positive">+11.4%</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="sleeve-card has-issue" data-sleeve="bonds" onclick="selectSleeve('bonds')">
+          <div class="sleeve-card-header">
+            <span class="sleeve-card-dot bonds"></span>
+            <span class="sleeve-card-name">Bonds</span>
+            <span class="sleeve-card-badge under">-3pp</span>
+          </div>
+          <div class="sleeve-card-stats">
+            <div>
+              <div class="sleeve-card-alloc">17%</div>
+              <div class="sleeve-card-target"><span class="target">/ 20%</span></div>
+            </div>
+            <div class="sleeve-card-meta">
+              <div class="sleeve-card-value">€19,292</div>
+              <div class="sleeve-card-return positive">+1.8%</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="sleeve-card" data-sleeve="safehaven" onclick="selectSleeve('safehaven')">
+          <div class="sleeve-card-header">
+            <span class="sleeve-card-dot safehaven"></span>
+            <span class="sleeve-card-name">Safe Haven</span>
+          </div>
+          <div class="sleeve-card-stats">
+            <div>
+              <div class="sleeve-card-alloc">10%</div>
+              <div class="sleeve-card-target"><span class="target">/ 10%</span></div>
+            </div>
+            <div class="sleeve-card-meta">
+              <div class="sleeve-card-value">€11,348</div>
+              <div class="sleeve-card-return positive">+28.1%</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="sleeve-card has-issue" data-sleeve="growth" onclick="selectSleeve('growth')">
+          <div class="sleeve-card-header">
+            <span class="sleeve-card-dot growth"></span>
+            <span class="sleeve-card-name">Growth</span>
+            <span class="sleeve-card-badge over">+5pp</span>
+          </div>
+          <div class="sleeve-card-stats">
+            <div>
+              <div class="sleeve-card-alloc">20%</div>
+              <div class="sleeve-card-target"><span class="target">/ 15%</span></div>
+            </div>
+            <div class="sleeve-card-meta">
+              <div class="sleeve-card-value">€22,696</div>
+              <div class="sleeve-card-return positive">+18.6%</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="assets-section">
+      <div class="assets-header">
+        <span class="assets-title">Assets</span>
+        <span class="assets-count" id="assetsCount">All · 32</span>
+      </div>
+      <div class="search-bar">
+        <span class="search-icon">🔍</span>
+        <input type="text" class="search-input" id="searchInput" placeholder="Search assets..." oninput="filterAssets()">
+      </div>
+      <div class="asset-list" id="assetList"></div>
+      <div class="no-results hidden" id="noResults">No assets match your search</div>
+      <div class="load-more hidden" id="loadMore" onclick="loadMore()">Show more assets</div>
+    </div>
+  </div>
+
+  <script>
+    const assets = [
+      { symbol: 'X.IUSQ', name: 'iShares MSCI ACWI UCITS', value: 42500, weight: 37.5, return: 12.3, sleeve: 'equities' },
+      { symbol: 'X.SPYD', name: 'SPDR S&P US Dividend', value: 12400, weight: 10.9, return: 8.4, sleeve: 'equities' },
+      { symbol: 'X.EUNL', name: 'iShares Core MSCI Europe', value: 7515, weight: 6.6, return: 5.6, sleeve: 'equities' },
+      { symbol: 'X.XBAG', name: 'Xtrackers ESG Global Bond', value: 11348, weight: 10.0, return: 1.2, sleeve: 'bonds' },
+      { symbol: 'X.XGSH', name: 'Xtrackers Short Duration', value: 5674, weight: 5.0, return: 2.8, sleeve: 'bonds' },
+      { symbol: 'X.IBTS', name: 'iShares Treasury Bond', value: 2270, weight: 2.0, return: 1.4, sleeve: 'bonds' },
+      { symbol: 'WGLD', name: 'WisdomTree Physical Gold', value: 7939, weight: 7.0, return: 32.5, sleeve: 'safehaven' },
+      { symbol: 'SGLD', name: 'iShares Physical Gold', value: 3409, weight: 3.0, return: 28.1, sleeve: 'safehaven' },
+      { symbol: 'X.XDWT', name: 'Xtrackers MSCI World Tech', value: 9072, weight: 8.0, return: 24.2, sleeve: 'growth' },
+      { symbol: '.NVDA', name: 'NVIDIA Corporation', value: 4536, weight: 4.0, return: 85.2, sleeve: 'growth' },
+      { symbol: '.AAPL', name: 'Apple Inc.', value: 3402, weight: 3.0, return: 18.5, sleeve: 'growth' },
+      { symbol: '.MSFT', name: 'Microsoft Corporation', value: 2835, weight: 2.5, return: 22.1, sleeve: 'growth' },
+      { symbol: '.AMZN', name: 'Amazon.com Inc.', value: 2835, weight: 2.5, return: 31.2, sleeve: 'growth' },
+    ];
+
+    const sleeveHierarchy = {
+      core: ['equities', 'bonds'],
+      satellite: ['safehaven', 'growth']
+    };
+
+    const sleeveNames = {
+      all: 'All', core: 'Core', satellite: 'Satellite',
+      equities: 'Equities', bonds: 'Bonds',
+      safehaven: 'Safe Haven', growth: 'Growth'
+    };
+
+    let currentSleeve = 'all';
+    let displayCount = 8;
+
+    function getChildSleeves(sleeve) {
+      let children = [sleeve];
+      if (sleeveHierarchy[sleeve]) {
+        sleeveHierarchy[sleeve].forEach(child => {
+          children = children.concat(getChildSleeves(child));
+        });
+      }
+      return children;
+    }
+
+    function selectSleeve(sleeve) {
+      currentSleeve = sleeve;
+      displayCount = 8;
+
+      document.querySelectorAll('.sleeve-card').forEach(card => {
+        card.classList.toggle('selected', card.dataset.sleeve === sleeve);
+      });
+
+      const allowedSleeves = sleeve === 'all' ? null : getChildSleeves(sleeve);
+      document.querySelectorAll('.sunburst-segment').forEach(seg => {
+        const segSleeve = seg.dataset.sleeve;
+        const isRelated = !allowedSleeves || allowedSleeves.includes(segSleeve);
+        seg.classList.toggle('dimmed', !isRelated);
+        seg.classList.toggle('selected', sleeve === segSleeve);
+      });
+
+      const sleeveData = {
+        all: { value: '€113k', label: 'Total Value', sub: '32 assets' },
+        core: { value: '€85k', label: 'Core · 75%', sub: '18 assets' },
+        equities: { value: '€62k', label: 'Equities · 55%', sub: '12 assets' },
+        bonds: { value: '€19k', label: 'Bonds · 17%', sub: '6 assets' },
+        satellite: { value: '€28k', label: 'Satellite · 25%', sub: '14 assets' },
+        safehaven: { value: '€11k', label: 'Safe Haven · 10%', sub: '4 assets' },
+        growth: { value: '€23k', label: 'Growth · 20%', sub: '10 assets' }
+      };
+      const data = sleeveData[sleeve] || sleeveData.all;
+      document.getElementById('sunburstValue').textContent = data.value;
+      document.getElementById('sunburstLabel').textContent = data.label;
+      document.getElementById('sunburstSub').textContent = data.sub;
+
+      filterAssets();
+    }
+
+    function filterAssets() {
+      const search = document.getElementById('searchInput').value.toLowerCase();
+      const allowedSleeves = currentSleeve === 'all' ? null : getChildSleeves(currentSleeve);
+
+      const filtered = assets.filter(a => {
+        const matchSleeve = !allowedSleeves || allowedSleeves.includes(a.sleeve);
+        const matchSearch = !search || a.symbol.toLowerCase().includes(search) || a.name.toLowerCase().includes(search);
+        return matchSleeve && matchSearch;
+      });
+
+      const toShow = filtered.slice(0, displayCount);
+      const list = document.getElementById('assetList');
+      list.innerHTML = toShow.map(a => `
+        <div class="asset-row">
+          <div class="asset-info">
+            <div class="asset-symbol">${a.symbol}</div>
+            <div class="asset-name">${a.name}</div>
+            <div class="asset-sleeve">${sleeveNames[a.sleeve] || a.sleeve}</div>
+          </div>
+          <div class="asset-metrics">
+            <div class="asset-value">€${a.value.toLocaleString()}</div>
+            <div class="asset-sub">
+              <span class="asset-weight">${a.weight}%</span>
+              <span class="asset-return ${a.return < 0 ? 'negative' : ''}">${a.return >= 0 ? '+' : ''}${a.return}%</span>
+            </div>
+          </div>
+        </div>
+      `).join('');
+
+      document.getElementById('assetsCount').textContent = `${sleeveNames[currentSleeve]} · ${filtered.length}`;
+      document.getElementById('noResults').classList.toggle('hidden', filtered.length > 0);
+      document.getElementById('loadMore').classList.toggle('hidden', filtered.length <= displayCount);
+    }
+
+    function loadMore() {
+      displayCount += 8;
+      filterAssets();
+    }
+
+    function toggleIssues() {
+      document.getElementById('issuesPanel').classList.toggle('expanded');
+      document.getElementById('issuesChevron').classList.toggle('expanded');
+    }
+
+    document.querySelectorAll('.range-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.range-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+      });
+    });
+
+    filterAssets();
+  </script>
+</body>
+</html>

@@ -1,0 +1,29 @@
+### TickerMetadata - Sync state tracking per ticker
+### Tracks when price data was last fetched for each ticker
+class: TickerMetadata
+table: ticker_metadata
+
+fields:
+  ### UUID primary key (v7 for lexicographic sorting)
+  id: UuidValue?, defaultPersist=random_v7
+
+  ### Yahoo Finance ticker symbol
+  ticker: String
+
+  ### Last date with daily price data (YYYY-MM-DD format)
+  lastDailyDate: String?
+
+  ### When daily data was last synced
+  lastSyncedAt: DateTime?
+
+  ### When intraday data was last synced
+  lastIntradaySyncedAt: DateTime?
+
+  ### Whether this ticker should be actively synced
+  isActive: bool
+
+indexes:
+  ### Unique index on ticker - one metadata record per ticker
+  ticker_metadata_ticker_idx:
+    fields: ticker
+    unique: true

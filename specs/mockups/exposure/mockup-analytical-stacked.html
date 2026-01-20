@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exposure - Stacked Bars</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .segment:hover {
+      filter: brightness(1.1);
+    }
+  </style>
+</head>
+<body class="bg-slate-100 min-h-screen">
+  <div class="mx-auto max-w-[1200px] px-6 py-6">
+
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-6">
+      <div class="flex items-center gap-2">
+        <h1 class="text-sm font-semibold text-slate-900">Exposure</h1>
+        <span class="text-slate-300">/</span>
+        <button class="flex items-center gap-1.5 text-sm text-slate-600 hover:text-slate-900">
+          <span>All Sleeves</span>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+          </svg>
+        </button>
+      </div>
+      <div class="flex items-center gap-4 text-xs text-slate-500">
+        <span>119.950 € · 18 assets</span>
+      </div>
+    </div>
+
+    <!-- Violations Alert -->
+    <div class="rounded-xl border border-amber-200 bg-amber-50 p-4 mb-6">
+      <div class="flex items-start justify-between">
+        <div class="flex items-start gap-3">
+          <div class="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center text-sm flex-shrink-0">!</div>
+          <div>
+            <div class="font-medium text-amber-900 mb-2">3 exposure rules violated</div>
+            <div class="flex flex-wrap gap-2">
+              <span class="px-2.5 py-1 bg-white border border-amber-200 rounded-lg text-xs text-amber-800">Technology 38% › 25%</span>
+              <span class="px-2.5 py-1 bg-white border border-amber-200 rounded-lg text-xs text-amber-800">United States 72% › 60%</span>
+              <span class="px-2.5 py-1 bg-white border border-amber-200 rounded-lg text-xs text-amber-800">Mega Cap 58% › 50%</span>
+            </div>
+          </div>
+        </div>
+        <a href="/rebalancing" class="flex items-center gap-1 px-3 py-1.5 bg-amber-600 text-white text-xs font-medium rounded-lg hover:bg-amber-700 flex-shrink-0">
+          Fix in Rebalancing →
+        </a>
+      </div>
+    </div>
+
+    <!-- Stacked Bar Cards -->
+    <div class="space-y-4">
+
+      <!-- Sector -->
+      <div class="rounded-xl border border-slate-200 bg-white overflow-hidden">
+        <div class="px-5 py-4 flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <span class="text-sm font-medium text-slate-900">Sector</span>
+            <span class="text-xs text-slate-400">9 sectors</span>
+            <span class="text-xs text-red-500 font-medium">1 violation</span>
+          </div>
+          <button class="text-xs text-blue-500 hover:underline">Expand →</button>
+        </div>
+
+        <!-- Stacked bar -->
+        <div class="px-5 pb-2">
+          <div class="h-10 flex rounded-lg overflow-hidden">
+            <div class="segment bg-red-400 flex items-center justify-center cursor-pointer relative" style="width: 38%;" title="Technology 38%">
+              <span class="text-white text-xs font-medium">Technology 38%</span>
+              <!-- Limit marker -->
+              <div class="absolute right-0 top-0 bottom-0 w-0.5 bg-red-700" style="right: calc(100% - 65.8%);"></div>
+            </div>
+            <div class="segment bg-blue-400 flex items-center justify-center cursor-pointer" style="width: 18%;" title="Healthcare 18%">
+              <span class="text-white text-xs font-medium">Healthcare</span>
+            </div>
+            <div class="segment bg-emerald-400 flex items-center justify-center cursor-pointer" style="width: 14%;" title="Financials 14%">
+              <span class="text-white text-xs font-medium">Financials</span>
+            </div>
+            <div class="segment bg-violet-400 flex items-center justify-center cursor-pointer" style="width: 12%;" title="Consumer 12%">
+              <span class="text-white text-[11px]">Consumer</span>
+            </div>
+            <div class="segment bg-amber-400 flex items-center justify-center cursor-pointer" style="width: 8%;" title="Energy 8%">
+              <span class="text-white text-[10px]">Energy</span>
+            </div>
+            <div class="segment bg-slate-400 flex items-center justify-center cursor-pointer" style="width: 10%;" title="5 more sectors">
+              <span class="text-white text-[10px]">+5</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Legend row -->
+        <div class="px-5 py-3 border-t border-slate-100 bg-slate-50 flex items-center gap-4 text-xs overflow-x-auto">
+          <div class="flex items-center gap-1.5 flex-shrink-0">
+            <span class="w-2.5 h-2.5 rounded-sm bg-red-400"></span>
+            <span class="text-red-600 font-medium">Technology 38%</span>
+            <span class="text-red-400 text-[10px]">(limit 25%)</span>
+          </div>
+          <div class="flex items-center gap-1.5 flex-shrink-0">
+            <span class="w-2.5 h-2.5 rounded-sm bg-blue-400"></span>
+            <span class="text-slate-600">Healthcare 18%</span>
+          </div>
+          <div class="flex items-center gap-1.5 flex-shrink-0">
+            <span class="w-2.5 h-2.5 rounded-sm bg-emerald-400"></span>
+            <span class="text-slate-600">Financials 14%</span>
+          </div>
+          <div class="flex items-center gap-1.5 flex-shrink-0">
+            <span class="w-2.5 h-2.5 rounded-sm bg-violet-400"></span>
+            <span class="text-slate-600">Consumer 12%</span>
+          </div>
+          <div class="flex items-center gap-1.5 flex-shrink-0">
+            <span class="w-2.5 h-2.5 rounded-sm bg-slate-400"></span>
+            <span class="text-slate-400">+5 more 18%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Country -->
+      <div class="rounded-xl border border-slate-200 bg-white overflow-hidden">
+        <div class="px-5 py-4 flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <span class="text-sm font-medium text-slate-900">Country</span>
+            <span class="text-xs text-slate-400">12 countries</span>
+            <span class="text-xs text-red-500 font-medium">1 violation</span>
+          </div>
+          <button class="text-xs text-blue-500 hover:underline">Expand →</button>
+        </div>
+
+        <!-- Stacked bar -->
+        <div class="px-5 pb-2">
+          <div class="h-10 flex rounded-lg overflow-hidden">
+            <div class="segment bg-red-400 flex items-center justify-center cursor-pointer" style="width: 72%;" title="United States 72%">
+              <span class="text-white text-sm font-medium">United States 72%</span>
+            </div>
+            <div class="segment bg-blue-400 flex items-center justify-center cursor-pointer" style="width: 10%;" title="Germany 10%">
+              <span class="text-white text-[11px]">DE</span>
+            </div>
+            <div class="segment bg-amber-400 flex items-center justify-center cursor-pointer" style="width: 6%;" title="Japan 6%">
+              <span class="text-white text-[10px]">JP</span>
+            </div>
+            <div class="segment bg-emerald-400 flex items-center justify-center cursor-pointer" style="width: 4%;" title="UK 4%">
+              <span class="text-white text-[10px]">UK</span>
+            </div>
+            <div class="segment bg-slate-400 flex items-center justify-center cursor-pointer" style="width: 8%;" title="8 more countries">
+              <span class="text-white text-[10px]">+8</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Legend row -->
+        <div class="px-5 py-3 border-t border-slate-100 bg-slate-50 flex items-center gap-4 text-xs overflow-x-auto">
+          <div class="flex items-center gap-1.5 flex-shrink-0">
+            <span class="w-2.5 h-2.5 rounded-sm bg-red-400"></span>
+            <span class="text-red-600 font-medium">United States 72%</span>
+            <span class="text-red-400 text-[10px]">(limit 60%)</span>
+          </div>
+          <div class="flex items-center gap-1.5 flex-shrink-0">
+            <span class="w-2.5 h-2.5 rounded-sm bg-blue-400"></span>
+            <span class="text-slate-600">Germany 10%</span>
+          </div>
+          <div class="flex items-center gap-1.5 flex-shrink-0">
+            <span class="w-2.5 h-2.5 rounded-sm bg-amber-400"></span>
+            <span class="text-slate-600">Japan 6%</span>
+          </div>
+          <div class="flex items-center gap-1.5 flex-shrink-0">
+            <span class="w-2.5 h-2.5 rounded-sm bg-slate-400"></span>
+            <span class="text-slate-400">+9 more 12%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Industry -->
+      <div class="rounded-xl border border-slate-200 bg-white overflow-hidden">
+        <div class="px-5 py-4 flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <span class="text-sm font-medium text-slate-900">Industry</span>
+            <span class="text-xs text-slate-400">28 industries</span>
+            <span class="text-xs text-green-600">✓ All OK</span>
+          </div>
+          <button class="text-xs text-blue-500 hover:underline">Expand →</button>
+        </div>
+
+        <!-- Stacked bar -->
+        <div class="px-5 pb-2">
+          <div class="h-10 flex rounded-lg overflow-hidden">
+            <div class="segment bg-blue-400 flex items-center justify-center cursor-pointer" style="width: 12%;" title="Semiconductors 12%">
+              <span class="text-white text-[10px]">Semi</span>
+            </div>
+            <div class="segment bg-emerald-400 flex items-center justify-center cursor-pointer" style="width: 10%;" title="Software 10%">
+              <span class="text-white text-[10px]">SW</span>
+            </div>
+            <div class="segment bg-violet-400 flex items-center justify-center cursor-pointer" style="width: 8%;" title="Banks 8%">
+              <span class="text-white text-[10px]">Banks</span>
+            </div>
+            <div class="segment bg-amber-400 flex items-center justify-center cursor-pointer" style="width: 7%;" title="Pharma 7%">
+              <span class="text-white text-[10px]">Pharma</span>
+            </div>
+            <div class="segment bg-slate-300 flex items-center justify-center cursor-pointer" style="width: 63%;" title="24 more industries">
+              <span class="text-slate-600 text-xs">24 more industries (63%)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Legend row -->
+        <div class="px-5 py-3 border-t border-slate-100 bg-slate-50 flex items-center gap-4 text-xs overflow-x-auto">
+          <div class="flex items-center gap-1.5 flex-shrink-0">
+            <span class="w-2.5 h-2.5 rounded-sm bg-blue-400"></span>
+            <span class="text-slate-600">Semiconductors 12%</span>
+          </div>
+          <div class="flex items-center gap-1.5 flex-shrink-0">
+            <span class="w-2.5 h-2.5 rounded-sm bg-emerald-400"></span>
+            <span class="text-slate-600">Software 10%</span>
+          </div>
+          <div class="flex items-center gap-1.5 flex-shrink-0">
+            <span class="w-2.5 h-2.5 rounded-sm bg-violet-400"></span>
+            <span class="text-slate-600">Banks 8%</span>
+          </div>
+          <div class="flex items-center gap-1.5 flex-shrink-0">
+            <span class="w-2.5 h-2.5 rounded-sm bg-amber-400"></span>
+            <span class="text-slate-600">Pharma 7%</span>
+          </div>
+          <div class="flex items-center gap-1.5 flex-shrink-0">
+            <span class="w-2.5 h-2.5 rounded-sm bg-slate-300"></span>
+            <span class="text-slate-400">+24 more 63%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Market Cap -->
+      <div class="rounded-xl border border-slate-200 bg-white overflow-hidden">
+        <div class="px-5 py-4 flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <span class="text-sm font-medium text-slate-900">Market Cap</span>
+            <span class="text-xs text-slate-400">5 tiers</span>
+            <span class="text-xs text-red-500 font-medium">1 violation</span>
+          </div>
+          <button class="text-xs text-blue-500 hover:underline">Expand →</button>
+        </div>
+
+        <!-- Stacked bar -->
+        <div class="px-5 pb-2">
+          <div class="h-10 flex rounded-lg overflow-hidden">
+            <div class="segment bg-red-400 flex items-center justify-center cursor-pointer" style="width: 58%;" title="Mega Cap 58%">
+              <span class="text-white text-sm font-medium">Mega Cap 58%</span>
+            </div>
+            <div class="segment bg-blue-400 flex items-center justify-center cursor-pointer" style="width: 22%;" title="Large Cap 22%">
+              <span class="text-white text-xs">Large 22%</span>
+            </div>
+            <div class="segment bg-emerald-400 flex items-center justify-center cursor-pointer" style="width: 12%;" title="Mid Cap 12%">
+              <span class="text-white text-[11px]">Mid</span>
+            </div>
+            <div class="segment bg-violet-400 flex items-center justify-center cursor-pointer" style="width: 6%;" title="Small Cap 6%">
+              <span class="text-white text-[10px]">Sm</span>
+            </div>
+            <div class="segment bg-slate-400 flex items-center justify-center cursor-pointer" style="width: 2%;" title="Micro Cap 2%">
+            </div>
+          </div>
+        </div>
+
+        <!-- Legend row -->
+        <div class="px-5 py-3 border-t border-slate-100 bg-slate-50 flex items-center gap-4 text-xs overflow-x-auto">
+          <div class="flex items-center gap-1.5 flex-shrink-0">
+            <span class="w-2.5 h-2.5 rounded-sm bg-red-400"></span>
+            <span class="text-red-600 font-medium">Mega Cap 58%</span>
+            <span class="text-red-400 text-[10px]">(limit 50%)</span>
+          </div>
+          <div class="flex items-center gap-1.5 flex-shrink-0">
+            <span class="w-2.5 h-2.5 rounded-sm bg-blue-400"></span>
+            <span class="text-slate-600">Large Cap 22%</span>
+          </div>
+          <div class="flex items-center gap-1.5 flex-shrink-0">
+            <span class="w-2.5 h-2.5 rounded-sm bg-emerald-400"></span>
+            <span class="text-slate-600">Mid Cap 12%</span>
+          </div>
+          <div class="flex items-center gap-1.5 flex-shrink-0">
+            <span class="w-2.5 h-2.5 rounded-sm bg-violet-400"></span>
+            <span class="text-slate-600">Small Cap 6%</span>
+          </div>
+          <div class="flex items-center gap-1.5 flex-shrink-0">
+            <span class="w-2.5 h-2.5 rounded-sm bg-slate-400"></span>
+            <span class="text-slate-400">Micro Cap 2%</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Footer -->
+    <div class="mt-4 flex items-center justify-between text-xs text-slate-500">
+      <div class="flex items-center gap-4">
+        <button class="text-blue-500 hover:underline">Cross-analysis →</button>
+        <button class="text-blue-500 hover:underline">Compare sleeves →</button>
+        <button class="text-blue-500 hover:underline">Exposure history →</button>
+      </div>
+      <button class="text-slate-400 hover:text-slate-600">Manage rules</button>
+    </div>
+
+  </div>
+</body>
+</html>

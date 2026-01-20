@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=375, initial-scale=1.0">
+  <title>Assets List - Mobile</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f8f9fa;
+      max-width: 375px;
+      margin: 0 auto;
+      min-height: 812px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Header */
+    .header {
+      background: white;
+      padding: 12px 16px;
+      border-bottom: 1px solid #e5e7eb;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .back-btn {
+      font-size: 24px;
+      color: #111;
+    }
+    .header-title {
+      font-size: 17px;
+      font-weight: 600;
+      color: #111;
+    }
+    .sort-btn {
+      font-size: 14px;
+      color: #6366f1;
+      font-weight: 500;
+    }
+
+    /* Search bar */
+    .search-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #f3f4f6;
+      border-radius: 10px;
+      padding: 10px 12px;
+    }
+    .search-icon { font-size: 16px; opacity: 0.5; }
+    .search-input {
+      flex: 1;
+      border: none;
+      background: none;
+      font-size: 15px;
+      outline: none;
+    }
+    .search-input::placeholder { color: #9ca3af; }
+
+    /* Filter pills */
+    .filter-row {
+      display: flex;
+      gap: 8px;
+      padding: 12px 16px;
+      background: white;
+      border-bottom: 1px solid #e5e7eb;
+      overflow-x: auto;
+    }
+    .filter-pill {
+      padding: 6px 12px;
+      font-size: 13px;
+      border-radius: 16px;
+      background: #f3f4f6;
+      border: none;
+      color: #6b7280;
+      white-space: nowrap;
+    }
+    .filter-pill.active {
+      background: #111;
+      color: white;
+    }
+
+    /* Sort indicator */
+    .sort-indicator {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 16px;
+      background: #f9fafb;
+      font-size: 12px;
+      color: #6b7280;
+    }
+    .sort-active {
+      color: #111;
+      font-weight: 500;
+    }
+
+    /* Assets list */
+    .assets-list {
+      flex: 1;
+      overflow-y: auto;
+      padding-bottom: 80px;
+    }
+
+    .asset-card {
+      background: white;
+      padding: 14px 16px;
+      border-bottom: 1px solid #f3f4f6;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .asset-card:active {
+      background: #f9fafb;
+    }
+
+    .asset-icon {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 700;
+      color: #4338ca;
+    }
+    .asset-icon.gold { background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); color: #b45309; }
+    .asset-icon.bond { background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); color: #1d4ed8; }
+
+    .asset-info {
+      flex: 1;
+      min-width: 0;
+    }
+    .asset-main {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+    }
+    .asset-symbol {
+      font-size: 15px;
+      font-weight: 600;
+      color: #111;
+    }
+    .asset-sleeve {
+      font-size: 11px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: #f3f4f6;
+      color: #6b7280;
+    }
+    .asset-name {
+      font-size: 12px;
+      color: #6b7280;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-top: 2px;
+    }
+
+    .asset-metrics {
+      text-align: right;
+      flex-shrink: 0;
+    }
+    .asset-value {
+      font-size: 15px;
+      font-weight: 600;
+      color: #111;
+    }
+    .asset-sub {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 8px;
+      margin-top: 2px;
+    }
+    .asset-weight {
+      font-size: 12px;
+      color: #6b7280;
+    }
+    .asset-return {
+      font-size: 12px;
+      font-weight: 600;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+    .asset-return.positive {
+      background: #dcfce7;
+      color: #15803d;
+    }
+    .asset-return.negative {
+      background: #fee2e2;
+      color: #dc2626;
+    }
+
+    /* P/L row */
+    .asset-pl {
+      font-size: 11px;
+      color: #6b7280;
+      margin-top: 2px;
+    }
+    .asset-pl.positive { color: #16a34a; }
+    .asset-pl.negative { color: #dc2626; }
+
+    /* Bottom Tab Bar */
+    .tab-bar {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 375px;
+      background: white;
+      border-top: 1px solid #e5e7eb;
+      display: flex;
+      padding: 6px 0 20px;
+    }
+    .tab-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      font-size: 10px;
+      color: #9ca3af;
+      padding: 4px;
+    }
+    .tab-item.active { color: #111; }
+    .tab-icon {
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+
+    /* Summary footer */
+    .list-summary {
+      padding: 12px 16px;
+      background: #f9fafb;
+      text-align: center;
+      font-size: 12px;
+      color: #6b7280;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="header-top">
+      <span class="back-btn">‹</span>
+      <span class="header-title">Assets</span>
+      <span class="sort-btn">Sort</span>
+    </div>
+    <div class="search-bar">
+      <span class="search-icon">🔍</span>
+      <input type="text" class="search-input" placeholder="Search assets...">
+    </div>
+  </div>
+
+  <div class="filter-row">
+    <button class="filter-pill active">All Sleeves</button>
+    <button class="filter-pill">Core</button>
+    <button class="filter-pill">Satellite</button>
+    <button class="filter-pill">Safe Haven</button>
+    <button class="filter-pill">Growth</button>
+  </div>
+
+  <div class="sort-indicator">
+    <span>Sorted by: <span class="sort-active">Value ↓</span></span>
+    <span>20 assets</span>
+  </div>
+
+  <div class="assets-list">
+    <div class="asset-card">
+      <div class="asset-icon">IU</div>
+      <div class="asset-info">
+        <div class="asset-main">
+          <span class="asset-symbol">X.IUSQ</span>
+          <span class="asset-sleeve">Core</span>
+        </div>
+        <div class="asset-name">iShares MSCI ACWI UCITS ETF US</div>
+      </div>
+      <div class="asset-metrics">
+        <div class="asset-value">49.269 €</div>
+        <div class="asset-sub">
+          <span class="asset-weight">43.4%</span>
+          <span class="asset-return positive">+7.8%</span>
+        </div>
+        <div class="asset-pl positive">+3.566 €</div>
+      </div>
+    </div>
+
+    <div class="asset-card">
+      <div class="asset-icon bond">XB</div>
+      <div class="asset-info">
+        <div class="asset-main">
+          <span class="asset-symbol">X.XBAG</span>
+          <span class="asset-sleeve">Core</span>
+        </div>
+        <div class="asset-name">Xtrackers II ESG Global Aggregate Bond</div>
+      </div>
+      <div class="asset-metrics">
+        <div class="asset-value">17.022 €</div>
+        <div class="asset-sub">
+          <span class="asset-weight">15.0%</span>
+          <span class="asset-return positive">+0.3%</span>
+        </div>
+        <div class="asset-pl positive">+42 €</div>
+      </div>
+    </div>
+
+    <div class="asset-card">
+      <div class="asset-icon gold">WG</div>
+      <div class="asset-info">
+        <div class="asset-main">
+          <span class="asset-symbol">WGLD</span>
+          <span class="asset-sleeve">Core</span>
+        </div>
+        <div class="asset-name">WisdomTree Core Physical Gold</div>
+      </div>
+      <div class="asset-metrics">
+        <div class="asset-value">14.598 €</div>
+        <div class="asset-sub">
+          <span class="asset-weight">12.9%</span>
+          <span class="asset-return positive">+36.5%</span>
+        </div>
+        <div class="asset-pl positive">+3.905 €</div>
+      </div>
+    </div>
+
+    <div class="asset-card">
+      <div class="asset-icon gold">PH</div>
+      <div class="asset-info">
+        <div class="asset-main">
+          <span class="asset-symbol">PHPD</span>
+          <span class="asset-sleeve">Safe Haven</span>
+        </div>
+        <div class="asset-name">WisdomTree Physical Palladium</div>
+      </div>
+      <div class="asset-metrics">
+        <div class="asset-value">4.732 €</div>
+        <div class="asset-sub">
+          <span class="asset-weight">4.2%</span>
+          <span class="asset-return positive">+42.1%</span>
+        </div>
+        <div class="asset-pl positive">+1.401 €</div>
+      </div>
+    </div>
+
+    <div class="asset-card">
+      <div class="asset-icon">SX</div>
+      <div class="asset-info">
+        <div class="asset-main">
+          <span class="asset-symbol">X.SXRS</span>
+          <span class="asset-sleeve">Growth</span>
+        </div>
+        <div class="asset-name">iShares Diversified Commodity Swap</div>
+      </div>
+      <div class="asset-metrics">
+        <div class="asset-value">3.823 €</div>
+        <div class="asset-sub">
+          <span class="asset-weight">3.4%</span>
+          <span class="asset-return positive">+12.3%</span>
+        </div>
+        <div class="asset-pl positive">+418 €</div>
+      </div>
+    </div>
+
+    <div class="asset-card">
+      <div class="asset-icon">UP</div>
+      <div class="asset-info">
+        <div class="asset-main">
+          <span class="asset-symbol">.UPS</span>
+          <span class="asset-sleeve">Safe Haven</span>
+        </div>
+        <div class="asset-name">United Parcel Service</div>
+      </div>
+      <div class="asset-metrics">
+        <div class="asset-value">2.753 €</div>
+        <div class="asset-sub">
+          <span class="asset-weight">2.4%</span>
+          <span class="asset-return positive">+6.0%</span>
+        </div>
+        <div class="asset-pl positive">+155 €</div>
+      </div>
+    </div>
+
+    <div class="asset-card">
+      <div class="asset-icon">NO</div>
+      <div class="asset-info">
+        <div class="asset-main">
+          <span class="asset-symbol">X.NOV</span>
+          <span class="asset-sleeve">Growth</span>
+        </div>
+        <div class="asset-name">Novo Nordisk A/S</div>
+      </div>
+      <div class="asset-metrics">
+        <div class="asset-value">2.682 €</div>
+        <div class="asset-sub">
+          <span class="asset-weight">2.4%</span>
+          <span class="asset-return positive">+6.7%</span>
+        </div>
+        <div class="asset-pl positive">+169 €</div>
+      </div>
+    </div>
+
+    <div class="list-summary">
+      Showing 7 of 20 assets · Total: 113.534 €
+    </div>
+  </div>
+
+  <div class="tab-bar">
+    <div class="tab-item">
+      <span class="tab-icon">📊</span>
+      <span>Dashboard</span>
+    </div>
+    <div class="tab-item active">
+      <span class="tab-icon">📈</span>
+      <span>Assets</span>
+    </div>
+    <div class="tab-item">
+      <span class="tab-icon">📁</span>
+      <span>Sleeves</span>
+    </div>
+    <div class="tab-item">
+      <span class="tab-icon">⚙️</span>
+      <span>Settings</span>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,31 @@
+### Sleeve - Hierarchical grouping of assets with budget targets
+### Portfolio-specific - same global holdings can be organized differently per portfolio
+class: Sleeve
+table: sleeves
+
+fields:
+  ### UUID primary key (v7 for lexicographic sorting)
+  id: UuidValue?, defaultPersist=random_v7
+
+  ### Reference to parent portfolio (UUID)
+  portfolioId: UuidValue, relation(parent=portfolios)
+
+  ### Self-reference for hierarchy (null = root/top-level sleeve)
+  ### Cascade delete: when parent sleeve is deleted, children are also deleted
+  parentSleeveId: UuidValue?, relation(parent=sleeves, onDelete=Cascade)
+
+  ### Display name (e.g., "Core", "Equities", "Satellite")
+  name: String
+
+  ### Target allocation as percentage of portfolio (e.g., 75.0 = 75%)
+  budgetPercent: double
+
+  ### Display order within parent (for UI sorting)
+  sortOrder: int
+
+  ### Whether this sleeve represents the cash allocation
+  isCash: bool
+
+indexes:
+  sleeve_portfolio_idx:
+    fields: portfolioId

@@ -1,0 +1,40 @@
+### Order - Raw imported orders from broker CSV
+### Global table (audit trail), not per-portfolio
+class: Order
+table: orders
+
+fields:
+  ### UUID primary key (v7 for lexicographic sorting)
+  id: UuidValue?, defaultPersist=random_v7
+
+  ### Reference to the asset (UUID)
+  assetId: UuidValue, relation(parent=assets)
+
+  ### Date the order was executed
+  orderDate: DateTime
+
+  ### Quantity bought (positive) or sold (negative)
+  quantity: double
+
+  ### Price per unit in the native currency
+  priceNative: double
+
+  ### Total value in native currency (quantity * priceNative)
+  totalNative: double
+
+  ### Total value in EUR (converted at order time)
+  totalEur: double
+
+  ### Currency of the order (e.g., EUR, USD)
+  currency: String
+
+  ### Optional broker order reference number
+  orderReference: String?
+
+  ### Timestamp when this order was imported into the system
+  importedAt: DateTime
+
+indexes:
+  ### Index for efficient lookups by asset
+  order_asset_idx:
+    fields: assetId

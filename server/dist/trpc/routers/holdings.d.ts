@@ -20,6 +20,7 @@ export declare const holdingsRouter: import("@trpc/server").TRPCBuiltRouter<{
                 currency: string;
                 metadata: import("../../db/schema").AssetMetadata | null;
                 yahooSymbol: string | null;
+                archived: boolean;
             };
             id: string;
             assetIsin: string;

@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exposure - Compare Sleeves</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>body { font-family: 'Inter', sans-serif; }</style>
+</head>
+<body class="bg-slate-100 min-h-screen">
+  <div class="mx-auto max-w-[1200px] px-6 py-6">
+
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-6">
+      <div class="flex items-center gap-2">
+        <a href="mockup-analytical.html" class="text-sm text-blue-500 hover:underline">Exposure</a>
+        <span class="text-slate-300">/</span>
+        <span class="text-sm font-semibold text-slate-900">Compare Sleeves</span>
+      </div>
+      <span class="text-xs text-slate-500">4 sleeves · 119.950 €</span>
+    </div>
+
+    <!-- Sleeve selector -->
+    <div class="flex items-center gap-3 mb-6">
+      <span class="text-sm text-slate-600">Comparing:</span>
+      <div class="flex gap-2">
+        <button class="px-3 py-1.5 text-sm bg-slate-900 text-white rounded-lg">Portfolio (all)</button>
+        <button class="px-3 py-1.5 text-sm bg-blue-100 text-blue-700 rounded-lg border border-blue-200">Core</button>
+        <button class="px-3 py-1.5 text-sm bg-amber-100 text-amber-700 rounded-lg border border-amber-200">Satellite</button>
+        <button class="px-3 py-1.5 text-sm bg-white text-slate-600 rounded-lg border border-slate-200 hover:bg-slate-50">+ Add sleeve</button>
+      </div>
+    </div>
+
+    <!-- Summary cards -->
+    <div class="grid grid-cols-3 gap-4 mb-6">
+      <!-- Portfolio -->
+      <div class="rounded-xl border border-slate-300 bg-white p-4">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-sm font-semibold text-slate-900">Portfolio (all)</span>
+          <span class="px-2 py-0.5 bg-amber-100 text-amber-700 text-xs rounded">3 violations</span>
+        </div>
+        <div class="text-2xl font-bold text-slate-900 mb-1">119.950 €</div>
+        <div class="text-xs text-slate-500 mb-4">18 assets</div>
+        <div class="space-y-2 text-xs">
+          <div class="flex justify-between">
+            <span class="text-slate-500">Top sector</span>
+            <span class="text-red-600 font-medium">Technology 38%</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-500">Top country</span>
+            <span class="text-red-600 font-medium">US 72%</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-500">Top market cap</span>
+            <span class="text-red-600 font-medium">Mega 58%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Core -->
+      <div class="rounded-xl border border-blue-200 bg-blue-50/30 p-4">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-sm font-semibold text-slate-900">Core</span>
+          <span class="px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded">OK</span>
+        </div>
+        <div class="text-2xl font-bold text-slate-900 mb-1">84.414 €</div>
+        <div class="text-xs text-slate-500 mb-4">12 assets · 70% of portfolio</div>
+        <div class="space-y-2 text-xs">
+          <div class="flex justify-between">
+            <span class="text-slate-500">Top sector</span>
+            <span class="text-slate-700">Financials 32%</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-500">Top country</span>
+            <span class="text-slate-700">US 58%</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-500">Top market cap</span>
+            <span class="text-slate-700">Large 42%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Satellite -->
+      <div class="rounded-xl border border-amber-200 bg-amber-50/30 p-4">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-sm font-semibold text-slate-900">Satellite</span>
+          <span class="px-2 py-0.5 bg-red-100 text-red-700 text-xs rounded">3 violations</span>
+        </div>
+        <div class="text-2xl font-bold text-slate-900 mb-1">29.136 €</div>
+        <div class="text-xs text-slate-500 mb-4">6 assets · 24% of portfolio</div>
+        <div class="space-y-2 text-xs">
+          <div class="flex justify-between">
+            <span class="text-slate-500">Top sector</span>
+            <span class="text-red-600 font-medium">Technology 52%</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-500">Top country</span>
+            <span class="text-red-600 font-medium">US 85%</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-500">Top market cap</span>
+            <span class="text-red-600 font-medium">Mega 78%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dimension comparison -->
+    <div class="rounded-xl border border-slate-200 bg-white overflow-hidden mb-6">
+      <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+        <span class="text-sm font-medium text-slate-900">Sector Distribution</span>
+        <select class="text-xs border border-slate-200 rounded px-2 py-1">
+          <option selected>Sector</option>
+          <option>Country</option>
+          <option>Market Cap</option>
+          <option>Industry</option>
+        </select>
+      </div>
+
+      <div class="p-4">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="text-xs text-slate-400">
+              <th class="pb-3 text-left font-medium w-32">Sector</th>
+              <th class="pb-3 text-center font-medium">
+                <span class="text-slate-900">Portfolio</span>
+              </th>
+              <th class="pb-3 text-center font-medium">
+                <span class="text-blue-600">Core</span>
+              </th>
+              <th class="pb-3 text-center font-medium">
+                <span class="text-amber-600">Satellite</span>
+              </th>
+              <th class="pb-3 text-right font-medium w-20">Limit</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            <tr>
+              <td class="py-3 font-medium text-slate-900">Technology</td>
+              <td class="py-3">
+                <div class="flex items-center justify-center gap-2">
+                  <div class="w-24 h-2 bg-slate-100 rounded-full overflow-hidden">
+                    <div class="h-full bg-red-400 rounded-full" style="width: 38%"></div>
+                  </div>
+                  <span class="w-10 text-xs text-red-600 font-medium">38%</span>
+                </div>
+              </td>
+              <td class="py-3">
+                <div class="flex items-center justify-center gap-2">
+                  <div class="w-24 h-2 bg-slate-100 rounded-full overflow-hidden">
+                    <div class="h-full bg-blue-400 rounded-full" style="width: 22%"></div>
+                  </div>
+                  <span class="w-10 text-xs text-slate-600">22%</span>
+                </div>
+              </td>
+              <td class="py-3">
+                <div class="flex items-center justify-center gap-2">
+                  <div class="w-24 h-2 bg-slate-100 rounded-full overflow-hidden">
+                    <div class="h-full bg-red-400 rounded-full" style="width: 52%"></div>
+                  </div>
+                  <span class="w-10 text-xs text-red-600 font-medium">52%</span>
+                </div>
+              </td>
+              <td class="py-3 text-right text-xs text-slate-500">≤25%</td>
+            </tr>
+            <tr>
+              <td class="py-3 font-medium text-slate-900">Healthcare</td>
+              <td class="py-3">
+                <div class="flex items-center justify-center gap-2">
+                  <div class="w-24 h-2 bg-slate-100 rounded-full overflow-hidden">
+                    <div class="h-full bg-slate-400 rounded-full" style="width: 18%"></div>
+                  </div>
+                  <span class="w-10 text-xs text-slate-600">18%</span>
+                </div>
+              </td>
+              <td class="py-3">
+                <div class="flex items-center justify-center gap-2">
+                  <div class="w-24 h-2 bg-slate-100 rounded-full overflow-hidden">
+                    <div class="h-full bg-blue-400 rounded-full" style="width: 24%"></div>
+                  </div>
+                  <span class="w-10 text-xs text-slate-600">24%</span>
+                </div>
+              </td>
+              <td class="py-3">
+                <div class="flex items-center justify-center gap-2">
+                  <div class="w-24 h-2 bg-slate-100 rounded-full overflow-hidden">
+                    <div class="h-full bg-amber-400 rounded-full" style="width: 5%"></div>
+                  </div>
+                  <span class="w-10 text-xs text-slate-600">5%</span>
+                </div>
+              </td>
+              <td class="py-3 text-right text-xs text-slate-500">≤30%</td>
+            </tr>
+            <tr>
+              <td class="py-3 font-medium text-slate-900">Financials</td>
+              <td class="py-3">
+                <div class="flex items-center justify-center gap-2">
+                  <div class="w-24 h-2 bg-slate-100 rounded-full overflow-hidden">
+                    <div class="h-full bg-slate-400 rounded-full" style="width: 14%"></div>
+                  </div>
+                  <span class="w-10 text-xs text-slate-600">14%</span>
+                </div>
+              </td>
+              <td class="py-3">
+                <div class="flex items-center justify-center gap-2">
+                  <div class="w-24 h-2 bg-slate-100 rounded-full overflow-hidden">
+                    <div class="h-full bg-blue-400 rounded-full" style="width: 32%"></div>
+                  </div>
+                  <span class="w-10 text-xs text-slate-600">32%</span>
+                </div>
+              </td>
+              <td class="py-3">
+                <div class="flex items-center justify-center gap-2">
+                  <div class="w-24 h-2 bg-slate-100 rounded-full overflow-hidden">
+                    <div class="h-full bg-amber-400 rounded-full" style="width: 0%"></div>
+                  </div>
+                  <span class="w-10 text-xs text-slate-400">0%</span>
+                </div>
+              </td>
+              <td class="py-3 text-right text-xs text-slate-500">≤20%</td>
+            </tr>
+            <tr>
+              <td class="py-3 font-medium text-slate-900">Consumer</td>
+              <td class="py-3">
+                <div class="flex items-center justify-center gap-2">
+                  <div class="w-24 h-2 bg-slate-100 rounded-full overflow-hidden">
+                    <div class="h-full bg-slate-400 rounded-full" style="width: 12%"></div>
+                  </div>
+                  <span class="w-10 text-xs text-slate-600">12%</span>
+                </div>
+              </td>
+              <td class="py-3">
+                <div class="flex items-center justify-center gap-2">
+                  <div class="w-24 h-2 bg-slate-100 rounded-full overflow-hidden">
+                    <div class="h-full bg-blue-400 rounded-full" style="width: 8%"></div>
+                  </div>
+                  <span class="w-10 text-xs text-slate-600">8%</span>
+                </div>
+              </td>
+              <td class="py-3">
+                <div class="flex items-center justify-center gap-2">
+                  <div class="w-24 h-2 bg-slate-100 rounded-full overflow-hidden">
+                    <div class="h-full bg-amber-400 rounded-full" style="width: 22%"></div>
+                  </div>
+                  <span class="w-10 text-xs text-slate-600">22%</span>
+                </div>
+              </td>
+              <td class="py-3 text-right text-xs text-slate-400">—</td>
+            </tr>
+            <tr>
+              <td class="py-3 font-medium text-slate-500">Other (5)</td>
+              <td class="py-3">
+                <div class="flex items-center justify-center gap-2">
+                  <div class="w-24 h-2 bg-slate-100 rounded-full overflow-hidden">
+                    <div class="h-full bg-slate-300 rounded-full" style="width: 18%"></div>
+                  </div>
+                  <span class="w-10 text-xs text-slate-400">18%</span>
+                </div>
+              </td>
+              <td class="py-3">
+                <div class="flex items-center justify-center gap-2">
+                  <div class="w-24 h-2 bg-slate-100 rounded-full overflow-hidden">
+                    <div class="h-full bg-blue-300 rounded-full" style="width: 14%"></div>
+                  </div>
+                  <span class="w-10 text-xs text-slate-400">14%</span>
+                </div>
+              </td>
+              <td class="py-3">
+                <div class="flex items-center justify-center gap-2">
+                  <div class="w-24 h-2 bg-slate-100 rounded-full overflow-hidden">
+                    <div class="h-full bg-amber-300 rounded-full" style="width: 21%"></div>
+                  </div>
+                  <span class="w-10 text-xs text-slate-400">21%</span>
+                </div>
+              </td>
+              <td class="py-3 text-right text-xs text-slate-400">—</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="px-5 py-3 border-t border-slate-100 bg-slate-50 text-xs">
+        <span class="text-slate-500">Insight: </span>
+        <span class="text-slate-700">Your <strong>Satellite sleeve</strong> is driving the Technology overweight. Core is well-diversified.</span>
+      </div>
+    </div>
+
+    <!-- Action suggestion -->
+    <div class="rounded-xl border border-blue-200 bg-blue-50 p-4">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
+            <span class="text-blue-600 text-sm">→</span>
+          </div>
+          <div>
+            <div class="font-medium text-blue-900">Rebalancing suggestion</div>
+            <div class="text-sm text-blue-700">Focus on Satellite sleeve to fix portfolio-wide violations</div>
+          </div>
+        </div>
+        <a href="/rebalancing?sleeve=satellite" class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700">
+          Rebalance Satellite →
+        </a>
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>

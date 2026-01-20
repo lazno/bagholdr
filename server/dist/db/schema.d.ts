@@ -157,6 +157,23 @@ export declare const assets: import("drizzle-orm/sqlite-core").SQLiteTableWithCo
         }, {}, {
             length: number | undefined;
         }>;
+        archived: import("drizzle-orm/sqlite-core").SQLiteColumn<{
+            name: "archived";
+            tableName: "assets";
+            dataType: "boolean";
+            columnType: "SQLiteBoolean";
+            data: boolean;
+            driverParam: number;
+            notNull: true;
+            hasDefault: true;
+            isPrimaryKey: false;
+            isAutoincrement: false;
+            hasRuntimeDefault: false;
+            enumValues: undefined;
+            baseColumn: never;
+            identity: undefined;
+            generated: undefined;
+        }, {}, {}>;
     };
     dialect: "sqlite";
 }>;

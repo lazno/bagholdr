@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=375, initial-scale=1.0">
+  <title>Option C: Summary Cards + Drill-Down</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f8f9fa;
+      max-width: 375px;
+      margin: 0 auto;
+      min-height: 812px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Header */
+    .header {
+      background: white;
+      padding: 12px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .portfolio-name { font-size: 17px; font-weight: 600; color: #111; }
+    .header-icons {
+      display: flex;
+      gap: 16px;
+    }
+    .header-icon {
+      font-size: 18px;
+      opacity: 0.5;
+    }
+
+    /* Main content */
+    .content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0 16px 24px;
+    }
+
+    /* Hero value section */
+    .hero {
+      text-align: center;
+      padding: 24px 0 20px;
+    }
+    .hero-label {
+      font-size: 12px;
+      color: #6b7280;
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .hero-value {
+      font-size: 40px;
+      font-weight: 700;
+      color: #111;
+      margin-bottom: 12px;
+    }
+    .hero-return {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #dcfce7;
+      padding: 8px 16px;
+      border-radius: 20px;
+    }
+    .return-amount {
+      font-size: 15px;
+      font-weight: 600;
+      color: #16a34a;
+    }
+    .return-pct {
+      font-size: 15px;
+      font-weight: 600;
+      color: #16a34a;
+    }
+    .return-ann {
+      font-size: 12px;
+      color: #6b7280;
+    }
+
+    /* Period pills */
+    .period-row {
+      display: flex;
+      justify-content: center;
+      gap: 4px;
+      margin-top: 16px;
+    }
+    .period-pill {
+      padding: 6px 12px;
+      font-size: 12px;
+      border-radius: 14px;
+      background: #f3f4f6;
+      color: #6b7280;
+      border: none;
+    }
+    .period-pill.active {
+      background: #111;
+      color: white;
+    }
+
+    /* Summary cards */
+    .cards-section {
+      margin-top: 20px;
+    }
+
+    .summary-card {
+      background: white;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+    .summary-card.tappable {
+      cursor: pointer;
+    }
+    .summary-card.tappable:active {
+      background: #f9fafb;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .card-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: #6b7280;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .card-action {
+      font-size: 12px;
+      color: #6366f1;
+      font-weight: 500;
+    }
+    .card-chevron {
+      font-size: 18px;
+      color: #9ca3af;
+    }
+
+    /* Stats card */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    .stat-item {
+      text-align: center;
+    }
+    .stat-value {
+      font-size: 20px;
+      font-weight: 600;
+      color: #111;
+    }
+    .stat-label {
+      font-size: 11px;
+      color: #6b7280;
+      margin-top: 2px;
+    }
+
+    /* Issues card */
+    .issues-card {
+      background: #fffbeb;
+      border: 1px solid #fde68a;
+    }
+    .issues-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .issue-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: #374151;
+    }
+    .issue-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+    .issue-dot.warning { background: #f59e0b; }
+    .issue-dot.over { background: #f97316; }
+    .issue-dot.under { background: #3b82f6; }
+
+    /* Sleeves card */
+    .sleeves-mini {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .sleeve-mini-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .sleeve-mini-name {
+      width: 70px;
+      font-size: 13px;
+      font-weight: 500;
+      color: #111;
+    }
+    .sleeve-mini-bar {
+      flex: 1;
+      height: 8px;
+      background: #f3f4f6;
+      border-radius: 4px;
+      overflow: hidden;
+      position: relative;
+    }
+    .sleeve-mini-fill {
+      height: 100%;
+      border-radius: 4px;
+    }
+    .sleeve-mini-fill.core { background: #22c55e; width: 74.6%; }
+    .sleeve-mini-fill.satellite { background: #8b5cf6; width: 25.4%; }
+    .sleeve-mini-target {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: #374151;
+    }
+    .sleeve-mini-pct {
+      width: 45px;
+      font-size: 12px;
+      font-weight: 500;
+      color: #111;
+      text-align: right;
+    }
+    .sleeve-mini-badge {
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 600;
+      min-width: 32px;
+      text-align: center;
+    }
+    .sleeve-mini-badge.ok { background: #dcfce7; color: #16a34a; }
+    .sleeve-mini-badge.over { background: #fed7aa; color: #c2410c; }
+    .sleeve-mini-badge.under { background: #dbeafe; color: #1d4ed8; }
+
+    /* Chart preview */
+    .mini-chart {
+      height: 80px;
+      background: linear-gradient(180deg, #f0fdf4 0%, #ffffff 100%);
+      border-radius: 8px;
+      position: relative;
+      overflow: hidden;
+      border: 1px solid #e5e7eb;
+    }
+    .mini-chart-line {
+      position: absolute;
+      bottom: 15px;
+      left: 12px;
+      right: 12px;
+      height: 50px;
+      background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 50'%3E%3Cpath d='M0,45 Q30,42 60,38 T120,28 T180,20 T240,12 T300,5' stroke='%2322c55e' stroke-width='2' fill='none'/%3E%3C/svg%3E") no-repeat;
+      background-size: 100% 100%;
+    }
+
+    /* Assets preview */
+    .assets-preview {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .asset-mini {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .asset-mini-icon {
+      width: 36px;
+      height: 36px;
+      background: #f3f4f6;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      color: #374151;
+    }
+    .asset-mini-info {
+      flex: 1;
+    }
+    .asset-mini-symbol {
+      font-size: 14px;
+      font-weight: 600;
+      color: #111;
+    }
+    .asset-mini-weight {
+      font-size: 11px;
+      color: #6b7280;
+    }
+    .asset-mini-return {
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .asset-mini-return.positive { color: #16a34a; }
+    .asset-mini-return.negative { color: #dc2626; }
+
+    /* Navigation hint */
+    .nav-hint {
+      text-align: center;
+      padding: 16px;
+      font-size: 12px;
+      color: #9ca3af;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <span class="portfolio-name">Mine</span>
+    <div class="header-icons">
+      <span class="header-icon">👁</span>
+      <span class="header-icon">⚙️</span>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="hero">
+      <div class="hero-label">Invested Value</div>
+      <div class="hero-value">113.534 €</div>
+      <div class="hero-return">
+        <span class="return-amount">+12.344 €</span>
+        <span class="return-pct">+12.2%</span>
+        <span class="return-ann">(51.0% p.a.)</span>
+      </div>
+      <div class="period-row">
+        <button class="period-pill">Today</button>
+        <button class="period-pill">1M</button>
+        <button class="period-pill">3M</button>
+        <button class="period-pill">YTD</button>
+        <button class="period-pill">1Y</button>
+        <button class="period-pill active">All</button>
+      </div>
+    </div>
+
+    <div class="cards-section">
+      <!-- Quick stats -->
+      <div class="summary-card">
+        <div class="stats-grid">
+          <div class="stat-item">
+            <div class="stat-value">6.400 €</div>
+            <div class="stat-label">Cash Available</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value">119.934 €</div>
+            <div class="stat-label">Total Value</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Issues (only shown if there are issues) -->
+      <div class="summary-card issues-card tappable">
+        <div class="card-header">
+          <span class="card-title">3 Issues</span>
+          <span class="card-chevron">›</span>
+        </div>
+        <div class="issues-list">
+          <div class="issue-item">
+            <span class="issue-dot warning"></span>
+            18 assets with stale prices
+          </div>
+          <div class="issue-item">
+            <span class="issue-dot under"></span>
+            Safe Haven is 2pp under target
+          </div>
+          <div class="issue-item">
+            <span class="issue-dot over"></span>
+            Growth is 8pp over target
+          </div>
+        </div>
+      </div>
+
+      <!-- Chart preview -->
+      <div class="summary-card tappable">
+        <div class="card-header">
+          <span class="card-title">Performance</span>
+          <span class="card-chevron">›</span>
+        </div>
+        <div class="mini-chart">
+          <div class="mini-chart-line"></div>
+        </div>
+      </div>
+
+      <!-- Sleeves summary -->
+      <div class="summary-card tappable">
+        <div class="card-header">
+          <span class="card-title">Allocation</span>
+          <span class="card-action">Manage →</span>
+        </div>
+        <div class="sleeves-mini">
+          <div class="sleeve-mini-row">
+            <span class="sleeve-mini-name">Core</span>
+            <div class="sleeve-mini-bar">
+              <div class="sleeve-mini-fill core"></div>
+              <div class="sleeve-mini-target" style="left: 71%;"></div>
+            </div>
+            <span class="sleeve-mini-pct">74.6%</span>
+            <span class="sleeve-mini-badge ok">ok</span>
+          </div>
+          <div class="sleeve-mini-row">
+            <span class="sleeve-mini-name">Satellite</span>
+            <div class="sleeve-mini-bar">
+              <div class="sleeve-mini-fill satellite"></div>
+              <div class="sleeve-mini-target" style="left: 25%;"></div>
+            </div>
+            <span class="sleeve-mini-pct">25.4%</span>
+            <span class="sleeve-mini-badge ok">ok</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Top assets -->
+      <div class="summary-card tappable">
+        <div class="card-header">
+          <span class="card-title">Top Holdings</span>
+          <span class="card-action">All 20 →</span>
+        </div>
+        <div class="assets-preview">
+          <div class="asset-mini">
+            <div class="asset-mini-icon">IU</div>
+            <div class="asset-mini-info">
+              <div class="asset-mini-symbol">X.IUSQ</div>
+              <div class="asset-mini-weight">43.4% of portfolio</div>
+            </div>
+            <span class="asset-mini-return positive">+7.8%</span>
+          </div>
+          <div class="asset-mini">
+            <div class="asset-mini-icon">XB</div>
+            <div class="asset-mini-info">
+              <div class="asset-mini-symbol">X.XBAG</div>
+              <div class="asset-mini-weight">15.0% of portfolio</div>
+            </div>
+            <span class="asset-mini-return positive">+0.3%</span>
+          </div>
+          <div class="asset-mini">
+            <div class="asset-mini-icon">WG</div>
+            <div class="asset-mini-info">
+              <div class="asset-mini-symbol">WGLD</div>
+              <div class="asset-mini-weight">12.9% of portfolio</div>
+            </div>
+            <span class="asset-mini-return positive">+36.5%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="nav-hint">
+      Tap any card to see full details
+    </div>
+  </div>
+</body>
+</html>

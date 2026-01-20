@@ -1,0 +1,29 @@
+### PriceCache - Cached current price data from Yahoo Finance
+### Short-lived cache for real-time price display
+class: PriceCache
+table: price_cache
+
+fields:
+  ### UUID primary key (v7 for lexicographic sorting)
+  id: UuidValue?, defaultPersist=random_v7
+
+  ### Yahoo Finance ticker symbol
+  ticker: String
+
+  ### Price in the native currency of the instrument
+  priceNative: double
+
+  ### Currency of the price (e.g., USD, EUR, GBP)
+  currency: String
+
+  ### Price converted to EUR (using cached FX rate)
+  priceEur: double
+
+  ### When this price was fetched
+  fetchedAt: DateTime
+
+indexes:
+  ### Unique index on ticker - one cached price per ticker
+  price_cache_ticker_idx:
+    fields: ticker
+    unique: true

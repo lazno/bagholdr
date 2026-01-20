@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=375, initial-scale=1.0">
+  <title>Interactive N: Minimal (Filter Pills Only)</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f8f9fa;
+      max-width: 375px;
+      margin: 0 auto;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .header {
+      background: white;
+      padding: 10px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .header-left { display: flex; align-items: center; gap: 12px; }
+    .hamburger { width: 20px; height: 20px; display: flex; flex-direction: column; justify-content: center; gap: 4px; }
+    .hamburger span { display: block; height: 2px; background: #111; }
+    .portfolio-selector { display: flex; align-items: center; gap: 4px; font-size: 16px; font-weight: 600; }
+    .chevron { font-size: 12px; color: #6b7280; }
+    .header-right { display: flex; align-items: center; gap: 12px; }
+    .icon-btn { font-size: 18px; opacity: 0.5; }
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; }
+
+    .time-range-bar {
+      background: white;
+      padding: 8px 16px;
+      display: flex;
+      gap: 4px;
+      border-bottom: 1px solid #e5e7eb;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .range-btn {
+      flex: 1;
+      padding: 8px 0;
+      font-size: 12px;
+      border-radius: 6px;
+      background: #f3f4f6;
+      border: none;
+      color: #6b7280;
+      font-weight: 500;
+      text-align: center;
+      cursor: pointer;
+    }
+    .range-btn.active { background: #111; color: white; }
+
+    .content { flex: 1; overflow-y: auto; }
+
+    .value-section {
+      background: white;
+      padding: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .value-grid { display: grid; grid-template-columns: 1fr auto; gap: 12px; }
+    .value-label { font-size: 11px; color: #6b7280; text-transform: uppercase; margin-bottom: 2px; }
+    .value-amount { font-size: 28px; font-weight: 700; color: #111; }
+    .value-return { display: flex; align-items: baseline; gap: 6px; margin-top: 4px; }
+    .return-pct { font-size: 15px; font-weight: 600; color: #16a34a; }
+    .return-abs { font-size: 13px; color: #16a34a; }
+    .return-ann { font-size: 11px; color: #6b7280; }
+    .value-side { text-align: right; display: flex; flex-direction: column; gap: 6px; }
+    .side-label { font-size: 10px; color: #9ca3af; text-transform: uppercase; }
+    .side-value { font-size: 13px; font-weight: 600; color: #111; }
+    .side-value.muted { font-size: 12px; color: #6b7280; }
+
+    .issues-section { background: #fffbeb; border-bottom: 1px solid #fde68a; }
+    .issues-header {
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+    }
+    .issues-header:active { background: #fef3c7; }
+    .issues-badge {
+      background: #facc15;
+      color: #713f12;
+      padding: 4px 10px;
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .issues-summary { flex: 1; font-size: 13px; color: #92400e; }
+    .issues-chevron { font-size: 14px; color: #d97706; transition: transform 0.2s; }
+    .issues-chevron.expanded { transform: rotate(90deg); }
+    .issues-details { padding: 0 16px 12px; display: none; }
+    .issues-details.expanded { display: block; }
+    .issue-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 0;
+      border-bottom: 1px solid #fde68a;
+      font-size: 13px;
+      color: #78350f;
+    }
+    .issue-item:last-child { border-bottom: none; }
+    .issue-dot { width: 8px; height: 8px; border-radius: 50%; }
+    .issue-dot.warning { background: #f59e0b; }
+    .issue-dot.over { background: #f97316; }
+    .issue-dot.under { background: #3b82f6; }
+    .issue-dot.info { background: #6b7280; }
+    .issue-action { margin-left: auto; font-size: 12px; color: #b45309; font-weight: 500; }
+
+    .chart-section {
+      background: white;
+      padding: 16px;
+      margin: 12px;
+      border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+    .chart-title { font-size: 14px; font-weight: 600; color: #111; margin-bottom: 12px; }
+    .chart-placeholder {
+      height: 140px;
+      background: linear-gradient(180deg, #f0fdf4 0%, #ecfdf5 50%, #f0fdf4 100%);
+      border-radius: 8px;
+      position: relative;
+      overflow: hidden;
+    }
+    .chart-line {
+      position: absolute;
+      top: 10px; left: 0; right: 0; height: 120px;
+      background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 100'%3E%3Cpath d='M0,80 Q50,75 100,60 T200,40 T300,20' stroke='%2322c55e' stroke-width='2' fill='none'/%3E%3Cpath d='M0,85 L300,45' stroke='%239ca3af' stroke-width='1' stroke-dasharray='4,4' fill='none'/%3E%3C/svg%3E") no-repeat center;
+      background-size: 100% 100%;
+    }
+    .chart-value {
+      position: absolute;
+      top: 8px; right: 8px;
+      background: white;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #16a34a;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    }
+    .chart-legend {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      margin-top: 8px;
+      font-size: 11px;
+      color: #6b7280;
+    }
+    .legend-item { display: flex; align-items: center; gap: 4px; }
+    .legend-line { width: 16px; height: 2px; }
+    .legend-line.invested { background: #22c55e; }
+    .legend-line.cost { background: repeating-linear-gradient(90deg, #9ca3af 0, #9ca3af 4px, transparent 4px, transparent 8px); }
+
+    /* No separate sleeve section - everything in assets */
+    .assets-section { background: white; padding: 12px 16px; }
+    .assets-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .assets-title { font-size: 14px; font-weight: 600; color: #111; }
+    .assets-count { font-size: 12px; color: #6b7280; }
+
+    /* Inline filter pills */
+    .filter-row {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+    .filter-pill {
+      padding: 6px 12px;
+      font-size: 12px;
+      border-radius: 16px;
+      background: #f3f4f6;
+      border: none;
+      color: #6b7280;
+      cursor: pointer;
+      transition: all 0.15s;
+      font-weight: 500;
+    }
+    .filter-pill:hover { background: #e5e7eb; }
+    .filter-pill.active { background: #111; color: white; }
+    .filter-pill .count { font-weight: 400; opacity: 0.7; margin-left: 2px; }
+    .filter-pill.has-issue { border: 1px solid #fbbf24; background: #fffbeb; color: #92400e; }
+    .filter-pill.has-issue.active { background: #fbbf24; color: #713f12; border-color: #fbbf24; }
+
+    .search-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #f3f4f6;
+      border-radius: 8px;
+      padding: 10px 12px;
+      margin-bottom: 10px;
+    }
+    .search-icon { font-size: 14px; opacity: 0.4; }
+    .search-input { flex: 1; border: none; background: none; font-size: 14px; outline: none; }
+    .search-input::placeholder { color: #9ca3af; }
+
+    .asset-list { }
+    .asset-row {
+      display: flex;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid #f3f4f6;
+    }
+    .asset-row:last-child { border-bottom: none; }
+    .asset-info { flex: 1; }
+    .asset-symbol { font-size: 14px; font-weight: 600; color: #111; }
+    .asset-name { font-size: 11px; color: #6b7280; }
+    .asset-sleeve { font-size: 10px; color: #9ca3af; margin-top: 1px; }
+    .asset-metrics { text-align: right; }
+    .asset-value { font-size: 14px; font-weight: 500; color: #111; }
+    .asset-sub { display: flex; justify-content: flex-end; gap: 8px; font-size: 11px; }
+    .asset-weight { color: #6b7280; }
+    .asset-return.positive { color: #16a34a; font-weight: 500; }
+    .asset-return.negative { color: #dc2626; font-weight: 500; }
+
+    .load-more {
+      text-align: center;
+      padding: 16px;
+      font-size: 13px;
+      color: #6366f1;
+      font-weight: 500;
+      cursor: pointer;
+    }
+    .load-more:hover { text-decoration: underline; }
+    .load-more.hidden { display: none; }
+
+    .no-results {
+      text-align: center;
+      padding: 24px;
+      color: #6b7280;
+      font-size: 14px;
+    }
+    .no-results.hidden { display: none; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="header-left">
+      <div class="hamburger"><span></span><span></span><span></span></div>
+      <div class="portfolio-selector">Mine <span class="chevron">▼</span></div>
+    </div>
+    <div class="header-right">
+      <span class="icon-btn">👁</span>
+      <span class="status-dot"></span>
+    </div>
+  </div>
+
+  <div class="time-range-bar">
+    <button class="range-btn">1D</button>
+    <button class="range-btn">1W</button>
+    <button class="range-btn">1M</button>
+    <button class="range-btn">YTD</button>
+    <button class="range-btn">1Y</button>
+    <button class="range-btn active">All</button>
+  </div>
+
+  <div class="content">
+    <div class="value-section">
+      <div class="value-grid">
+        <div class="value-main">
+          <div class="value-label">Invested</div>
+          <div class="value-amount">113.534 €</div>
+          <div class="value-return">
+            <span class="return-pct">+12.2%</span>
+            <span class="return-abs">+12.344 €</span>
+            <span class="return-ann">(51% p.a.)</span>
+          </div>
+        </div>
+        <div class="value-side">
+          <div class="side-item">
+            <div class="side-label">Cash</div>
+            <div class="side-value">6.400 €</div>
+          </div>
+          <div class="side-item">
+            <div class="side-label">Total</div>
+            <div class="side-value muted">119.934 €</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="issues-section">
+      <div class="issues-header" onclick="toggleIssues()">
+        <span class="issues-badge">10</span>
+        <span class="issues-summary">3 allocation · 2 exposure · 5 data issues</span>
+        <span class="issues-chevron" id="issuesChevron">›</span>
+      </div>
+      <div class="issues-details" id="issuesDetails">
+        <div class="issue-item">
+          <span class="issue-dot warning"></span>
+          <span>18 assets have stale prices (>24h)</span>
+          <span class="issue-action">Refresh →</span>
+        </div>
+        <div class="issue-item">
+          <span class="issue-dot under"></span>
+          <span>Safe Haven is 2pp under target</span>
+          <span class="issue-action">View →</span>
+        </div>
+        <div class="issue-item">
+          <span class="issue-dot over"></span>
+          <span>Growth is 8pp over target</span>
+          <span class="issue-action">View →</span>
+        </div>
+        <div class="issue-item">
+          <span class="issue-dot info"></span>
+          <span>US Tech exposure 42% (target: 30%)</span>
+          <span class="issue-action">View →</span>
+        </div>
+        <div class="issue-item">
+          <span class="issue-dot info"></span>
+          <span>EUR currency exposure 65%</span>
+          <span class="issue-action">View →</span>
+        </div>
+        <div class="issue-item">
+          <span class="issue-dot warning"></span>
+          <span>3 assets missing ISIN mapping</span>
+          <span class="issue-action">Fix →</span>
+        </div>
+        <div class="issue-item">
+          <span class="issue-dot warning"></span>
+          <span>2 assets have no price history</span>
+          <span class="issue-action">Check →</span>
+        </div>
+        <div class="issue-item">
+          <span class="issue-dot under"></span>
+          <span>Bonds allocation 15% vs target 20%</span>
+          <span class="issue-action">View →</span>
+        </div>
+        <div class="issue-item">
+          <span class="issue-dot over"></span>
+          <span>Equities 75% vs target 70%</span>
+          <span class="issue-action">View →</span>
+        </div>
+        <div class="issue-item">
+          <span class="issue-dot info"></span>
+          <span>Last sync: 2 hours ago</span>
+          <span class="issue-action">Sync →</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="chart-section">
+      <div class="chart-title">Invested Value</div>
+      <div class="chart-placeholder">
+        <div class="chart-line"></div>
+        <div class="chart-value">113.5k</div>
+      </div>
+      <div class="chart-legend">
+        <span class="legend-item"><span class="legend-line invested"></span> Invested</span>
+        <span class="legend-item"><span class="legend-line cost"></span> Cost Basis</span>
+      </div>
+    </div>
+
+    <div class="assets-section">
+      <div class="assets-header">
+        <span class="assets-title">Assets</span>
+        <span class="assets-count" id="assetsCount">50 total</span>
+      </div>
+
+      <div class="filter-row" id="filterRow">
+        <button class="filter-pill active" data-sleeve="all" onclick="filterBySleeve('all')">All<span class="count">(50)</span></button>
+        <button class="filter-pill" data-sleeve="core" onclick="filterBySleeve('core')">Core<span class="count">(18)</span></button>
+        <button class="filter-pill" data-sleeve="satellite" onclick="filterBySleeve('satellite')">Satellite<span class="count">(22)</span></button>
+        <button class="filter-pill has-issue" data-sleeve="safehaven" onclick="filterBySleeve('safehaven')">Safe Haven<span class="count">(4)</span></button>
+        <button class="filter-pill has-issue" data-sleeve="growth" onclick="filterBySleeve('growth')">Growth<span class="count">(10)</span></button>
+      </div>
+
+      <div class="search-bar">
+        <span class="search-icon">🔍</span>
+        <input type="text" class="search-input" id="searchInput" placeholder="Search by name or symbol..." oninput="filterAssets()">
+      </div>
+      <div class="asset-list" id="assetList"></div>
+      <div class="no-results hidden" id="noResults">No assets match your search</div>
+      <div class="load-more hidden" id="loadMore" onclick="loadMore()">Show more assets</div>
+    </div>
+  </div>
+
+  <script>
+    const assets = [
+      { symbol: 'X.IUSQ', name: 'iShares MSCI ACWI UCITS', value: 49269, weight: 43.4, return: 7.8, sleeve: 'core' },
+      { symbol: 'X.XBAG', name: 'Xtrackers II ESG Global Agg Bond', value: 17022, weight: 15.0, return: 0.3, sleeve: 'core' },
+      { symbol: 'WGLD', name: 'WisdomTree Core Physical Gold', value: 14598, weight: 12.9, return: 36.5, sleeve: 'safehaven' },
+      { symbol: 'X.XDWT', name: 'Xtrackers MSCI World Tech', value: 8432, weight: 7.4, return: 24.2, sleeve: 'growth' },
+      { symbol: 'X.SPYD', name: 'SPDR S&P US Dividend Aristocrats', value: 5821, weight: 5.1, return: 8.4, sleeve: 'core' },
+      { symbol: 'PHPD', name: 'WisdomTree Physical Palladium', value: 4732, weight: 4.2, return: 42.1, sleeve: 'safehaven' },
+      { symbol: 'X.EUNL', name: 'iShares Core MSCI Europe', value: 3654, weight: 3.2, return: 5.6, sleeve: 'core' },
+      { symbol: '.NVDA', name: 'NVIDIA Corporation', value: 3421, weight: 3.0, return: 156.2, sleeve: 'growth' },
+      { symbol: '.UPS', name: 'United Parcel Service', value: 2753, weight: 2.4, return: 6.0, sleeve: 'safehaven' },
+      { symbol: 'X.XGSH', name: 'Xtrackers II Short Duration Corp', value: 2100, weight: 1.9, return: 2.1, sleeve: 'core' },
+      { symbol: '.AAPL', name: 'Apple Inc.', value: 1987, weight: 1.8, return: 18.5, sleeve: 'growth' },
+      { symbol: 'X.EMIM', name: 'iShares Core MSCI EM IMI', value: 1876, weight: 1.7, return: -2.3, sleeve: 'satellite' },
+      { symbol: 'SGLD', name: 'iShares Physical Gold ETC', value: 1654, weight: 1.5, return: 15.3, sleeve: 'safehaven' },
+      { symbol: '.MSFT', name: 'Microsoft Corporation', value: 1543, weight: 1.4, return: 22.1, sleeve: 'growth' },
+      { symbol: 'X.XDWH', name: 'Xtrackers MSCI World Health Care', value: 1432, weight: 1.3, return: 4.8, sleeve: 'satellite' },
+      { symbol: '.AMZN', name: 'Amazon.com Inc.', value: 1321, weight: 1.2, return: 31.2, sleeve: 'growth' },
+      { symbol: 'X.IS3N', name: 'iShares Core MSCI Japan IMI', value: 1210, weight: 1.1, return: 8.9, sleeve: 'satellite' },
+      { symbol: '.GOOGL', name: 'Alphabet Inc. Class A', value: 1154, weight: 1.0, return: 19.4, sleeve: 'growth' },
+      { symbol: 'X.IUSP', name: 'iShares S&P 500 EUR Hedged', value: 1098, weight: 1.0, return: 12.3, sleeve: 'core' },
+      { symbol: '.META', name: 'Meta Platforms Inc.', value: 987, weight: 0.9, return: 45.6, sleeve: 'growth' },
+      { symbol: 'X.XDER', name: 'Xtrackers MSCI World Energy', value: 921, weight: 0.8, return: -5.2, sleeve: 'satellite' },
+      { symbol: '.TSLA', name: 'Tesla Inc.', value: 876, weight: 0.8, return: -12.4, sleeve: 'growth' },
+      { symbol: 'X.SXRV', name: 'iShares STOXX Europe 600 Utilities', value: 832, weight: 0.7, return: 3.2, sleeve: 'satellite' },
+      { symbol: '.BRK.B', name: 'Berkshire Hathaway Inc.', value: 798, weight: 0.7, return: 14.7, sleeve: 'core' },
+      { symbol: 'X.XDWF', name: 'Xtrackers MSCI World Financials', value: 765, weight: 0.7, return: 11.2, sleeve: 'satellite' },
+      { symbol: '.JPM', name: 'JPMorgan Chase & Co.', value: 732, weight: 0.6, return: 16.8, sleeve: 'core' },
+      { symbol: 'X.SXRS', name: 'iShares STOXX Europe 600 Telecom', value: 698, weight: 0.6, return: -1.3, sleeve: 'satellite' },
+      { symbol: '.V', name: 'Visa Inc.', value: 654, weight: 0.6, return: 9.4, sleeve: 'core' },
+      { symbol: 'X.XDWM', name: 'Xtrackers MSCI World Materials', value: 621, weight: 0.5, return: -3.8, sleeve: 'satellite' },
+      { symbol: '.MA', name: 'Mastercard Inc.', value: 598, weight: 0.5, return: 11.7, sleeve: 'core' },
+      { symbol: 'X.XDWI', name: 'Xtrackers MSCI World Industrials', value: 565, weight: 0.5, return: 7.6, sleeve: 'satellite' },
+      { symbol: '.JNJ', name: 'Johnson & Johnson', value: 543, weight: 0.5, return: 2.3, sleeve: 'core' },
+      { symbol: 'X.SXRP', name: 'iShares STOXX Europe 600 Real Est', value: 521, weight: 0.5, return: -8.4, sleeve: 'satellite' },
+      { symbol: '.PG', name: 'Procter & Gamble Co.', value: 498, weight: 0.4, return: 5.1, sleeve: 'core' },
+      { symbol: 'X.XDWU', name: 'Xtrackers MSCI World Utilities', value: 476, weight: 0.4, return: 1.9, sleeve: 'satellite' },
+      { symbol: '.KO', name: 'Coca-Cola Company', value: 454, weight: 0.4, return: 3.8, sleeve: 'core' },
+      { symbol: 'X.SXRO', name: 'iShares STOXX Europe 600 Oil&Gas', value: 432, weight: 0.4, return: -6.2, sleeve: 'satellite' },
+      { symbol: '.PEP', name: 'PepsiCo Inc.', value: 421, weight: 0.4, return: 4.2, sleeve: 'core' },
+      { symbol: 'X.XDWS', name: 'Xtrackers MSCI World Consumer Stap', value: 398, weight: 0.4, return: 2.8, sleeve: 'satellite' },
+      { symbol: '.WMT', name: 'Walmart Inc.', value: 387, weight: 0.3, return: 6.7, sleeve: 'core' },
+      { symbol: 'X.SXRN', name: 'iShares STOXX Europe 600 Insurance', value: 365, weight: 0.3, return: 8.9, sleeve: 'satellite' },
+      { symbol: '.HD', name: 'Home Depot Inc.', value: 354, weight: 0.3, return: 3.4, sleeve: 'core' },
+      { symbol: 'X.XDWC', name: 'Xtrackers MSCI World Consumer Disc', value: 332, weight: 0.3, return: 12.1, sleeve: 'satellite' },
+      { symbol: '.MCD', name: 'McDonalds Corporation', value: 321, weight: 0.3, return: 7.2, sleeve: 'core' },
+      { symbol: 'X.SXRK', name: 'iShares STOXX Europe 600 Basic Res', value: 298, weight: 0.3, return: -4.5, sleeve: 'satellite' },
+      { symbol: '.DIS', name: 'Walt Disney Company', value: 287, weight: 0.3, return: -15.3, sleeve: 'growth' },
+      { symbol: 'X.XDWR', name: 'Xtrackers MSCI World Real Estate', value: 265, weight: 0.2, return: -9.8, sleeve: 'satellite' },
+      { symbol: '.NFLX', name: 'Netflix Inc.', value: 254, weight: 0.2, return: 28.4, sleeve: 'growth' },
+      { symbol: 'X.SXRI', name: 'iShares STOXX Europe 600 Indust', value: 232, weight: 0.2, return: 5.6, sleeve: 'satellite' },
+      { symbol: '.CRM', name: 'Salesforce Inc.', value: 221, weight: 0.2, return: 17.9, sleeve: 'growth' },
+    ];
+
+    let currentSleeve = 'all';
+    let searchTerm = '';
+    let displayedCount = 20;
+
+    function getSleeveLabel(sleeve) {
+      const labels = { core: 'Core', satellite: 'Satellite', safehaven: 'Safe Haven', growth: 'Growth' };
+      return labels[sleeve] || sleeve;
+    }
+
+    function formatValue(val) {
+      if (val >= 1000) return (val / 1000).toFixed(1).replace('.0', '') + 'k €';
+      return val.toLocaleString('de-DE') + ' €';
+    }
+
+    function renderAssets() {
+      const list = document.getElementById('assetList');
+      const noResults = document.getElementById('noResults');
+      const loadMoreBtn = document.getElementById('loadMore');
+
+      let filtered = assets.filter(a => {
+        const matchesSleeve = currentSleeve === 'all' || a.sleeve === currentSleeve;
+        const matchesSearch = searchTerm === '' ||
+          a.symbol.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          a.name.toLowerCase().includes(searchTerm.toLowerCase());
+        return matchesSleeve && matchesSearch;
+      });
+
+      document.getElementById('assetsCount').textContent = filtered.length + ' total';
+
+      if (filtered.length === 0) {
+        list.innerHTML = '';
+        noResults.classList.remove('hidden');
+        loadMoreBtn.classList.add('hidden');
+        return;
+      }
+
+      noResults.classList.add('hidden');
+      const toShow = filtered.slice(0, displayedCount);
+
+      list.innerHTML = toShow.map(a => `
+        <div class="asset-row" data-sleeve="${a.sleeve}">
+          <div class="asset-info">
+            <div class="asset-symbol">${a.symbol}</div>
+            <div class="asset-name">${a.name}</div>
+            ${currentSleeve === 'all' ? `<div class="asset-sleeve">${getSleeveLabel(a.sleeve)}</div>` : ''}
+          </div>
+          <div class="asset-metrics">
+            <div class="asset-value">${formatValue(a.value)}</div>
+            <div class="asset-sub">
+              <span class="asset-weight">${a.weight}%</span>
+              <span class="asset-return ${a.return >= 0 ? 'positive' : 'negative'}">${a.return >= 0 ? '+' : ''}${a.return}%</span>
+            </div>
+          </div>
+        </div>
+      `).join('');
+
+      if (filtered.length > displayedCount) {
+        loadMoreBtn.classList.remove('hidden');
+        loadMoreBtn.textContent = `Show ${Math.min(20, filtered.length - displayedCount)} more assets`;
+      } else {
+        loadMoreBtn.classList.add('hidden');
+      }
+    }
+
+    function filterBySleeve(sleeve) {
+      currentSleeve = sleeve;
+      displayedCount = 20;
+      document.querySelectorAll('.filter-pill').forEach(p => {
+        p.classList.toggle('active', p.dataset.sleeve === sleeve);
+      });
+      renderAssets();
+    }
+
+    function filterAssets() {
+      searchTerm = document.getElementById('searchInput').value;
+      displayedCount = 20;
+      renderAssets();
+    }
+
+    function loadMore() {
+      displayedCount += 20;
+      renderAssets();
+    }
+
+    function toggleIssues() {
+      const details = document.getElementById('issuesDetails');
+      const chevron = document.getElementById('issuesChevron');
+      details.classList.toggle('expanded');
+      chevron.classList.toggle('expanded');
+    }
+
+    document.querySelectorAll('.range-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.range-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+      });
+    });
+
+    renderAssets();
+  </script>
+</body>
+</html>

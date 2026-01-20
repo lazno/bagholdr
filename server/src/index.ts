@@ -1,5 +1,5 @@
 /**
- * FinancePal Server
+ * Bagholdr Server
  *
  * Standalone Hono server with:
  * - tRPC API endpoints (HTTP + WebSocket for subscriptions)
@@ -55,7 +55,7 @@ cron.schedule(CRON_PRICE_SYNC, runPriceSyncJob);
 
 const WS_PORT = PORT + 1;
 
-console.log(`Starting FinancePal server on port ${PORT}...`);
+console.log(`Starting Bagholdr server on port ${PORT}...`);
 console.log(`CORS origin: ${CORS_ORIGIN}`);
 
 // HTTP server for REST/tRPC queries and mutations

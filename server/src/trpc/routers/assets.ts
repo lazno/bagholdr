@@ -1,8 +1,8 @@
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
-import { eq, gt } from 'drizzle-orm';
+import { eq, gt, inArray } from 'drizzle-orm';
 import { router, publicProcedure } from '../trpc';
-import { assets, holdings } from '../../db/schema';
+import { assets, holdings, sleeveAssets } from '../../db/schema';
 
 export const assetsRouter = router({
 	list: publicProcedure
@@ -101,5 +101,104 @@ export const assetsRouter = router({
 			}
 
 			return { success: true };
+		}),
+
+	bulkUpdateType: publicProcedure
+		.input(
+			z.object({
+				isins: z.array(z.string()).min(1),
+				assetType: z.enum(['stock', 'etf', 'bond', 'fund', 'commodity', 'other'])
+			})
+		)
+		.mutation(async ({ ctx, input }) => {
+			const { isins, assetType } = input;
+
+			// Verify all assets exist
+			const existingAssets = await ctx.db
+				.select({ isin: assets.isin })
+				.from(assets)
+				.where(inArray(assets.isin, isins));
+
+			if (existingAssets.length !== isins.length) {
+				const foundIsins = new Set(existingAssets.map((a) => a.isin));
+				const missing = isins.filter((isin) => !foundIsins.has(isin));
+				throw new TRPCError({
+					code: 'NOT_FOUND',
+					message: `Assets not found: ${missing.join(', ')}`
+				});
+			}
+
+			// Bulk update
+			await ctx.db.update(assets).set({ assetType }).where(inArray(assets.isin, isins));
+
+			return { success: true, updatedCount: isins.length };
+		}),
+
+	setArchived: publicProcedure
+		.input(
+			z.object({
+				isin: z.string(),
+				archived: z.boolean()
+			})
+		)
+		.mutation(async ({ ctx, input }) => {
+			const { isin, archived } = input;
+
+			// Verify asset exists
+			const [existing] = await ctx.db
+				.select()
+				.from(assets)
+				.where(eq(assets.isin, isin))
+				.limit(1);
+
+			if (!existing) {
+				throw new TRPCError({ code: 'NOT_FOUND', message: 'Asset not found' });
+			}
+
+			// Update archived status
+			await ctx.db.update(assets).set({ archived }).where(eq(assets.isin, isin));
+
+			// If archiving, remove from all sleeves
+			if (archived) {
+				await ctx.db.delete(sleeveAssets).where(eq(sleeveAssets.assetIsin, isin));
+			}
+
+			return { success: true, archived };
+		}),
+
+	bulkSetArchived: publicProcedure
+		.input(
+			z.object({
+				isins: z.array(z.string()).min(1),
+				archived: z.boolean()
+			})
+		)
+		.mutation(async ({ ctx, input }) => {
+			const { isins, archived } = input;
+
+			// Verify all assets exist
+			const existingAssets = await ctx.db
+				.select({ isin: assets.isin })
+				.from(assets)
+				.where(inArray(assets.isin, isins));
+
+			if (existingAssets.length !== isins.length) {
+				const foundIsins = new Set(existingAssets.map((a) => a.isin));
+				const missing = isins.filter((isin) => !foundIsins.has(isin));
+				throw new TRPCError({
+					code: 'NOT_FOUND',
+					message: `Assets not found: ${missing.join(', ')}`
+				});
+			}
+
+			// Bulk update archived status
+			await ctx.db.update(assets).set({ archived }).where(inArray(assets.isin, isins));
+
+			// If archiving, remove from all sleeves
+			if (archived) {
+				await ctx.db.delete(sleeveAssets).where(inArray(sleeveAssets.assetIsin, isins));
+			}
+
+			return { success: true, updatedCount: isins.length, archived };
 		})
 });

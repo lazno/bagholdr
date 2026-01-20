@@ -21,6 +21,7 @@ export declare const assetsRouter: import("@trpc/server").TRPCBuiltRouter<{
             currency: string;
             metadata: import("../../db/schema").AssetMetadata | null;
             yahooSymbol: string | null;
+            archived: boolean;
         }[];
         meta: object;
     }>;
@@ -39,6 +40,7 @@ export declare const assetsRouter: import("@trpc/server").TRPCBuiltRouter<{
             currency: string;
             metadata: import("../../db/schema").AssetMetadata | null;
             yahooSymbol: string | null;
+            archived: boolean;
         }[];
         meta: object;
     }>;
@@ -55,6 +57,7 @@ export declare const assetsRouter: import("@trpc/server").TRPCBuiltRouter<{
             currency: string;
             metadata: import("../../db/schema").AssetMetadata | null;
             yahooSymbol: string | null;
+            archived: boolean;
         };
         meta: object;
     }>;
@@ -69,6 +72,40 @@ export declare const assetsRouter: import("@trpc/server").TRPCBuiltRouter<{
         };
         output: {
             success: boolean;
+        };
+        meta: object;
+    }>;
+    bulkUpdateType: import("@trpc/server").TRPCMutationProcedure<{
+        input: {
+            isins: string[];
+            assetType: "stock" | "etf" | "bond" | "fund" | "commodity" | "other";
+        };
+        output: {
+            success: boolean;
+            updatedCount: number;
+        };
+        meta: object;
+    }>;
+    setArchived: import("@trpc/server").TRPCMutationProcedure<{
+        input: {
+            isin: string;
+            archived: boolean;
+        };
+        output: {
+            success: boolean;
+            archived: boolean;
+        };
+        meta: object;
+    }>;
+    bulkSetArchived: import("@trpc/server").TRPCMutationProcedure<{
+        input: {
+            isins: string[];
+            archived: boolean;
+        };
+        output: {
+            success: boolean;
+            updatedCount: number;
+            archived: boolean;
         };
         meta: object;
     }>;

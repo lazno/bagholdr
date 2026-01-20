@@ -16,7 +16,9 @@ export const assets = sqliteTable('assets', {
 	currency: text('currency').notNull(),
 	metadata: text('metadata', { mode: 'json' }).$type<AssetMetadata | null>(),
 	// Yahoo Finance symbol - resolved from ISIN, used for price fetching
-	yahooSymbol: text('yahoo_symbol')
+	yahooSymbol: text('yahoo_symbol'),
+	// Archived assets are excluded from all calculations and dashboard views
+	archived: integer('archived', { mode: 'boolean' }).notNull().default(false)
 });
 
 /**

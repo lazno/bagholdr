@@ -1,0 +1,4 @@
+{
+    "apiUrl": "http://localhost:8080",
+    "_note": "This file is not used. Server URL is determined by platform in main.dart"
+}

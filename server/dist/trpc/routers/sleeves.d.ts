@@ -44,6 +44,7 @@ export declare const sleevesRouter: import("@trpc/server").TRPCBuiltRouter<{
                 currency: string;
                 metadata: import("../../db/schema").AssetMetadata | null;
                 yahooSymbol: string | null;
+                archived: boolean;
             }[];
             id: string;
             portfolioId: string;
@@ -182,6 +183,7 @@ export declare const sleevesRouter: import("@trpc/server").TRPCBuiltRouter<{
                 currency: string;
                 metadata: import("../../db/schema").AssetMetadata | null;
                 yahooSymbol: string | null;
+                archived: boolean;
             };
             holding: {
                 id: string;

@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exposure - Compact Table View</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: #f8fafc;
+      color: #1e293b;
+      font-size: 13px;
+      line-height: 1.4;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    .header h1 { font-size: 18px; font-weight: 600; }
+    .header-controls { display: flex; gap: 12px; align-items: center; }
+    .btn {
+      padding: 6px 12px;
+      border-radius: 5px;
+      border: 1px solid #e2e8f0;
+      background: white;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    .btn:hover { background: #f8fafc; }
+    .scope-select {
+      padding: 6px 10px;
+      border: 1px solid #e2e8f0;
+      border-radius: 5px;
+      font-size: 12px;
+      background: white;
+    }
+
+    /* Compact violations */
+    .violations-strip {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      border-radius: 6px;
+      padding: 8px 12px;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+    }
+    .violations-strip .icon { color: #dc2626; font-weight: bold; }
+    .v-chip {
+      background: white;
+      padding: 3px 8px;
+      border-radius: 3px;
+      border: 1px solid #fecaca;
+      color: #dc2626;
+    }
+
+    /* Main table container */
+    .table-card {
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    /* Column headers for dimensions */
+    .dim-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .dim-header {
+      padding: 12px 16px;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #64748b;
+      font-weight: 500;
+      border-right: 1px solid #e2e8f0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .dim-header:last-child { border-right: none; }
+    .dim-header .violation-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #dc2626;
+    }
+    .dim-header .count {
+      background: #f1f5f9;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-size: 10px;
+    }
+
+    /* Table content grid */
+    .content-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+    }
+    .dim-column {
+      border-right: 1px solid #e2e8f0;
+      max-height: 360px;
+      overflow-y: auto;
+    }
+    .dim-column:last-child { border-right: none; }
+
+    /* Category row */
+    .cat-row {
+      display: grid;
+      grid-template-columns: 1fr 50px 50px;
+      padding: 8px 12px;
+      border-bottom: 1px solid #f1f5f9;
+      cursor: pointer;
+      align-items: center;
+    }
+    .cat-row:hover { background: #f8fafc; }
+    .cat-row.selected { background: #eff6ff; }
+    .cat-row.violation { background: #fef2f2; }
+    .cat-row:last-child { border-bottom: none; }
+
+    .cat-name {
+      font-size: 12px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .cat-name .alert { color: #dc2626; font-size: 10px; }
+
+    /* Inline bar */
+    .inline-bar {
+      width: 100%;
+      height: 6px;
+      background: #f1f5f9;
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    .inline-bar-fill {
+      height: 100%;
+      background: #3b82f6;
+      border-radius: 3px;
+    }
+    .inline-bar-fill.violation { background: #dc2626; }
+    .inline-bar-fill.s { background: #0ea5e9; }
+    .inline-bar-fill.i { background: #8b5cf6; }
+    .inline-bar-fill.c { background: #10b981; }
+    .inline-bar-fill.m { background: #f59e0b; }
+
+    .cat-pct {
+      font-size: 11px;
+      font-weight: 500;
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+    .cat-val {
+      font-size: 10px;
+      color: #64748b;
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Detail drawer */
+    .detail-drawer {
+      border-top: 1px solid #e2e8f0;
+      padding: 16px;
+      background: #f8fafc;
+    }
+    .drawer-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .drawer-header h3 { font-size: 13px; font-weight: 500; }
+    .drawer-close {
+      background: none;
+      border: none;
+      color: #64748b;
+      cursor: pointer;
+      font-size: 12px;
+    }
+    .drawer-content {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+    .asset-card {
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      padding: 10px 12px;
+    }
+    .asset-card .name {
+      font-size: 12px;
+      font-weight: 500;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .asset-card .type {
+      font-size: 9px;
+      padding: 2px 4px;
+      background: #f1f5f9;
+      border-radius: 2px;
+      color: #64748b;
+    }
+    .asset-card .meta {
+      font-size: 11px;
+      color: #64748b;
+      display: flex;
+      justify-content: space-between;
+    }
+    .asset-card .contrib { font-weight: 500; color: #1e293b; }
+
+    /* Rules bar */
+    .rules-bar {
+      border-top: 1px solid #e2e8f0;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: white;
+    }
+    .rules-bar .label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #64748b;
+    }
+    .rule-pill {
+      font-size: 11px;
+      padding: 4px 8px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 4px;
+    }
+    .rule-pill.violated {
+      background: #fef2f2;
+      border-color: #fecaca;
+      color: #dc2626;
+    }
+    .rule-pill .dim {
+      color: #64748b;
+      font-size: 9px;
+      text-transform: uppercase;
+    }
+
+    /* Summary row */
+    .summary-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      border-top: 1px solid #e2e8f0;
+      background: #f8fafc;
+    }
+    .summary-cell {
+      padding: 10px 12px;
+      font-size: 11px;
+      color: #64748b;
+      border-right: 1px solid #e2e8f0;
+    }
+    .summary-cell:last-child { border-right: none; }
+    .summary-cell span { color: #1e293b; font-weight: 500; }
+
+    /* Scrollbar styling */
+    .dim-column::-webkit-scrollbar { width: 6px; }
+    .dim-column::-webkit-scrollbar-track { background: #f1f5f9; }
+    .dim-column::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <h1>Exposure Analysis</h1>
+      <div class="header-controls">
+        <select class="scope-select">
+          <option>Portfolio (all)</option>
+          <option>Core</option>
+          <option>Satellite</option>
+        </select>
+        <span style="color:#64748b; font-size:12px;">$164,500</span>
+        <button class="btn">Refresh</button>
+        <button class="btn">+ Rule</button>
+      </div>
+    </div>
+
+    <!-- Violations strip -->
+    <div class="violations-strip">
+      <span class="icon">!</span>
+      <span>Violations:</span>
+      <span class="v-chip">Sector: Tech 32%>25%</span>
+      <span class="v-chip">Country: US 65%>60%</span>
+    </div>
+
+    <!-- Main table -->
+    <div class="table-card">
+      <!-- Dimension headers -->
+      <div class="dim-row">
+        <div class="dim-header">
+          <span>Sector</span>
+          <div style="display:flex;gap:6px;align-items:center;">
+            <span class="violation-dot"></span>
+            <span class="count">11</span>
+          </div>
+        </div>
+        <div class="dim-header">
+          <span>Industry</span>
+          <span class="count">24</span>
+        </div>
+        <div class="dim-header">
+          <span>Country</span>
+          <div style="display:flex;gap:6px;align-items:center;">
+            <span class="violation-dot"></span>
+            <span class="count">12</span>
+          </div>
+        </div>
+        <div class="dim-header">
+          <span>Market Cap</span>
+          <span class="count">5</span>
+        </div>
+      </div>
+
+      <!-- Content grid -->
+      <div class="content-row">
+        <!-- Sector column -->
+        <div class="dim-column">
+          <div class="cat-row violation selected">
+            <div class="cat-name">Technology <span class="alert">!</span></div>
+            <div class="cat-pct">32%</div>
+            <div class="cat-val">$52k</div>
+          </div>
+          <div class="cat-row">
+            <div class="cat-name">Healthcare</div>
+            <div class="cat-pct">22%</div>
+            <div class="cat-val">$36k</div>
+          </div>
+          <div class="cat-row">
+            <div class="cat-name">Financials</div>
+            <div class="cat-pct">18%</div>
+            <div class="cat-val">$30k</div>
+          </div>
+          <div class="cat-row">
+            <div class="cat-name">Consumer Cycl.</div>
+            <div class="cat-pct">12%</div>
+            <div class="cat-val">$20k</div>
+          </div>
+          <div class="cat-row">
+            <div class="cat-name">Industrials</div>
+            <div class="cat-pct">8%</div>
+            <div class="cat-val">$13k</div>
+          </div>
+          <div class="cat-row">
+            <div class="cat-name">Energy</div>
+            <div class="cat-pct">4%</div>
+            <div class="cat-val">$7k</div>
+          </div>
+          <div class="cat-row">
+            <div class="cat-name">Comm. Svc</div>
+            <div class="cat-pct">2%</div>
+            <div class="cat-val">$3k</div>
+          </div>
+          <div class="cat-row">
+            <div class="cat-name">Cash/Other</div>
+            <div class="cat-pct">2%</div>
+            <div class="cat-val">$3k</div>
+          </div>
+        </div>
+
+        <!-- Industry column -->
+        <div class="dim-column">
+          <div class="cat-row">
+            <div class="cat-name">Software</div>
+            <div class="cat-pct">18%</div>
+            <div class="cat-val">$30k</div>
+          </div>
+          <div class="cat-row">
+            <div class="cat-name">Semiconductors</div>
+            <div class="cat-pct">12%</div>
+            <div class="cat-val">$20k</div>
+          </div>
+          <div class="cat-row">
+            <div class="cat-name">Banks</div>
+            <div class="cat-pct">10%</div>
+            <div class="cat-val">$16k</div>
+          </div>
+          <div class="cat-row">
+            <div class="cat-name">Pharmaceuticals</div>
+            <div class="cat-pct">8%</div>
+            <div class="cat-val">$13k</div>
+          </div>
+          <div class="cat-row">
+            <div class="cat-name">Biotechnology</div>
+            <div class="cat-pct">6%</div>
+            <div class="cat-val">$10k</div>
+          </div>
+          <div class="cat-row">
+            <div class="cat-name">Auto Mfg</div>
+            <div class="cat-pct">5%</div>
+            <div class="cat-val">$8k</div>
+          </div>
+          <div class="cat-row">
+            <div class="cat-name">Insurance</div>
+            <div class="cat-pct">4%</div>
+            <div class="cat-val">$7k</div>
+          </div>
+          <div class="cat-row">
+            <div class="cat-name">Retail</div>
+            <div class="cat-pct">4%</div>
+            <div class="cat-val">$7k</div>
+          </div>
+          <div class="cat-row">
+            <div class="cat-name">Oil & Gas</div>
+            <div class="cat-pct">3%</div>
+            <div class="cat-val">$5k</div>
+          </div>
+          <div class="cat-row">
+            <div class="cat-name">+15 more...</div>
+            <div class="cat-pct">30%</div>
+            <div class="cat-val">$48k</div>
+          </div>
+        </div>
+
+        <!-- Country column -->
+        <div class="dim-column">
+          <div class="cat-row violation">
+            <div class="cat-name">United States <span class="alert">!</span></div>
+            <div class="cat-pct">65%</div>
+            <div class="cat-val">$107k</div>
+          </div>
+          <div class="cat-row">
+            <div class="cat-name">Germany</div>
+            <div class="cat-pct">12%</div>
+            <div class="cat-val">$20k</div>
+          </div>
+          <div class="cat-row">
+            <div class="cat-name">Japan</div>
+            <div class="cat-pct">8%</div>
+            <div class="cat-val">$13k</div>
+          </div>
+          <div class="cat-row">
+            <div class="cat-name">UK</div>
+            <div class="cat-pct">5%</div>
+            <div class="cat-val">$8k</div>
+          </div>
+          <div class="cat-row">
+            <div class="cat-name">France</div>
+            <div class="cat-pct">4%</div>
+            <div class="cat-val">$7k</div>
+          </div>
+          <div class="cat-row">
+            <div class="cat-name">Switzerland</div>
+            <div class="cat-pct">3%</div>
+            <div class="cat-val">$5k</div>
+          </div>
+          <div class="cat-row">
+            <div class="cat-name">Other</div>
+            <div class="cat-pct">3%</div>
+            <div class="cat-val">$5k</div>
+          </div>
+        </div>
+
+        <!-- Market Cap column -->
+        <div class="dim-column">
+          <div class="cat-row">
+            <div class="cat-name">Mega Cap</div>
+            <div class="cat-pct">45%</div>
+            <div class="cat-val">$74k</div>
+          </div>
+          <div class="cat-row">
+            <div class="cat-name">Large Cap</div>
+            <div class="cat-pct">30%</div>
+            <div class="cat-val">$49k</div>
+          </div>
+          <div class="cat-row">
+            <div class="cat-name">Mid Cap</div>
+            <div class="cat-pct">15%</div>
+            <div class="cat-val">$25k</div>
+          </div>
+          <div class="cat-row">
+            <div class="cat-name">Small Cap</div>
+            <div class="cat-pct">7%</div>
+            <div class="cat-val">$12k</div>
+          </div>
+          <div class="cat-row">
+            <div class="cat-name">Micro Cap</div>
+            <div class="cat-pct">3%</div>
+            <div class="cat-val">$5k</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Summary row -->
+      <div class="summary-row">
+        <div class="summary-cell">Unknown: <span>2%</span></div>
+        <div class="summary-cell">Unknown: <span>5%</span></div>
+        <div class="summary-cell">Unknown: <span>0%</span></div>
+        <div class="summary-cell">Unknown: <span>0%</span></div>
+      </div>
+
+      <!-- Detail drawer -->
+      <div class="detail-drawer">
+        <div class="drawer-header">
+          <h3>Technology (32%) - 6 assets contributing</h3>
+          <button class="drawer-close">x close</button>
+        </div>
+        <div class="drawer-content">
+          <div class="asset-card">
+            <div class="name">AAPL <span class="type">Stock</span></div>
+            <div class="meta">
+              <span>$12,500</span>
+              <span class="contrib">7.6%</span>
+            </div>
+          </div>
+          <div class="asset-card">
+            <div class="name">MSFT <span class="type">Stock</span></div>
+            <div class="meta">
+              <span>$9,200</span>
+              <span class="contrib">5.6%</span>
+            </div>
+          </div>
+          <div class="asset-card">
+            <div class="name">VWCE <span class="type">ETF @ 25%</span></div>
+            <div class="meta">
+              <span>$52,600</span>
+              <span class="contrib">8.0%</span>
+            </div>
+          </div>
+          <div class="asset-card">
+            <div class="name">QQQ <span class="type">ETF @ 50%</span></div>
+            <div class="meta">
+              <span>$24,000</span>
+              <span class="contrib">5.2%</span>
+            </div>
+          </div>
+          <div class="asset-card">
+            <div class="name">NVDA <span class="type">Stock</span></div>
+            <div class="meta">
+              <span>$5,800</span>
+              <span class="contrib">3.5%</span>
+            </div>
+          </div>
+          <div class="asset-card">
+            <div class="name">GOOGL <span class="type">Stock</span></div>
+            <div class="meta">
+              <span>$3,500</span>
+              <span class="contrib">2.1%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Rules bar -->
+      <div class="rules-bar">
+        <span class="label">Rules:</span>
+        <span class="rule-pill violated"><span class="dim">Sector</span> Max 25%</span>
+        <span class="rule-pill violated"><span class="dim">Country</span> US &le;60%</span>
+        <span class="rule-pill"><span class="dim">Market</span> Mega &le;50%</span>
+        <span class="rule-pill" style="border-style:dashed;color:#64748b;">+ Add</span>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

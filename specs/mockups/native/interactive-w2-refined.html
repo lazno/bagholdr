@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=375, initial-scale=1.0">
+  <title>Option W2: Refined</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f5f5f5;
+      max-width: 375px;
+      margin: 0 auto;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .header {
+      background: white;
+      padding: 10px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .header-left { display: flex; align-items: center; gap: 12px; }
+    .hamburger { width: 20px; height: 20px; display: flex; flex-direction: column; justify-content: center; gap: 4px; }
+    .hamburger span { display: block; height: 2px; background: #111; }
+    .portfolio-selector { display: flex; align-items: center; gap: 4px; font-size: 16px; font-weight: 600; }
+    .chevron { font-size: 12px; color: #6b7280; }
+    .header-right { display: flex; align-items: center; gap: 12px; }
+    .icon-btn { font-size: 18px; opacity: 0.5; cursor: pointer; }
+    .icon-btn:hover { opacity: 0.8; }
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; }
+
+    /* Smaller time range buttons */
+    .time-range-bar {
+      background: white;
+      padding: 6px 16px;
+      display: flex;
+      gap: 4px;
+      border-bottom: 1px solid #e5e7eb;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .range-btn {
+      flex: 1;
+      padding: 6px 0;
+      font-size: 11px;
+      border-radius: 5px;
+      background: #f3f4f6;
+      border: none;
+      color: #6b7280;
+      font-weight: 500;
+      cursor: pointer;
+    }
+    .range-btn.active { background: #111; color: white; }
+
+    .content { flex: 1; overflow-y: auto; }
+
+    /* ========== PERFORMANCE HERO SECTION ========== */
+    .hero-section {
+      background: white;
+      padding: 20px 16px 0;
+      margin-bottom: 8px;
+    }
+
+    /* Value display - like Option M */
+    .value-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 16px;
+    }
+    .value-main {}
+    .value-label { font-size: 11px; color: #6b7280; text-transform: uppercase; margin-bottom: 4px; }
+    .value-amount { font-size: 28px; font-weight: 700; color: #111; }
+    .value-return { display: flex; align-items: baseline; gap: 6px; margin-top: 6px; }
+    .return-pct { font-size: 16px; font-weight: 600; color: #16a34a; }
+    .return-abs { font-size: 13px; color: #16a34a; }
+    .return-ann { font-size: 11px; color: #6b7280; }
+
+    .value-side { text-align: right; }
+    .side-item { margin-bottom: 8px; }
+    .side-label { font-size: 10px; color: #9ca3af; text-transform: uppercase; }
+    .side-value { font-size: 14px; font-weight: 600; color: #111; }
+    .side-value.muted { color: #6b7280; font-size: 13px; }
+
+    /* Hero chart - larger, prominent */
+    .hero-chart {
+      position: relative;
+      height: 200px;
+      margin: 0 -16px;
+    }
+    .hero-chart-svg { width: 100%; height: 100%; }
+    .chart-tooltip {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: white;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #16a34a;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .chart-time-axis {
+      display: flex;
+      justify-content: space-between;
+      padding: 6px 8px 0;
+      font-size: 9px;
+      color: #9ca3af;
+    }
+    .chart-legend {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      padding: 10px 8px 16px;
+      font-size: 11px;
+      color: #6b7280;
+    }
+    .legend-item { display: flex; align-items: center; gap: 5px; }
+    .legend-line { width: 16px; height: 2px; }
+    .legend-line.value { background: #22c55e; }
+    .legend-line.cost { background: repeating-linear-gradient(90deg, #9ca3af 0, #9ca3af 3px, transparent 3px, transparent 6px); }
+
+    /* ========== STRATEGY SECTION ========== */
+    .strategy-section {
+      background: white;
+      margin-bottom: 8px;
+    }
+
+    .strategy-header {
+      padding: 16px 16px 12px;
+      border-bottom: 1px solid #f3f4f6;
+    }
+    .strategy-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #111;
+    }
+
+    /* Issues within strategy section */
+    .issues-bar {
+      background: #fffbeb;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      border-bottom: 1px solid #fde68a;
+    }
+    .issues-bar:hover { background: #fef3c7; }
+    .issues-badge {
+      background: #facc15;
+      color: #713f12;
+      padding: 3px 8px;
+      border-radius: 8px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .issues-text { flex: 1; font-size: 12px; color: #92400e; }
+    .issues-chevron { font-size: 12px; color: #d97706; transition: transform 0.2s; }
+    .issues-chevron.expanded { transform: rotate(90deg); }
+    .issues-panel {
+      display: none;
+      background: #fffbeb;
+      padding: 0 16px 12px;
+      max-height: 160px;
+      overflow-y: auto;
+    }
+    .issues-panel.expanded { display: block; }
+    .issue-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 0;
+      font-size: 12px;
+      color: #78350f;
+      border-bottom: 1px solid #fde68a;
+    }
+    .issue-item:last-child { border-bottom: none; }
+    .issue-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+    .issue-dot.over { background: #f97316; }
+    .issue-dot.under { background: #3b82f6; }
+    .issue-dot.warning { background: #f59e0b; }
+    .issue-dot.info { background: #9ca3af; }
+    .issue-text { flex: 1; }
+    .issue-action { font-size: 10px; color: #b45309; font-weight: 500; }
+
+    /* Ring chart */
+    .ring-area {
+      display: flex;
+      justify-content: center;
+      padding: 20px 16px;
+    }
+    .ring-wrapper {
+      position: relative;
+      width: 180px;
+      height: 180px;
+    }
+    .ring-svg {
+      width: 100%;
+      height: 100%;
+      transform: rotate(-90deg);
+    }
+    .ring-segment {
+      fill: none;
+      cursor: pointer;
+      transition: opacity 0.15s, stroke-width 0.2s;
+    }
+    .ring-segment:hover { opacity: 0.85; }
+    .ring-segment.selected { stroke-width: 24 !important; }
+    .ring-segment.dimmed { opacity: 0.2; }
+
+    .ring-center {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 72px;
+      height: 72px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      cursor: pointer;
+      border-radius: 50%;
+      background: white;
+      transition: background 0.15s;
+    }
+    .ring-center:hover {
+      background: #f9fafb;
+    }
+    .ring-center-value {
+      font-size: 16px;
+      font-weight: 700;
+      color: #111;
+      line-height: 1.1;
+    }
+    .ring-center-label {
+      font-size: 10px;
+      color: #6b7280;
+      margin-top: 2px;
+      line-height: 1.1;
+    }
+    .ring-center-hint {
+      font-size: 8px;
+      color: #3b82f6;
+      margin-top: 3px;
+      opacity: 0;
+      transition: opacity 0.15s;
+    }
+    .ring-center.show-hint .ring-center-hint { opacity: 1; }
+    .ring-center:hover .ring-center-hint { opacity: 1; }
+
+    /* Detail panel - cleaned up layout */
+    .detail-panel {
+      margin: 0 16px;
+      padding: 16px;
+      background: #f9fafb;
+      border-radius: 12px;
+    }
+    .detail-panel.all-view {
+      background: transparent;
+      padding: 0 0 8px;
+    }
+
+    .detail-top {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .detail-panel.all-view .detail-top { margin-bottom: 0; }
+
+    .detail-color {
+      width: 4px;
+      height: 44px;
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+    .detail-color.all { background: linear-gradient(180deg, #3b82f6 0%, #3b82f6 75%, #f59e0b 75%); }
+    .detail-color.core { background: #3b82f6; }
+    .detail-color.equities { background: #60a5fa; }
+    .detail-color.bonds { background: #93c5fd; }
+    .detail-color.satellite { background: #f59e0b; }
+    .detail-color.safehaven { background: #fbbf24; }
+    .detail-color.growth { background: #fcd34d; }
+
+    .detail-main { flex: 1; }
+    .detail-name {
+      font-size: 15px;
+      font-weight: 700;
+      color: #111;
+      margin-bottom: 3px;
+    }
+    .detail-meta {
+      font-size: 11px;
+      color: #6b7280;
+    }
+
+    .detail-numbers {
+      text-align: right;
+    }
+    .detail-value {
+      font-size: 16px;
+      font-weight: 700;
+      color: #111;
+    }
+    .detail-return {
+      font-size: 12px;
+      font-weight: 600;
+      margin-top: 2px;
+    }
+    .detail-return.positive { color: #16a34a; }
+    .detail-return.negative { color: #dc2626; }
+    .detail-xirr {
+      font-size: 11px;
+      color: #6b7280;
+      margin-top: 2px;
+    }
+
+    /* Clean metrics row */
+    .detail-metrics {
+      display: flex;
+      justify-content: space-between;
+      padding-top: 14px;
+      border-top: 1px solid #e5e7eb;
+    }
+    .detail-panel.all-view .detail-metrics { display: none; }
+
+    .detail-metric {
+      flex: 1;
+      text-align: center;
+    }
+    .detail-metric:first-child { text-align: left; }
+    .detail-metric:last-child { text-align: right; }
+
+    .metric-value {
+      font-size: 16px;
+      font-weight: 700;
+      color: #111;
+    }
+    .metric-value.ok { color: #16a34a; }
+    .metric-value.over { color: #f97316; }
+    .metric-value.under { color: #3b82f6; }
+    .metric-label {
+      font-size: 10px;
+      color: #6b7280;
+      margin-top: 2px;
+    }
+
+    /* Sleeve pills */
+    .sleeve-pills {
+      display: flex;
+      gap: 6px;
+      padding: 16px;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      border-top: 1px solid #f3f4f6;
+    }
+    .sleeve-pills::-webkit-scrollbar { display: none; }
+    .sleeve-pill {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 7px 11px;
+      background: #f3f4f6;
+      border-radius: 16px;
+      border: 1.5px solid transparent;
+      cursor: pointer;
+      transition: all 0.15s;
+      font-size: 11px;
+    }
+    .sleeve-pill:hover { background: #e5e7eb; }
+    .sleeve-pill.selected { background: white; border-color: #374151; }
+    .sleeve-pill-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 2px;
+    }
+    .sleeve-pill-dot.core { background: #3b82f6; }
+    .sleeve-pill-dot.equities { background: #60a5fa; }
+    .sleeve-pill-dot.bonds { background: #93c5fd; }
+    .sleeve-pill-dot.satellite { background: #f59e0b; }
+    .sleeve-pill-dot.safehaven { background: #fbbf24; }
+    .sleeve-pill-dot.growth { background: #fcd34d; }
+    .sleeve-pill-name { font-weight: 500; color: #374151; }
+    .sleeve-pill-alloc { color: #9ca3af; }
+
+    /* ========== ASSETS SECTION ========== */
+    .assets-section { background: white; padding: 16px; }
+    .assets-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .assets-title { font-size: 13px; font-weight: 600; color: #111; }
+    .assets-count { font-size: 11px; color: #6b7280; background: #f3f4f6; padding: 4px 8px; border-radius: 4px; }
+    .search-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #f3f4f6;
+      border-radius: 8px;
+      padding: 10px 12px;
+      margin-bottom: 12px;
+    }
+    .search-icon { font-size: 14px; opacity: 0.4; }
+    .search-input { flex: 1; border: none; background: none; font-size: 14px; outline: none; }
+
+    /* Asset table - columns 1+2 fit viewport, column 3 scrolls */
+    .asset-scroll-container {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      margin-left: -16px;
+      margin-right: -16px;
+      padding-left: 16px;
+      padding-right: 16px;
+    }
+    .asset-scroll-container::-webkit-scrollbar { display: none; }
+
+    .asset-table {
+      min-width: 410px;
+    }
+
+    .asset-header {
+      display: flex;
+      padding: 8px 0;
+      border-bottom: 1px solid #e5e7eb;
+      font-size: 10px;
+      font-weight: 500;
+      color: #9ca3af;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+    .asset-header .col-asset { flex: 1; }
+    .asset-header .col-perf { width: 115px; text-align: right; }
+    .asset-header .col-weight { width: 55px; text-align: right; }
+
+    .asset-row {
+      display: flex;
+      align-items: center;
+      padding: 11px 0;
+      border-bottom: 1px solid #f3f4f6;
+    }
+    .asset-row:last-child { border-bottom: none; }
+
+    .asset-info { flex: 1; }
+    .asset-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: #111;
+    }
+    .asset-meta {
+      margin-top: 3px;
+      font-size: 11px;
+      color: #6b7280;
+    }
+    .asset-meta span { color: #6b7280; }
+    .asset-sep { margin: 0 5px; color: #d1d5db; }
+
+    .asset-perf {
+      width: 115px;
+      text-align: right;
+    }
+    .asset-pl {
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .asset-pl.positive { color: #16a34a; }
+    .asset-pl.negative { color: #dc2626; }
+    .asset-returns {
+      font-size: 10px;
+      color: #9ca3af;
+      margin-top: 2px;
+    }
+
+    .asset-weight {
+      width: 55px;
+      text-align: right;
+      font-size: 13px;
+      font-weight: 500;
+      color: #374151;
+    }
+
+    .load-more {
+      text-align: center;
+      padding: 14px;
+      color: #6b7280;
+      font-size: 12px;
+      cursor: pointer;
+      background: #f9fafb;
+      border-radius: 8px;
+      margin-top: 12px;
+    }
+    .no-results { text-align: center; padding: 32px; color: #9ca3af; font-size: 14px; }
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="header-left">
+      <div class="hamburger"><span></span><span></span><span></span></div>
+      <div class="portfolio-selector">Main Portfolio <span class="chevron">▼</span></div>
+    </div>
+    <div class="header-right">
+      <span class="icon-btn" onclick="toggleBalances()" title="Hide balances">👁</span>
+      <span class="status-dot"></span>
+    </div>
+  </div>
+
+  <div class="time-range-bar">
+    <button class="range-btn">1M</button>
+    <button class="range-btn">3M</button>
+    <button class="range-btn">6M</button>
+    <button class="range-btn">YTD</button>
+    <button class="range-btn active">1Y</button>
+    <button class="range-btn">ALL</button>
+  </div>
+
+  <div class="content">
+    <!-- ===== PERFORMANCE HERO ===== -->
+    <div class="hero-section">
+      <div class="value-row">
+        <div class="value-main">
+          <div class="value-label">Invested</div>
+          <div class="value-amount">€113,482</div>
+          <div class="value-return">
+            <span class="return-pct">+12.2%</span>
+            <span class="return-abs">+€12,348</span>
+            <span class="return-ann">(8.4% p.a.)</span>
+          </div>
+        </div>
+        <div class="value-side">
+          <div class="side-item">
+            <div class="side-label">Cash</div>
+            <div class="side-value">€6,452</div>
+          </div>
+          <div class="side-item">
+            <div class="side-label">Total</div>
+            <div class="side-value muted">€119,934</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-chart">
+        <svg class="hero-chart-svg" viewBox="0 0 375 200" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="heroGradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#22c55e" stop-opacity="0.35"/>
+              <stop offset="100%" stop-color="#22c55e" stop-opacity="0.02"/>
+            </linearGradient>
+          </defs>
+          <line x1="0" y1="50" x2="375" y2="50" stroke="#f3f4f6" stroke-width="1"/>
+          <line x1="0" y1="100" x2="375" y2="100" stroke="#f3f4f6" stroke-width="1"/>
+          <line x1="0" y1="150" x2="375" y2="150" stroke="#f3f4f6" stroke-width="1"/>
+          <!-- Cost basis -->
+          <path d="M0,175 Q50,172 100,162 T180,138 T260,105 T340,72 T375,58" fill="none" stroke="#9ca3af" stroke-width="1.5" stroke-dasharray="5,4" opacity="0.6"/>
+          <!-- Value line + fill -->
+          <path d="M0,170 Q50,166 100,150 T180,118 T260,72 T340,38 T375,22 L375,200 L0,200 Z" fill="url(#heroGradient)"/>
+          <path d="M0,170 Q50,166 100,150 T180,118 T260,72 T340,38 T375,22" fill="none" stroke="#22c55e" stroke-width="2.5"/>
+        </svg>
+        <div class="chart-tooltip">€113.5k</div>
+      </div>
+      <div class="chart-time-axis">
+        <span>Jan</span><span>Mar</span><span>May</span><span>Jul</span><span>Sep</span><span>Nov</span><span>Now</span>
+      </div>
+      <div class="chart-legend">
+        <div class="legend-item"><div class="legend-line value"></div> Invested</div>
+        <div class="legend-item"><div class="legend-line cost"></div> Cost basis</div>
+      </div>
+    </div>
+
+    <!-- ===== STRATEGY SECTION ===== -->
+    <div class="strategy-section">
+      <div class="strategy-header">
+        <div class="strategy-title">Strategy</div>
+      </div>
+
+      <!-- Issues bar -->
+      <div class="issues-bar" onclick="toggleIssues()">
+        <span class="issues-badge">4</span>
+        <span class="issues-text">Issues need attention</span>
+        <span class="issues-chevron" id="issuesChevron">▶</span>
+      </div>
+      <div class="issues-panel" id="issuesPanel">
+        <div class="issue-item">
+          <span class="issue-dot over"></span>
+          <span class="issue-text">Growth +5pp over target</span>
+          <span class="issue-action">Rebalance →</span>
+        </div>
+        <div class="issue-item">
+          <span class="issue-dot under"></span>
+          <span class="issue-text">Bonds -3pp under target</span>
+          <span class="issue-action">Rebalance →</span>
+        </div>
+        <div class="issue-item">
+          <span class="issue-dot warning"></span>
+          <span class="issue-text">3 assets have stale prices</span>
+          <span class="issue-action">Refresh →</span>
+        </div>
+        <div class="issue-item">
+          <span class="issue-dot info"></span>
+          <span class="issue-text">Last sync: 2 hours ago</span>
+          <span class="issue-action">Sync →</span>
+        </div>
+      </div>
+
+      <!-- Ring chart -->
+      <div class="ring-area">
+        <div class="ring-wrapper">
+          <svg class="ring-svg" viewBox="0 0 180 180">
+            <!-- Inner ring: Core/Satellite (r=55, circ=345.6) -->
+            <circle class="ring-segment" data-sleeve="core" cx="90" cy="90" r="55"
+              stroke="#3b82f6" stroke-width="18" stroke-dasharray="259.2 345.6" stroke-dashoffset="0"
+              onclick="selectSleeve('core')"/>
+            <circle class="ring-segment" data-sleeve="satellite" cx="90" cy="90" r="55"
+              stroke="#f59e0b" stroke-width="18" stroke-dasharray="86.4 345.6" stroke-dashoffset="-259.2"
+              onclick="selectSleeve('satellite')"/>
+            <!-- Outer ring: Children (r=78, circ=490.1) -->
+            <circle class="ring-segment" data-sleeve="equities" cx="90" cy="90" r="78"
+              stroke="#60a5fa" stroke-width="14" stroke-dasharray="269.6 490.1" stroke-dashoffset="0"
+              onclick="selectSleeve('equities')"/>
+            <circle class="ring-segment" data-sleeve="bonds" cx="90" cy="90" r="78"
+              stroke="#93c5fd" stroke-width="14" stroke-dasharray="98 490.1" stroke-dashoffset="-269.6"
+              onclick="selectSleeve('bonds')"/>
+            <circle class="ring-segment" data-sleeve="safehaven" cx="90" cy="90" r="78"
+              stroke="#fbbf24" stroke-width="14" stroke-dasharray="49 490.1" stroke-dashoffset="-367.6"
+              onclick="selectSleeve('safehaven')"/>
+            <circle class="ring-segment" data-sleeve="growth" cx="90" cy="90" r="78"
+              stroke="#fcd34d" stroke-width="14" stroke-dasharray="73.5 490.1" stroke-dashoffset="-416.6"
+              onclick="selectSleeve('growth')"/>
+          </svg>
+          <div class="ring-center" id="ringCenter" onclick="selectSleeve('all')">
+            <div class="ring-center-value" id="ringValue">€113k</div>
+            <div class="ring-center-label" id="ringLabel">All Sleeves</div>
+            <div class="ring-center-hint" id="ringHint">tap for all</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Detail panel -->
+      <div class="detail-panel all-view" id="detailPanel">
+        <div class="detail-top">
+          <div class="detail-color all" id="detailColor"></div>
+          <div class="detail-main">
+            <div class="detail-name" id="detailName">All Sleeves</div>
+            <div class="detail-meta" id="detailMeta">6 sleeves · 32 assets</div>
+          </div>
+          <div class="detail-numbers">
+            <div class="detail-value" id="detailValue">€113,482</div>
+            <div class="detail-return positive" id="detailReturn">+12.2%</div>
+            <div class="detail-xirr" id="detailXirr">(8.4% p.a.)</div>
+          </div>
+        </div>
+        <div class="detail-metrics">
+          <div class="detail-metric">
+            <div class="metric-value" id="metricCurrent">55%</div>
+            <div class="metric-label">Current</div>
+          </div>
+          <div class="detail-metric">
+            <div class="metric-value" id="metricTarget">55%</div>
+            <div class="metric-label">Target</div>
+          </div>
+          <div class="detail-metric">
+            <div class="metric-value ok" id="metricDrift">On target</div>
+            <div class="metric-label">Status</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sleeve pills -->
+      <div class="sleeve-pills" id="sleevePills">
+        <div class="sleeve-pill selected" data-sleeve="all" onclick="selectSleeve('all')">
+          <span class="sleeve-pill-name">All</span>
+        </div>
+        <div class="sleeve-pill" data-sleeve="core" onclick="selectSleeve('core')">
+          <span class="sleeve-pill-dot core"></span>
+          <span class="sleeve-pill-name">Core</span>
+          <span class="sleeve-pill-alloc">75%</span>
+        </div>
+        <div class="sleeve-pill" data-sleeve="satellite" onclick="selectSleeve('satellite')">
+          <span class="sleeve-pill-dot satellite"></span>
+          <span class="sleeve-pill-name">Satellite</span>
+          <span class="sleeve-pill-alloc">25%</span>
+        </div>
+        <div class="sleeve-pill" data-sleeve="equities" onclick="selectSleeve('equities')">
+          <span class="sleeve-pill-dot equities"></span>
+          <span class="sleeve-pill-name">Equities</span>
+        </div>
+        <div class="sleeve-pill" data-sleeve="bonds" onclick="selectSleeve('bonds')">
+          <span class="sleeve-pill-dot bonds"></span>
+          <span class="sleeve-pill-name">Bonds</span>
+        </div>
+        <div class="sleeve-pill" data-sleeve="safehaven" onclick="selectSleeve('safehaven')">
+          <span class="sleeve-pill-dot safehaven"></span>
+          <span class="sleeve-pill-name">Safe Haven</span>
+        </div>
+        <div class="sleeve-pill" data-sleeve="growth" onclick="selectSleeve('growth')">
+          <span class="sleeve-pill-dot growth"></span>
+          <span class="sleeve-pill-name">Growth</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== ASSETS SECTION ===== -->
+    <div class="assets-section">
+      <div class="assets-header">
+        <span class="assets-title">Assets</span>
+        <span class="assets-count" id="assetsCount">All · 32</span>
+      </div>
+      <div class="search-bar">
+        <span class="search-icon">🔍</span>
+        <input type="text" class="search-input" id="searchInput" placeholder="Search assets..." oninput="filterAssets()">
+      </div>
+      <div class="asset-scroll-container">
+        <div class="asset-table">
+          <div class="asset-header">
+            <span class="col-asset">Asset</span>
+            <span class="col-perf">Performance</span>
+            <span class="col-weight">Weight</span>
+          </div>
+          <div id="assetList"></div>
+        </div>
+      </div>
+      <div class="no-results hidden" id="noResults">No assets match your search</div>
+      <div class="load-more hidden" id="loadMore" onclick="loadMore()">Show more assets</div>
+    </div>
+  </div>
+
+  <script>
+    const assets = [
+      { symbol: 'X.IUSQ', name: 'iShares MSCI ACWI UCITS', value: 42500, pl: 4655, weight: 37.5, twr: 12.3, xirr: 9.2, sleeve: 'equities' },
+      { symbol: 'X.SPYD', name: 'SPDR S&P US Dividend', value: 12400, pl: 960, weight: 10.9, twr: 8.4, xirr: 6.8, sleeve: 'equities' },
+      { symbol: 'X.EUNL', name: 'iShares Core MSCI Europe', value: 7515, pl: 398, weight: 6.6, twr: 5.6, xirr: 4.2, sleeve: 'equities' },
+      { symbol: 'X.XBAG', name: 'Xtrackers ESG Global Bond', value: 11348, pl: 135, weight: 10.0, twr: 1.2, xirr: 1.0, sleeve: 'bonds' },
+      { symbol: 'X.XGSH', name: 'Xtrackers Short Duration', value: 5674, pl: 154, weight: 5.0, twr: 2.8, xirr: 2.4, sleeve: 'bonds' },
+      { symbol: 'X.IBTS', name: 'iShares Treasury Bond', value: 2270, pl: 31, weight: 2.0, twr: 1.4, xirr: 1.1, sleeve: 'bonds' },
+      { symbol: 'WGLD', name: 'WisdomTree Physical Gold', value: 7939, pl: 1948, weight: 7.0, twr: 32.5, xirr: 22.1, sleeve: 'safehaven' },
+      { symbol: 'SGLD', name: 'iShares Physical Gold', value: 3409, pl: 748, weight: 3.0, twr: 28.1, xirr: 19.4, sleeve: 'safehaven' },
+      { symbol: 'X.XDWT', name: 'Xtrackers MSCI World Tech', value: 9072, pl: 1768, weight: 8.0, twr: 24.2, xirr: 18.6, sleeve: 'growth' },
+      { symbol: '.NVDA', name: 'NVIDIA Corporation', value: 4536, pl: 2086, weight: 4.0, twr: 85.2, xirr: 52.3, sleeve: 'growth' },
+      { symbol: '.AAPL', name: 'Apple Inc.', value: 3402, pl: 531, weight: 3.0, twr: 18.5, xirr: 14.2, sleeve: 'growth' },
+      { symbol: '.MSFT', name: 'Microsoft Corporation', value: 2835, pl: 514, weight: 2.5, twr: 22.1, xirr: 16.8, sleeve: 'growth' },
+      { symbol: '.AMZN', name: 'Amazon.com Inc.', value: 2835, pl: 674, weight: 2.5, twr: 31.2, xirr: 24.5, sleeve: 'growth' },
+    ];
+
+    const sleeveHierarchy = {
+      core: ['equities', 'bonds'],
+      satellite: ['safehaven', 'growth']
+    };
+
+    const sleeveNames = {
+      all: 'All Sleeves', core: 'Core', satellite: 'Satellite',
+      equities: 'Equities', bonds: 'Bonds',
+      safehaven: 'Safe Haven', growth: 'Growth'
+    };
+
+    const sleeveData = {
+      all:       { value: '€113,482', return: '+12.2%', retClass: 'positive', xirr: '8.4% p.a.', current: '100%', target: '—', drift: '—', driftClass: '', meta: '6 sleeves · 32 assets', color: 'all' },
+      core:      { value: '€85,112',  return: '+8.2%',  retClass: 'positive', xirr: '6.1% p.a.', current: '75%',  target: '75%', drift: 'On target', driftClass: 'ok', meta: '2 sleeves · 18 assets', color: 'core' },
+      equities:  { value: '€62,415',  return: '+11.4%', retClass: 'positive', xirr: '7.8% p.a.', current: '55%',  target: '55%', drift: 'On target', driftClass: 'ok', meta: '12 assets', color: 'equities' },
+      bonds:     { value: '€19,292',  return: '+1.8%',  retClass: 'positive', xirr: '1.5% p.a.', current: '17%',  target: '20%', drift: '-3pp', driftClass: 'under', meta: '6 assets', color: 'bonds' },
+      satellite: { value: '€28,370',  return: '+22.4%', retClass: 'positive', xirr: '15.2% p.a.', current: '25%',  target: '25%', drift: 'On target', driftClass: 'ok', meta: '2 sleeves · 14 assets', color: 'satellite' },
+      safehaven: { value: '€11,348',  return: '+28.1%', retClass: 'positive', xirr: '18.4% p.a.', current: '10%',  target: '10%', drift: 'On target', driftClass: 'ok', meta: '4 assets', color: 'safehaven' },
+      growth:    { value: '€22,696',  return: '+18.6%', retClass: 'positive', xirr: '12.1% p.a.', current: '20%',  target: '15%', drift: '+5pp', driftClass: 'over', meta: '10 assets', color: 'growth' }
+    };
+
+    let currentSleeve = 'all';
+    let displayCount = 8;
+
+    function getChildSleeves(sleeve) {
+      let children = [sleeve];
+      if (sleeveHierarchy[sleeve]) {
+        sleeveHierarchy[sleeve].forEach(child => {
+          children = children.concat(getChildSleeves(child));
+        });
+      }
+      return children;
+    }
+
+    function selectSleeve(sleeve) {
+      currentSleeve = sleeve;
+      displayCount = 8;
+
+      // Pills
+      document.querySelectorAll('.sleeve-pill').forEach(p => p.classList.toggle('selected', p.dataset.sleeve === sleeve));
+
+      // Ring
+      const allowed = sleeve === 'all' ? null : getChildSleeves(sleeve);
+      document.querySelectorAll('.ring-segment').forEach(seg => {
+        const s = seg.dataset.sleeve;
+        const related = !allowed || allowed.includes(s);
+        seg.classList.toggle('dimmed', !related);
+        seg.classList.toggle('selected', sleeve === s);
+      });
+
+      // Center
+      const data = sleeveData[sleeve];
+      document.getElementById('ringValue').textContent = data.value.replace(',', '.').replace('€', '€');
+      document.getElementById('ringLabel').textContent = sleeveNames[sleeve];
+
+      // Show "tap for all" hint when not on all
+      document.getElementById('ringCenter').classList.toggle('show-hint', sleeve !== 'all');
+
+      // Detail panel
+      document.getElementById('detailPanel').classList.toggle('all-view', sleeve === 'all');
+      document.getElementById('detailColor').className = 'detail-color ' + data.color;
+      document.getElementById('detailName').textContent = sleeveNames[sleeve];
+      document.getElementById('detailMeta').textContent = data.meta;
+      document.getElementById('detailValue').textContent = data.value;
+      document.getElementById('detailReturn').textContent = data.return;
+      document.getElementById('detailReturn').className = 'detail-return ' + data.retClass;
+      document.getElementById('detailXirr').textContent = '(' + data.xirr + ')';
+      document.getElementById('metricCurrent').textContent = data.current;
+      document.getElementById('metricTarget').textContent = data.target;
+      document.getElementById('metricDrift').textContent = data.drift;
+      document.getElementById('metricDrift').className = 'metric-value ' + data.driftClass;
+
+      filterAssets();
+    }
+
+    function filterAssets() {
+      const search = document.getElementById('searchInput').value.toLowerCase();
+      const allowed = currentSleeve === 'all' ? null : getChildSleeves(currentSleeve);
+
+      const filtered = assets.filter(a => {
+        const matchSleeve = !allowed || allowed.includes(a.sleeve);
+        const matchSearch = !search || a.symbol.toLowerCase().includes(search) || a.name.toLowerCase().includes(search);
+        return matchSleeve && matchSearch;
+      });
+
+      const toShow = filtered.slice(0, displayCount);
+      document.getElementById('assetList').innerHTML = toShow.map(a => `
+        <div class="asset-row">
+          <div class="asset-info">
+            <div class="asset-name">${a.name}</div>
+            <div class="asset-meta">
+              <span>${a.symbol}</span><span class="asset-sep">·</span><span>€${a.value.toLocaleString()}</span>
+            </div>
+          </div>
+          <div class="asset-perf">
+            <div class="asset-pl ${a.pl >= 0 ? 'positive' : 'negative'}">${a.pl >= 0 ? '+' : ''}€${Math.abs(a.pl).toLocaleString()}</div>
+            <div class="asset-returns">${a.twr >= 0 ? '+' : ''}${a.twr}% · ${a.xirr}% p.a.</div>
+          </div>
+          <div class="asset-weight">${a.weight}%</div>
+        </div>
+      `).join('');
+
+      document.getElementById('assetsCount').textContent = `${sleeveNames[currentSleeve].replace(' Sleeves', '')} · ${filtered.length}`;
+      document.getElementById('noResults').classList.toggle('hidden', filtered.length > 0);
+      document.getElementById('loadMore').classList.toggle('hidden', filtered.length <= displayCount);
+    }
+
+    function loadMore() {
+      displayCount += 8;
+      filterAssets();
+    }
+
+    function toggleIssues() {
+      document.getElementById('issuesPanel').classList.toggle('expanded');
+      document.getElementById('issuesChevron').classList.toggle('expanded');
+    }
+
+    document.querySelectorAll('.range-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.range-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+      });
+    });
+
+    let balancesHidden = false;
+    function toggleBalances() {
+      balancesHidden = !balancesHidden;
+      const eyeBtn = document.querySelector('.icon-btn');
+      eyeBtn.textContent = balancesHidden ? '👁‍🗨' : '👁';
+      eyeBtn.title = balancesHidden ? 'Show balances' : 'Hide balances';
+
+      // Toggle all monetary values
+      const hiddenText = '•••••';
+      if (balancesHidden) {
+        document.querySelectorAll('.value-amount, .side-value, .detail-value, .chart-tooltip, .ring-center-value').forEach(el => {
+          el.dataset.realValue = el.textContent;
+          el.textContent = hiddenText;
+        });
+        document.querySelectorAll('.return-abs').forEach(el => {
+          el.dataset.realValue = el.textContent;
+          el.textContent = '';
+        });
+      } else {
+        document.querySelectorAll('.value-amount, .side-value, .detail-value, .chart-tooltip, .ring-center-value, .return-abs').forEach(el => {
+          if (el.dataset.realValue) {
+            el.textContent = el.dataset.realValue;
+          }
+        });
+      }
+    }
+
+    filterAssets();
+  </script>
+</body>
+</html>

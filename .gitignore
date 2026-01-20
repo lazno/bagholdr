@@ -46,6 +46,14 @@ pnpm-debug.log*
 # Test coverage
 coverage/
 
+# Playwright
+/tests/screenshots/svelte/
+/tests/screenshots/flutter/
+/tests/screenshots/emulator/
+/tests/results/
+/playwright-report/
+/test-results/
+
 # pnpm
 .pnpm-store/
 
@@ -54,3 +62,23 @@ coverage/
 
 # we use AGENTS.md
 CLAUDE.MD
+
+# Dart/Flutter (native/)
+.dart_tool/
+.packages
+.pub-cache/
+.pub/
+**/doc/api/
+*.iml
+
+# Serverpod sensitive files
+native/bagholdr/bagholdr_server/config/passwords.yaml
+native/bagholdr/bagholdr_server/config/firebase_service_account_key.json
+
+# Flutter build artifacts
+native/bagholdr/bagholdr_flutter/build/
+native/bagholdr/bagholdr_server/build/
+native/bagholdr/bagholdr_server/web/app/
+
+# Native scripts runtime files
+native/scripts/.pids/

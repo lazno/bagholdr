@@ -1,0 +1,32 @@
+### DividendEvent - Dividend payout history from Yahoo Finance
+### Tracks ex-dates and amounts for dividend-paying assets
+class: DividendEvent
+table: dividend_events
+
+fields:
+  ### UUID primary key (v7 for lexicographic sorting)
+  id: UuidValue?, defaultPersist=random_v7
+
+  ### Yahoo Finance ticker symbol
+  ticker: String
+
+  ### Ex-dividend date in YYYY-MM-DD format
+  exDate: String
+
+  ### Dividend amount per share
+  amount: double
+
+  ### Currency of the dividend
+  currency: String
+
+  ### When this dividend data was fetched
+  fetchedAt: DateTime
+
+indexes:
+  ### Unique composite index - one dividend per ticker per ex-date
+  dividend_event_ticker_date_idx:
+    fields: ticker, exDate
+    unique: true
+  ### Index for efficient lookups by ticker
+  dividend_event_ticker_idx:
+    fields: ticker

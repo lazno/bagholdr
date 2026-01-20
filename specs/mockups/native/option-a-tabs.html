@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=375, initial-scale=1.0">
+  <title>Option A: Bottom Tab Navigation</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f8f9fa;
+      max-width: 375px;
+      margin: 0 auto;
+      min-height: 812px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Header */
+    .header {
+      background: white;
+      padding: 12px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .portfolio-name { font-size: 17px; font-weight: 600; color: #111; }
+    .status {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: #6b7280;
+    }
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #22c55e;
+    }
+
+    /* Main content */
+    .content {
+      flex: 1;
+      overflow-y: auto;
+      padding-bottom: 80px;
+    }
+
+    /* Portfolio Value Card */
+    .value-card {
+      background: white;
+      padding: 20px 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .value-label { font-size: 12px; color: #6b7280; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .value-amount { font-size: 34px; font-weight: 700; color: #111; margin-bottom: 8px; }
+    .return-row {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .return-absolute {
+      font-size: 15px;
+      font-weight: 600;
+      color: #16a34a;
+    }
+    .return-pct {
+      font-size: 15px;
+      font-weight: 600;
+      color: #16a34a;
+    }
+    .return-annualized {
+      font-size: 13px;
+      color: #6b7280;
+    }
+
+    /* Period Selector */
+    .period-selector {
+      display: flex;
+      gap: 2px;
+      padding: 12px 16px;
+      background: white;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .period-btn {
+      flex: 1;
+      padding: 8px 4px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      background: transparent;
+      border: none;
+      color: #6b7280;
+      text-align: center;
+    }
+    .period-btn.active {
+      background: #111;
+      color: white;
+    }
+
+    /* Stats Row */
+    .stats-row {
+      display: flex;
+      background: white;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .stat-item {
+      flex: 1;
+      padding: 12px 16px;
+      text-align: center;
+      border-right: 1px solid #e5e7eb;
+    }
+    .stat-item:last-child { border-right: none; }
+    .stat-label { font-size: 11px; color: #6b7280; margin-bottom: 2px; text-transform: uppercase; }
+    .stat-value { font-size: 15px; font-weight: 600; color: #111; }
+
+    /* Issues Bar */
+    .issues-bar {
+      background: #fef9c3;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      overflow-x: auto;
+    }
+    .issues-count {
+      background: #facc15;
+      color: #713f12;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .issue-chip {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      background: white;
+      padding: 6px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+      white-space: nowrap;
+      border: 1px solid #fde047;
+    }
+    .issue-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+    }
+    .issue-dot.warning { background: #f59e0b; }
+    .issue-dot.drift-over { background: #f97316; }
+    .issue-dot.drift-under { background: #3b82f6; }
+
+    /* Chart Section */
+    .chart-section {
+      background: white;
+      padding: 16px;
+      margin: 12px;
+      border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+    .chart-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .chart-title { font-size: 14px; font-weight: 600; color: #111; }
+    .chart-range {
+      display: flex;
+      gap: 2px;
+    }
+    .range-btn {
+      padding: 4px 8px;
+      font-size: 11px;
+      border-radius: 4px;
+      background: #f3f4f6;
+      border: none;
+      color: #6b7280;
+    }
+    .range-btn.active { background: #111; color: white; }
+    .chart-placeholder {
+      height: 140px;
+      background: linear-gradient(180deg, #f0fdf4 0%, #ecfdf5 50%, #f0fdf4 100%);
+      border-radius: 8px;
+      position: relative;
+      overflow: hidden;
+    }
+    .chart-line {
+      position: absolute;
+      top: 20px;
+      left: 0;
+      right: 0;
+      height: 100px;
+      background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 100'%3E%3Cpath d='M0,80 Q50,75 100,60 T200,40 T300,20' stroke='%2322c55e' stroke-width='2' fill='none'/%3E%3Cpath d='M0,85 L300,45' stroke='%239ca3af' stroke-width='1' stroke-dasharray='4,4' fill='none'/%3E%3C/svg%3E") no-repeat center;
+      background-size: 100% 100%;
+    }
+    .chart-value {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: white;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #16a34a;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    }
+
+    /* Sleeves Preview */
+    .sleeves-section {
+      padding: 0 12px 12px;
+    }
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 4px;
+    }
+    .section-title { font-size: 14px; font-weight: 600; color: #111; }
+    .see-all { font-size: 13px; color: #6366f1; font-weight: 500; }
+
+    .sleeve-card {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      overflow: hidden;
+    }
+    .sleeve-item {
+      padding: 14px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #f3f4f6;
+    }
+    .sleeve-item:last-child { border-bottom: none; }
+    .sleeve-item.child {
+      padding-left: 32px;
+      background: #fafafa;
+    }
+    .sleeve-left {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .sleeve-name { font-size: 14px; font-weight: 500; color: #111; }
+    .sleeve-value { font-size: 12px; color: #6b7280; }
+    .sleeve-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .sleeve-return {
+      font-size: 13px;
+      font-weight: 500;
+      color: #16a34a;
+    }
+    .sleeve-alloc {
+      text-align: right;
+    }
+    .sleeve-pct { font-size: 13px; font-weight: 600; color: #111; }
+    .sleeve-target { font-size: 11px; color: #9ca3af; }
+    .sleeve-badge {
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+    .sleeve-badge.over { background: #fed7aa; color: #c2410c; }
+    .sleeve-badge.under { background: #dbeafe; color: #1d4ed8; }
+    .sleeve-badge.ok { background: #d1fae5; color: #047857; }
+
+    /* Bottom Tab Bar */
+    .tab-bar {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 375px;
+      background: white;
+      border-top: 1px solid #e5e7eb;
+      display: flex;
+      padding: 6px 0 20px;
+    }
+    .tab-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      font-size: 10px;
+      color: #9ca3af;
+      padding: 4px;
+    }
+    .tab-item.active { color: #111; }
+    .tab-icon {
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <span class="portfolio-name">Mine</span>
+    <div class="status">
+      <span class="status-dot"></span>
+      Online
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="value-card">
+      <div class="value-label">Invested</div>
+      <div class="value-amount">113.534 €</div>
+      <div class="return-row">
+        <span class="return-absolute">+12.344 €</span>
+        <span class="return-pct">+12.2%</span>
+        <span class="return-annualized">(+51.0% p.a.)</span>
+      </div>
+    </div>
+
+    <div class="period-selector">
+      <button class="period-btn">Today</button>
+      <button class="period-btn">1M</button>
+      <button class="period-btn">3M</button>
+      <button class="period-btn">YTD</button>
+      <button class="period-btn">1Y</button>
+      <button class="period-btn active">All</button>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-item">
+        <div class="stat-label">Cash</div>
+        <div class="stat-value">6.400 €</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-label">Total Value</div>
+        <div class="stat-value">119.934 €</div>
+      </div>
+    </div>
+
+    <div class="issues-bar">
+      <span class="issues-count">3 Issues</span>
+      <div class="issue-chip">
+        <span class="issue-dot warning"></span>
+        18 stale prices
+      </div>
+      <div class="issue-chip">
+        <span class="issue-dot drift-under"></span>
+        Safe Haven -2pp
+      </div>
+      <div class="issue-chip">
+        <span class="issue-dot drift-over"></span>
+        Growth +8pp
+      </div>
+    </div>
+
+    <div class="chart-section">
+      <div class="chart-header">
+        <span class="chart-title">Invested Value</span>
+        <div class="chart-range">
+          <button class="range-btn">1M</button>
+          <button class="range-btn">3M</button>
+          <button class="range-btn active">6M</button>
+          <button class="range-btn">1Y</button>
+          <button class="range-btn">All</button>
+        </div>
+      </div>
+      <div class="chart-placeholder">
+        <div class="chart-line"></div>
+        <div class="chart-value">113.3k</div>
+      </div>
+    </div>
+
+    <div class="sleeves-section">
+      <div class="section-header">
+        <span class="section-title">Sleeves</span>
+        <span class="see-all">See All →</span>
+      </div>
+      <div class="sleeve-card">
+        <div class="sleeve-item">
+          <div class="sleeve-left">
+            <span class="sleeve-name">Core</span>
+            <span class="sleeve-value">84.715 €</span>
+          </div>
+          <div class="sleeve-right">
+            <span class="sleeve-return">+10.3%</span>
+            <div class="sleeve-alloc">
+              <div class="sleeve-pct">74.6%</div>
+              <div class="sleeve-target">/71%</div>
+            </div>
+          </div>
+        </div>
+        <div class="sleeve-item">
+          <div class="sleeve-left">
+            <span class="sleeve-name">Satellite</span>
+            <span class="sleeve-value">28.819 €</span>
+          </div>
+          <div class="sleeve-right">
+            <span class="sleeve-return">+18.1%</span>
+            <div class="sleeve-alloc">
+              <div class="sleeve-pct">25.4%</div>
+              <div class="sleeve-target">/25%</div>
+            </div>
+          </div>
+        </div>
+        <div class="sleeve-item child">
+          <div class="sleeve-left">
+            <span class="sleeve-name">└ Safe Haven</span>
+            <span class="sleeve-value">8.874 €</span>
+          </div>
+          <div class="sleeve-right">
+            <span class="sleeve-return">+21.9%</span>
+            <div class="sleeve-alloc">
+              <div class="sleeve-pct">7.8%</div>
+              <div class="sleeve-target">/10%</div>
+            </div>
+            <span class="sleeve-badge under">-2pp</span>
+          </div>
+        </div>
+        <div class="sleeve-item child">
+          <div class="sleeve-left">
+            <span class="sleeve-name">└ Growth</span>
+            <span class="sleeve-value">19.945 €</span>
+          </div>
+          <div class="sleeve-right">
+            <span class="sleeve-return">+16.5%</span>
+            <div class="sleeve-alloc">
+              <div class="sleeve-pct">17.6%</div>
+              <div class="sleeve-target">/10%</div>
+            </div>
+            <span class="sleeve-badge over">+8pp</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tab-bar">
+    <div class="tab-item active">
+      <span class="tab-icon">📊</span>
+      <span>Dashboard</span>
+    </div>
+    <div class="tab-item">
+      <span class="tab-icon">📈</span>
+      <span>Assets</span>
+    </div>
+    <div class="tab-item">
+      <span class="tab-icon">📁</span>
+      <span>Sleeves</span>
+    </div>
+    <div class="tab-item">
+      <span class="tab-icon">⚙️</span>
+      <span>Settings</span>
+    </div>
+  </div>
+</body>
+</html>

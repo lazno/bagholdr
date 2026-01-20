@@ -1,0 +1,34 @@
+### YahooSymbol - Available Yahoo Finance symbols for an ISIN
+### Stores all available symbols (multiple exchanges) for price lookups
+class: YahooSymbol
+table: yahoo_symbols
+
+fields:
+  ### UUID primary key (v7 for lexicographic sorting)
+  id: UuidValue?, defaultPersist=random_v7
+
+  ### Reference to the asset (UUID)
+  assetId: UuidValue, relation(parent=assets)
+
+  ### Yahoo Finance symbol (e.g., "AAPL", "MSFT.L", "IUSQ.DE")
+  symbol: String
+
+  ### Exchange code (e.g., "NMS", "LSE", "GER")
+  exchange: String?
+
+  ### Human-readable exchange name (e.g., "NASDAQ", "London Stock Exchange")
+  exchangeDisplay: String?
+
+  ### Quote type (e.g., "EQUITY", "ETF", "MUTUALFUND")
+  quoteType: String?
+
+  ### When this symbol was resolved/discovered
+  resolvedAt: DateTime
+
+indexes:
+  ### Index for efficient lookups by asset
+  yahoo_symbol_asset_idx:
+    fields: assetId
+  ### Index for lookups by symbol
+  yahoo_symbol_symbol_idx:
+    fields: symbol

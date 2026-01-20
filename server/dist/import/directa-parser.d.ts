@@ -31,7 +31,7 @@ export interface ParsedOrder {
     ticker: string;
     name: string;
     transactionDate: Date;
-    transactionType: 'Buy' | 'Sell';
+    transactionType: 'Buy' | 'Sell' | 'Commission';
     quantity: number;
     amountEur: number;
     currencyAmount: number;

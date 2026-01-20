@@ -18,7 +18,7 @@
 
 <svelte:head>
 	<link rel="icon" href={favicon} />
-	<title>FinancePal</title>
+	<title>Bagholdr</title>
 </svelte:head>
 
 {@render children()}

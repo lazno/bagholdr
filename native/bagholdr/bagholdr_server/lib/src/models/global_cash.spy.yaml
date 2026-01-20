@@ -1,0 +1,24 @@
+### GlobalCash - Single-row table storing portfolio cash balance
+### Tracks cash held outside of invested positions
+class: GlobalCash
+table: global_cash
+
+fields:
+  ### UUID primary key (v7 for lexicographic sorting)
+  id: UuidValue?, defaultPersist=random_v7
+
+  ### Logical identifier for the cash record (e.g., "default")
+  ### Allows multiple cash accounts if needed in future
+  cashId: String
+
+  ### Cash balance in EUR
+  amountEur: double
+
+  ### Last update timestamp
+  updatedAt: DateTime
+
+indexes:
+  ### Unique index on cashId - typically only one "default" record
+  global_cash_id_idx:
+    fields: cashId
+    unique: true

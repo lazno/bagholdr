@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=375, initial-scale=1.0">
+  <title>Option B: Drawer Navigation</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f8f9fa;
+      max-width: 375px;
+      margin: 0 auto;
+      min-height: 812px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Header */
+    .header {
+      background: white;
+      padding: 12px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #e5e7eb;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .hamburger {
+      width: 24px;
+      height: 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 4px;
+      cursor: pointer;
+    }
+    .hamburger span {
+      display: block;
+      height: 2px;
+      background: #111;
+      border-radius: 1px;
+    }
+    .portfolio-name { font-size: 17px; font-weight: 600; color: #111; }
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .privacy-btn {
+      font-size: 18px;
+      opacity: 0.5;
+    }
+    .status {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: #6b7280;
+    }
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #22c55e;
+    }
+
+    /* Main content - full height, no tab bar */
+    .content {
+      flex: 1;
+      overflow-y: auto;
+    }
+
+    /* Portfolio Value Card */
+    .value-card {
+      background: white;
+      padding: 20px 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .value-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+    .value-main {
+      flex: 1;
+    }
+    .value-label { font-size: 12px; color: #6b7280; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .value-amount { font-size: 34px; font-weight: 700; color: #111; margin-bottom: 8px; }
+    .value-secondary {
+      text-align: right;
+    }
+    .secondary-item {
+      margin-bottom: 8px;
+    }
+    .secondary-label { font-size: 10px; color: #6b7280; text-transform: uppercase; }
+    .secondary-value { font-size: 14px; font-weight: 600; color: #111; }
+
+    .return-row {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+    .return-absolute {
+      font-size: 15px;
+      font-weight: 600;
+      color: #16a34a;
+    }
+    .return-pct {
+      font-size: 15px;
+      font-weight: 600;
+      color: #16a34a;
+    }
+    .return-annualized {
+      font-size: 13px;
+      color: #6b7280;
+    }
+
+    /* Period Selector */
+    .period-selector {
+      display: flex;
+      gap: 2px;
+      padding: 12px 16px;
+      background: white;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .period-btn {
+      flex: 1;
+      padding: 8px 4px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      background: transparent;
+      border: none;
+      color: #6b7280;
+      text-align: center;
+    }
+    .period-btn.active {
+      background: #111;
+      color: white;
+    }
+
+    /* Issues Bar */
+    .issues-bar {
+      background: #fef9c3;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      overflow-x: auto;
+    }
+    .issues-count {
+      background: #facc15;
+      color: #713f12;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .issue-chip {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      background: white;
+      padding: 6px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+      white-space: nowrap;
+      border: 1px solid #fde047;
+    }
+    .issue-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+    }
+    .issue-dot.warning { background: #f59e0b; }
+    .issue-dot.drift-over { background: #f97316; }
+    .issue-dot.drift-under { background: #3b82f6; }
+
+    /* Chart Section */
+    .chart-section {
+      background: white;
+      padding: 16px;
+      margin: 12px;
+      border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+    .chart-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .chart-title { font-size: 14px; font-weight: 600; color: #111; }
+    .chart-range {
+      display: flex;
+      gap: 2px;
+    }
+    .range-btn {
+      padding: 4px 8px;
+      font-size: 11px;
+      border-radius: 4px;
+      background: #f3f4f6;
+      border: none;
+      color: #6b7280;
+    }
+    .range-btn.active { background: #111; color: white; }
+    .chart-placeholder {
+      height: 160px;
+      background: linear-gradient(180deg, #f0fdf4 0%, #ecfdf5 50%, #f0fdf4 100%);
+      border-radius: 8px;
+      position: relative;
+      overflow: hidden;
+    }
+    .chart-line {
+      position: absolute;
+      top: 20px;
+      left: 0;
+      right: 0;
+      height: 120px;
+      background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 100'%3E%3Cpath d='M0,80 Q50,75 100,60 T200,40 T300,20' stroke='%2322c55e' stroke-width='2' fill='none'/%3E%3Cpath d='M0,85 L300,45' stroke='%239ca3af' stroke-width='1' stroke-dasharray='4,4' fill='none'/%3E%3C/svg%3E") no-repeat center;
+      background-size: 100% 100%;
+    }
+    .chart-value {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: white;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #16a34a;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    }
+    .chart-legend {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      margin-top: 8px;
+      font-size: 11px;
+      color: #6b7280;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .legend-line {
+      width: 16px;
+      height: 2px;
+    }
+    .legend-line.invested { background: #22c55e; }
+    .legend-line.cost { background: repeating-linear-gradient(90deg, #9ca3af 0, #9ca3af 4px, transparent 4px, transparent 8px); }
+
+    /* Sleeves section - 2x2 grid */
+    .sleeves-section {
+      padding: 0 12px 12px;
+    }
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 4px;
+    }
+    .section-title { font-size: 14px; font-weight: 600; color: #111; }
+    .see-all { font-size: 13px; color: #6366f1; font-weight: 500; }
+
+    .sleeve-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .sleeve-card {
+      background: white;
+      border-radius: 10px;
+      padding: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+    .sleeve-card.has-issue {
+      border: 1px solid #fcd34d;
+      background: #fffbeb;
+    }
+    .sleeve-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 6px;
+    }
+    .sleeve-card-name { font-size: 13px; font-weight: 600; color: #111; }
+    .sleeve-card-badge {
+      font-size: 9px;
+      padding: 2px 5px;
+      border-radius: 3px;
+      font-weight: 600;
+    }
+    .sleeve-card-badge.over { background: #fed7aa; color: #c2410c; }
+    .sleeve-card-badge.under { background: #dbeafe; color: #1d4ed8; }
+    .sleeve-card-value { font-size: 15px; font-weight: 600; color: #111; margin-bottom: 4px; }
+    .sleeve-card-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: #6b7280;
+    }
+    .sleeve-card-return { color: #16a34a; font-weight: 500; }
+
+    /* Child sleeves row */
+    .sleeve-children {
+      grid-column: 1 / -1;
+      display: flex;
+      gap: 8px;
+    }
+    .sleeve-child-card {
+      flex: 1;
+      background: #f9fafb;
+      border-radius: 8px;
+      padding: 10px;
+      border: 1px solid #e5e7eb;
+    }
+    .sleeve-child-card.has-issue {
+      border-color: #fcd34d;
+      background: #fffbeb;
+    }
+    .child-name { font-size: 12px; font-weight: 600; color: #374151; margin-bottom: 4px; }
+    .child-value { font-size: 13px; font-weight: 600; color: #111; }
+    .child-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 10px;
+      color: #6b7280;
+      margin-top: 2px;
+    }
+    .child-return { color: #16a34a; font-weight: 500; }
+
+    /* Top assets preview */
+    .assets-section {
+      background: white;
+      margin: 0 12px 12px;
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+    .assets-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .view-all {
+      font-size: 12px;
+      color: #6366f1;
+      font-weight: 500;
+    }
+    .asset-row {
+      display: flex;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid #f3f4f6;
+    }
+    .asset-row:last-child { border-bottom: none; }
+    .asset-info {
+      flex: 1;
+    }
+    .asset-symbol { font-size: 14px; font-weight: 600; color: #111; }
+    .asset-name { font-size: 11px; color: #6b7280; }
+    .asset-metrics {
+      text-align: right;
+    }
+    .asset-value { font-size: 14px; font-weight: 500; color: #111; }
+    .asset-return { font-size: 12px; font-weight: 500; }
+    .asset-return.positive { color: #16a34a; }
+    .asset-return.negative { color: #dc2626; }
+    .asset-weight {
+      width: 50px;
+      text-align: right;
+      font-size: 12px;
+      color: #6b7280;
+    }
+
+    /* Drawer hint */
+    .drawer-hint {
+      text-align: center;
+      padding: 16px;
+      font-size: 12px;
+      color: #9ca3af;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="header-left">
+      <div class="hamburger">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+      <span class="portfolio-name">Mine</span>
+    </div>
+    <div class="header-right">
+      <span class="privacy-btn">👁</span>
+      <div class="status">
+        <span class="status-dot"></span>
+        Online
+      </div>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="value-card">
+      <div class="value-row">
+        <div class="value-main">
+          <div class="value-label">Invested</div>
+          <div class="value-amount">113.534 €</div>
+        </div>
+        <div class="value-secondary">
+          <div class="secondary-item">
+            <div class="secondary-label">Cash</div>
+            <div class="secondary-value">6.400 €</div>
+          </div>
+          <div class="secondary-item">
+            <div class="secondary-label">Total</div>
+            <div class="secondary-value">119.934 €</div>
+          </div>
+        </div>
+      </div>
+      <div class="return-row">
+        <span class="return-absolute">+12.344 €</span>
+        <span class="return-pct">+12.2%</span>
+        <span class="return-annualized">(+51.0% p.a.)</span>
+      </div>
+    </div>
+
+    <div class="period-selector">
+      <button class="period-btn">Today</button>
+      <button class="period-btn">1M</button>
+      <button class="period-btn">3M</button>
+      <button class="period-btn">YTD</button>
+      <button class="period-btn">1Y</button>
+      <button class="period-btn active">All</button>
+    </div>
+
+    <div class="issues-bar">
+      <span class="issues-count">3 Issues</span>
+      <div class="issue-chip">
+        <span class="issue-dot warning"></span>
+        18 stale prices
+      </div>
+      <div class="issue-chip">
+        <span class="issue-dot drift-under"></span>
+        Safe Haven -2pp
+      </div>
+      <div class="issue-chip">
+        <span class="issue-dot drift-over"></span>
+        Growth +8pp
+      </div>
+    </div>
+
+    <div class="chart-section">
+      <div class="chart-header">
+        <span class="chart-title">Invested Value</span>
+        <div class="chart-range">
+          <button class="range-btn">1M</button>
+          <button class="range-btn">3M</button>
+          <button class="range-btn active">6M</button>
+          <button class="range-btn">1Y</button>
+          <button class="range-btn">All</button>
+        </div>
+      </div>
+      <div class="chart-placeholder">
+        <div class="chart-line"></div>
+        <div class="chart-value">113.3k</div>
+      </div>
+      <div class="chart-legend">
+        <span class="legend-item"><span class="legend-line invested"></span> Invested</span>
+        <span class="legend-item"><span class="legend-line cost"></span> Cost Basis</span>
+      </div>
+    </div>
+
+    <div class="sleeves-section">
+      <div class="section-header">
+        <span class="section-title">Sleeves</span>
+        <span class="see-all">Manage →</span>
+      </div>
+      <div class="sleeve-grid">
+        <div class="sleeve-card">
+          <div class="sleeve-card-header">
+            <span class="sleeve-card-name">Core</span>
+          </div>
+          <div class="sleeve-card-value">84.715 €</div>
+          <div class="sleeve-card-meta">
+            <span class="sleeve-card-return">+10.3%</span>
+            <span>74.6% / 71%</span>
+          </div>
+        </div>
+        <div class="sleeve-card">
+          <div class="sleeve-card-header">
+            <span class="sleeve-card-name">Satellite</span>
+          </div>
+          <div class="sleeve-card-value">28.819 €</div>
+          <div class="sleeve-card-meta">
+            <span class="sleeve-card-return">+18.1%</span>
+            <span>25.4% / 25%</span>
+          </div>
+        </div>
+        <div class="sleeve-children">
+          <div class="sleeve-child-card has-issue">
+            <div class="sleeve-card-header">
+              <span class="child-name">Safe Haven</span>
+              <span class="sleeve-card-badge under">-2pp</span>
+            </div>
+            <div class="child-value">8.874 €</div>
+            <div class="child-meta">
+              <span class="child-return">+21.9%</span>
+              <span>7.8% / 10%</span>
+            </div>
+          </div>
+          <div class="sleeve-child-card has-issue">
+            <div class="sleeve-card-header">
+              <span class="child-name">Growth</span>
+              <span class="sleeve-card-badge over">+8pp</span>
+            </div>
+            <div class="child-value">19.945 €</div>
+            <div class="child-meta">
+              <span class="child-return">+16.5%</span>
+              <span>17.6% / 10%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="assets-section">
+      <div class="assets-header">
+        <span class="section-title" style="margin-bottom:0">Top Assets</span>
+        <span class="view-all">All 20 →</span>
+      </div>
+      <div class="asset-row">
+        <div class="asset-info">
+          <div class="asset-symbol">X.IUSQ</div>
+          <div class="asset-name">iShares MSCI ACWI UCITS</div>
+        </div>
+        <div class="asset-metrics">
+          <div class="asset-value">49.269 €</div>
+          <div class="asset-return positive">+7.8%</div>
+        </div>
+        <div class="asset-weight">43.4%</div>
+      </div>
+      <div class="asset-row">
+        <div class="asset-info">
+          <div class="asset-symbol">X.XBAG</div>
+          <div class="asset-name">Xtrackers II ESG Global Agg</div>
+        </div>
+        <div class="asset-metrics">
+          <div class="asset-value">17.022 €</div>
+          <div class="asset-return positive">+0.3%</div>
+        </div>
+        <div class="asset-weight">15.0%</div>
+      </div>
+      <div class="asset-row">
+        <div class="asset-info">
+          <div class="asset-symbol">WGLD</div>
+          <div class="asset-name">WisdomTree Core Physical Gold</div>
+        </div>
+        <div class="asset-metrics">
+          <div class="asset-value">14.598 €</div>
+          <div class="asset-return positive">+36.5%</div>
+        </div>
+        <div class="asset-weight">12.9%</div>
+      </div>
+    </div>
+
+    <div class="drawer-hint">
+      ☰ Tap menu for Assets, Sleeves, Settings
+    </div>
+  </div>
+</body>
+</html>

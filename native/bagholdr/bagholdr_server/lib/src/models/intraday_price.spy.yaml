@@ -1,0 +1,44 @@
+### IntradayPrice - 5-minute interval OHLCV data for detailed charting
+### Used for intraday charts (last 5 trading days)
+class: IntradayPrice
+table: intraday_prices
+
+fields:
+  ### UUID primary key (v7 for lexicographic sorting)
+  id: UuidValue?, defaultPersist=random_v7
+
+  ### Yahoo Finance ticker symbol
+  ticker: String
+
+  ### Unix timestamp in seconds for this interval
+  timestamp: int
+
+  ### Open price for the interval
+  open: double
+
+  ### Highest price during the interval
+  high: double
+
+  ### Lowest price during the interval
+  low: double
+
+  ### Closing price for the interval
+  close: double
+
+  ### Trading volume during the interval
+  volume: int
+
+  ### Currency of the price data
+  currency: String
+
+  ### When this data was fetched
+  fetchedAt: DateTime
+
+indexes:
+  ### Unique composite index - one price per ticker per timestamp
+  intraday_price_ticker_ts_idx:
+    fields: ticker, timestamp
+    unique: true
+  ### Index for efficient lookups by ticker
+  intraday_price_ticker_idx:
+    fields: ticker

@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=375, initial-scale=1.0">
+  <title>Option E: Expandable Sleeves with Inline Assets</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f8f9fa;
+      max-width: 375px;
+      margin: 0 auto;
+      min-height: 812px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Header */
+    .header {
+      background: white;
+      padding: 10px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .hamburger {
+      width: 20px;
+      height: 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 4px;
+    }
+    .hamburger span {
+      display: block;
+      height: 2px;
+      background: #111;
+    }
+    .portfolio-selector {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 16px;
+      font-weight: 600;
+      color: #111;
+    }
+    .chevron { font-size: 12px; color: #6b7280; }
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .icon-btn { font-size: 18px; opacity: 0.5; }
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #22c55e;
+    }
+
+    /* Main content */
+    .content {
+      flex: 1;
+      overflow-y: auto;
+      padding-bottom: 80px; /* space for floating pill */
+    }
+
+    /* Value section */
+    .value-section {
+      background: white;
+      padding: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .value-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+    .value-main {}
+    .value-label { font-size: 11px; color: #6b7280; text-transform: uppercase; margin-bottom: 2px; }
+    .value-amount { font-size: 28px; font-weight: 700; color: #111; }
+    .value-return {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+      margin-top: 4px;
+    }
+    .return-pct { font-size: 15px; font-weight: 600; color: #16a34a; }
+    .return-abs { font-size: 13px; color: #16a34a; }
+    .return-ann { font-size: 11px; color: #6b7280; }
+    .value-side { text-align: right; }
+    .side-label { font-size: 10px; color: #9ca3af; text-transform: uppercase; }
+    .side-value { font-size: 14px; font-weight: 600; color: #111; }
+
+    /* Issues - tappable row */
+    .issues-row {
+      background: #fffbeb;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-bottom: 1px solid #fde68a;
+    }
+    .issues-icon { font-size: 16px; }
+    .issues-text {
+      flex: 1;
+      font-size: 13px;
+      color: #92400e;
+    }
+    .issues-count {
+      font-size: 12px;
+      font-weight: 600;
+      color: #b45309;
+    }
+    .issues-chevron { color: #d97706; }
+
+    /* Chart */
+    .chart-section {
+      background: white;
+      padding: 12px 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .chart-title { font-size: 13px; font-weight: 600; color: #111; margin-bottom: 8px; }
+    .chart-area {
+      height: 100px;
+      background: linear-gradient(180deg, #f0fdf4 0%, #fff 100%);
+      border-radius: 8px;
+      position: relative;
+      border: 1px solid #e5e7eb;
+    }
+    .chart-svg {
+      position: absolute;
+      inset: 8px;
+    }
+    .chart-legend {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      margin-top: 6px;
+      font-size: 10px;
+      color: #6b7280;
+    }
+    .legend-item { display: flex; align-items: center; gap: 4px; }
+    .legend-line { width: 12px; height: 2px; }
+    .legend-line.invested { background: #22c55e; }
+    .legend-line.cost { background: repeating-linear-gradient(90deg, #9ca3af 0, #9ca3af 3px, transparent 3px, transparent 6px); }
+
+    /* Sleeves with EXPANDABLE assets */
+    .sleeves-section {
+      background: white;
+    }
+    .sleeves-header {
+      padding: 12px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #f3f4f6;
+    }
+    .sleeves-title { font-size: 13px; font-weight: 600; color: #111; }
+    .sleeves-hint { font-size: 11px; color: #9ca3af; }
+
+    .sleeve-item {
+      border-bottom: 1px solid #f3f4f6;
+    }
+    .sleeve-header {
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+    }
+    .sleeve-header:active {
+      background: #f9fafb;
+    }
+    .sleeve-expand {
+      width: 20px;
+      height: 20px;
+      border-radius: 4px;
+      background: #f3f4f6;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      color: #6b7280;
+    }
+    .sleeve-expand.expanded {
+      background: #111;
+      color: white;
+    }
+    .sleeve-info { flex: 1; }
+    .sleeve-name-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .sleeve-name { font-size: 14px; font-weight: 600; color: #111; }
+    .sleeve-badge {
+      font-size: 9px;
+      padding: 2px 5px;
+      border-radius: 3px;
+      font-weight: 600;
+    }
+    .sleeve-badge.over { background: #fed7aa; color: #c2410c; }
+    .sleeve-badge.under { background: #dbeafe; color: #1d4ed8; }
+    .sleeve-meta {
+      display: flex;
+      gap: 12px;
+      font-size: 12px;
+      color: #6b7280;
+      margin-top: 2px;
+    }
+    .sleeve-return { color: #16a34a; font-weight: 500; }
+    .sleeve-value-col {
+      text-align: right;
+    }
+    .sleeve-value { font-size: 14px; font-weight: 600; color: #111; }
+    .sleeve-alloc { font-size: 11px; color: #6b7280; }
+
+    /* Expanded assets list */
+    .sleeve-assets {
+      background: #fafafa;
+      padding: 0 16px 12px 48px;
+    }
+    .sleeve-assets.hidden { display: none; }
+    .sleeve-asset {
+      display: flex;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    .sleeve-asset:last-child { border-bottom: none; }
+    .asset-info { flex: 1; }
+    .asset-symbol { font-size: 13px; font-weight: 600; color: #374151; }
+    .asset-name { font-size: 10px; color: #9ca3af; }
+    .asset-metrics { text-align: right; }
+    .asset-value { font-size: 13px; font-weight: 500; color: #374151; }
+    .asset-return { font-size: 11px; font-weight: 500; color: #16a34a; }
+    .see-all-assets {
+      padding: 8px 0;
+      font-size: 12px;
+      color: #6366f1;
+      font-weight: 500;
+    }
+
+    /* FLOATING time range pill */
+    .floating-range {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: white;
+      border-radius: 24px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+      padding: 6px;
+      display: flex;
+      gap: 4px;
+      z-index: 100;
+    }
+    .floating-pill {
+      padding: 8px 12px;
+      font-size: 12px;
+      border-radius: 18px;
+      background: transparent;
+      border: none;
+      color: #6b7280;
+      font-weight: 500;
+    }
+    .floating-pill.active {
+      background: #111;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="header-left">
+      <div class="hamburger">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+      <div class="portfolio-selector">
+        Mine <span class="chevron">▼</span>
+      </div>
+    </div>
+    <div class="header-right">
+      <span class="icon-btn">👁</span>
+      <span class="status-dot"></span>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="value-section">
+      <div class="value-row">
+        <div class="value-main">
+          <div class="value-label">Invested</div>
+          <div class="value-amount">113.534 €</div>
+          <div class="value-return">
+            <span class="return-pct">+12.2%</span>
+            <span class="return-abs">+12.344 €</span>
+            <span class="return-ann">(51% p.a.)</span>
+          </div>
+        </div>
+        <div class="value-side">
+          <div class="side-label">Cash</div>
+          <div class="side-value">6.400 €</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="issues-row">
+      <span class="issues-icon">⚠️</span>
+      <span class="issues-text">18 stale prices · 2 allocation issues</span>
+      <span class="issues-count">3</span>
+      <span class="issues-chevron">›</span>
+    </div>
+
+    <div class="chart-section">
+      <div class="chart-title">Performance</div>
+      <div class="chart-area">
+        <svg class="chart-svg" viewBox="0 0 340 80" preserveAspectRatio="none">
+          <path d="M0,70 Q40,65 80,55 T160,40 T240,25 T320,10" stroke="#22c55e" stroke-width="2" fill="none"/>
+          <path d="M0,75 L320,40" stroke="#9ca3af" stroke-width="1" stroke-dasharray="4,4" fill="none"/>
+        </svg>
+      </div>
+      <div class="chart-legend">
+        <span class="legend-item"><span class="legend-line invested"></span> Value</span>
+        <span class="legend-item"><span class="legend-line cost"></span> Cost</span>
+      </div>
+    </div>
+
+    <div class="sleeves-section">
+      <div class="sleeves-header">
+        <span class="sleeves-title">Sleeves</span>
+        <span class="sleeves-hint">Tap to see assets</span>
+      </div>
+
+      <!-- Core sleeve - collapsed -->
+      <div class="sleeve-item">
+        <div class="sleeve-header">
+          <span class="sleeve-expand">+</span>
+          <div class="sleeve-info">
+            <div class="sleeve-name-row">
+              <span class="sleeve-name">Core</span>
+            </div>
+            <div class="sleeve-meta">
+              <span class="sleeve-return">+10.3%</span>
+              <span>8 assets</span>
+            </div>
+          </div>
+          <div class="sleeve-value-col">
+            <div class="sleeve-value">84.715 €</div>
+            <div class="sleeve-alloc">74.6% / 71%</div>
+          </div>
+        </div>
+        <div class="sleeve-assets hidden"></div>
+      </div>
+
+      <!-- Satellite sleeve - collapsed -->
+      <div class="sleeve-item">
+        <div class="sleeve-header">
+          <span class="sleeve-expand">+</span>
+          <div class="sleeve-info">
+            <div class="sleeve-name-row">
+              <span class="sleeve-name">Satellite</span>
+            </div>
+            <div class="sleeve-meta">
+              <span class="sleeve-return">+18.1%</span>
+              <span>12 assets</span>
+            </div>
+          </div>
+          <div class="sleeve-value-col">
+            <div class="sleeve-value">28.819 €</div>
+            <div class="sleeve-alloc">25.4% / 25%</div>
+          </div>
+        </div>
+        <div class="sleeve-assets hidden"></div>
+      </div>
+
+      <!-- Safe Haven - EXPANDED to show assets -->
+      <div class="sleeve-item">
+        <div class="sleeve-header">
+          <span class="sleeve-expand expanded">−</span>
+          <div class="sleeve-info">
+            <div class="sleeve-name-row">
+              <span class="sleeve-name">Safe Haven</span>
+              <span class="sleeve-badge under">-2pp</span>
+            </div>
+            <div class="sleeve-meta">
+              <span class="sleeve-return">+21.9%</span>
+              <span>4 assets</span>
+            </div>
+          </div>
+          <div class="sleeve-value-col">
+            <div class="sleeve-value">8.874 €</div>
+            <div class="sleeve-alloc">7.8% / 10%</div>
+          </div>
+        </div>
+        <div class="sleeve-assets">
+          <div class="sleeve-asset">
+            <div class="asset-info">
+              <div class="asset-symbol">PHPD</div>
+              <div class="asset-name">WisdomTree Physical Palladium</div>
+            </div>
+            <div class="asset-metrics">
+              <div class="asset-value">4.732 €</div>
+              <div class="asset-return">+42.1%</div>
+            </div>
+          </div>
+          <div class="sleeve-asset">
+            <div class="asset-info">
+              <div class="asset-symbol">.UPS</div>
+              <div class="asset-name">United Parcel Service</div>
+            </div>
+            <div class="asset-metrics">
+              <div class="asset-value">2.753 €</div>
+              <div class="asset-return">+6.0%</div>
+            </div>
+          </div>
+          <div class="see-all-assets">See all 4 assets →</div>
+        </div>
+      </div>
+
+      <!-- Growth - collapsed with issue -->
+      <div class="sleeve-item">
+        <div class="sleeve-header">
+          <span class="sleeve-expand">+</span>
+          <div class="sleeve-info">
+            <div class="sleeve-name-row">
+              <span class="sleeve-name">Growth</span>
+              <span class="sleeve-badge over">+8pp</span>
+            </div>
+            <div class="sleeve-meta">
+              <span class="sleeve-return">+16.5%</span>
+              <span>6 assets</span>
+            </div>
+          </div>
+          <div class="sleeve-value-col">
+            <div class="sleeve-value">19.945 €</div>
+            <div class="sleeve-alloc">17.6% / 10%</div>
+          </div>
+        </div>
+        <div class="sleeve-assets hidden"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FLOATING time range pill -->
+  <div class="floating-range">
+    <button class="floating-pill">1D</button>
+    <button class="floating-pill">1W</button>
+    <button class="floating-pill">1M</button>
+    <button class="floating-pill">YTD</button>
+    <button class="floating-pill">1Y</button>
+    <button class="floating-pill active">All</button>
+  </div>
+</body>
+</html>

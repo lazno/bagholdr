@@ -101,6 +101,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 currency: string;
                 metadata: import("../db/schema").AssetMetadata | null;
                 yahooSymbol: string | null;
+                archived: boolean;
             }[];
             meta: object;
         }>;
@@ -119,6 +120,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 currency: string;
                 metadata: import("../db/schema").AssetMetadata | null;
                 yahooSymbol: string | null;
+                archived: boolean;
             }[];
             meta: object;
         }>;
@@ -135,6 +137,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 currency: string;
                 metadata: import("../db/schema").AssetMetadata | null;
                 yahooSymbol: string | null;
+                archived: boolean;
             };
             meta: object;
         }>;
@@ -149,6 +152,40 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
             };
             output: {
                 success: boolean;
+            };
+            meta: object;
+        }>;
+        bulkUpdateType: import("@trpc/server").TRPCMutationProcedure<{
+            input: {
+                isins: string[];
+                assetType: "stock" | "etf" | "bond" | "fund" | "commodity" | "other";
+            };
+            output: {
+                success: boolean;
+                updatedCount: number;
+            };
+            meta: object;
+        }>;
+        setArchived: import("@trpc/server").TRPCMutationProcedure<{
+            input: {
+                isin: string;
+                archived: boolean;
+            };
+            output: {
+                success: boolean;
+                archived: boolean;
+            };
+            meta: object;
+        }>;
+        bulkSetArchived: import("@trpc/server").TRPCMutationProcedure<{
+            input: {
+                isins: string[];
+                archived: boolean;
+            };
+            output: {
+                success: boolean;
+                updatedCount: number;
+                archived: boolean;
             };
             meta: object;
         }>;
@@ -175,6 +212,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                     currency: string;
                     metadata: import("../db/schema").AssetMetadata | null;
                     yahooSymbol: string | null;
+                    archived: boolean;
                 };
                 id: string;
                 assetIsin: string;
@@ -235,7 +273,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                     ticker: string;
                     name: string;
                     transactionDate: unknown;
-                    transactionType: "Buy" | "Sell";
+                    transactionType: "Buy" | "Sell" | "Commission";
                     quantity: number;
                     amountEur: number;
                     currencyAmount: number;
@@ -617,6 +655,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                     currency: string;
                     metadata: import("../db/schema").AssetMetadata | null;
                     yahooSymbol: string | null;
+                    archived: boolean;
                 }[];
                 id: string;
                 portfolioId: string;
@@ -726,6 +765,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                     currency: string;
                     metadata: import("../db/schema").AssetMetadata | null;
                     yahooSymbol: string | null;
+                    archived: boolean;
                 };
                 holding: {
                     id: string;
@@ -754,6 +794,21 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 portfolioId: string;
             };
             output: import("./routers/valuation").PortfolioValuation;
+            meta: object;
+        }>;
+        getChartData: import("@trpc/server").TRPCQueryProcedure<{
+            input: {
+                portfolioId: string;
+                range?: "all" | "1y" | "1m" | "3m" | "6m" | undefined;
+            };
+            output: import("./routers/valuation").ChartDataResult;
+            meta: object;
+        }>;
+        getHistoricalReturns: import("@trpc/server").TRPCQueryProcedure<{
+            input: {
+                portfolioId: string;
+            };
+            output: import("./routers/valuation").HistoricalReturnsResult;
             meta: object;
         }>;
     }>>;

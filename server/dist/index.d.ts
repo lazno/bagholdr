@@ -1,5 +1,5 @@
 /**
- * FinancePal Server
+ * Bagholdr Server
  *
  * Standalone Hono server with:
  * - tRPC API endpoints (HTTP + WebSocket for subscriptions)

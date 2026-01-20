@@ -1078,58 +1078,33 @@ Understand the existing valuation logic before porting. **No code changes — ju
 **Priority**: High | **Status**: `[ ]`
 **Blocked by**: None (NAPP-014 complete)
 
-Translate valuation logic from TypeScript to Dart. This endpoint powers the Hero section of the dashboard. Reference mockup: [`specs/mockups/native/interactive-w2-refined.html`](mockups/native/interactive-w2-refined.html)
+Translate valuation logic from TypeScript to Dart. Powers the Hero section of the dashboard.
+
+**References**:
+- **Formulas**: [specs/calculus-spec.md](calculus-spec.md) — cost basis, MWR/XIRR, bands
+- **Porting guide**: [Valuation Logic Summary](#valuation-logic-summary) — endpoints, types, helper functions
+- **Source code**: `server/src/trpc/routers/valuation.ts`
+- **Mockup**: [specs/mockups/native/interactive-w2-refined.html](mockups/native/interactive-w2-refined.html)
 
 **File**: `bagholdr_server/lib/src/endpoints/valuation_endpoint.dart`
 
 ---
 
-#### Response Schema
-
-```dart
-class PortfolioSummaryResponse {
-  // Values
-  double investedValue;    // Sum of all holding values
-  double cashBalance;      // Portfolio cash balance
-  double totalValue;       // invested + cash
-
-  // Returns for selected period
-  double returnPct;        // Time-weighted return %
-  double returnAbs;        // Absolute return in €
-  double xirr;             // Annualized internal rate of return %
-
-  // Metadata
-  DateTime lastUpdated;    // When prices were last fetched
-}
-```
-
----
-
-#### Calculations
-
-| Field | Formula |
-|-------|---------|
-| investedValue | Sum of (holding.quantity × latestPrice) for all holdings |
-| returnPct | TWR using Modified Dietz method |
-| returnAbs | investedValue - costBasisAtPeriodStart |
-| xirr | Newton-Raphson iteration on cash flows |
-
----
-
 **Tasks**:
 - [ ] Create `ValuationEndpoint` class
-- [ ] Implement `getPortfolioSummary(portfolioId, period)` method
-- [ ] Port TWR calculation from TypeScript
-- [ ] Port XIRR calculation from TypeScript
-- [ ] Port cost basis calculation
+- [ ] Port `getPortfolioValuation` — sleeve hierarchy, band violations, health issues
+- [ ] Port `getHistoricalReturns` — MWR returns by period
+- [ ] Port `getChartData` — historical value + cost basis series
+- [ ] Port helper functions: `calculateSleeveTotal`, `calculateMWR`, `formatPeriodLabel`
+- [ ] Port or find XIRR implementation for Dart
 - [ ] Run `serverpod generate`
 - [ ] Validate against existing backend (same inputs → same outputs)
 
 **Acceptance Criteria**:
 - [ ] Returns correct portfolio value
-- [ ] TWR matches existing app for all periods (1M, 3M, 6M, YTD, 1Y, ALL)
-- [ ] XIRR matches existing app
-- [ ] Cost basis matches existing app
+- [ ] MWR/XIRR matches existing app for all periods (1M, 3M, 6M, YTD, 1Y, ALL)
+- [ ] Cost basis matches existing app (Average Cost Method)
+- [ ] Sleeve totals calculated recursively
 
 ---
 
@@ -2197,113 +2172,54 @@ _These sections are filled in by research tasks._
 
 ### Valuation Logic Summary
 
-**Source files**: `server/src/trpc/routers/valuation.ts`, `specs/calculus-spec.md`
+**Formulas & concepts**: See [specs/calculus-spec.md](calculus-spec.md) for all financial calculations (cost basis, MWR/XIRR, bands, etc.)
 
-#### Main Endpoints
-
-| Endpoint | Purpose |
-|----------|---------|
-| `getPortfolioValuation` | Full portfolio valuation with allocation breakdown, sleeve hierarchy, band violations, health issues |
-| `getChartData` | Historical chart data (invested value + cost basis over time) for ranges 1m/3m/6m/1y/all |
-| `getHistoricalReturns` | Portfolio returns for periods (today/1w/1m/6m/ytd/1y/all) using MWR + per-asset returns |
+**Source code**: `server/src/trpc/routers/valuation.ts`
 
 ---
 
-#### Core Calculations
+#### Endpoints to Port
 
-**1. Portfolio Value**
-```
-investedValue = Σ (holding.quantity × priceEur)
-totalValue = investedValue + cashBalance
-```
-If no cached price, falls back to cost basis.
-
-**2. Cost Basis (Average Cost Method)**
-```
-For each order chronologically:
-  BUY (qty > 0):    totalCost += order.totalEur, totalQty += order.quantity
-  SELL (qty < 0):   costReduction = avgCost × soldQty, totalCost -= costReduction
-  COMMISSION (qty = 0): totalCost += order.totalEur (adds cost, no quantity change)
-```
-Average cost stays same after sells, increases with commissions.
-
-**3. Return Calculations (MWR via XIRR)**
-
-Uses the `xirr` npm package. XIRR finds the constant annual rate of return.
-
-```typescript
-// Transaction format for XIRR
-transactions = [
-  { amount: -startValue, when: startDate },   // "Buy" portfolio at start
-  ...cashFlows.map(cf => ({ amount: -cf.amount, when: cf.date })),  // Buys negative, sells positive
-  { amount: endValue, when: endDate }          // "Sell" portfolio at end
-];
-annualizedReturn = xirr(transactions);
-compoundedReturn = (1 + annualizedReturn)^periodYears - 1;
-absoluteReturn = currentValue - startValue - netCashFlow;
-```
-
-**4. Sleeve Total Value (Recursive)**
-```
-calculateSleeveTotal(sleeveId) =
-  directValue(sleeveId) + Σ calculateSleeveTotal(childId) for each non-cash child
-```
-
-**5. Band Evaluation**
-```
-halfWidth = clamp(target × relativeTolerance, absoluteFloor, absoluteCap)
-lowerBand = target - halfWidth
-upperBand = target + halfWidth
-status = actual < lower || actual > upper ? "warning" : "ok"
-```
+| Endpoint | Purpose | Powers |
+|----------|---------|--------|
+| `getPortfolioValuation` | Full valuation with sleeve hierarchy, band violations, health issues | Hero section, Strategy section |
+| `getChartData` | Historical invested value + cost basis series (1m/3m/6m/1y/all) | Portfolio chart |
+| `getHistoricalReturns` | MWR returns by period + per-asset returns | Return displays, asset list |
 
 ---
 
 #### Response Types to Port
 
-| Type | Fields |
-|------|--------|
-| `AssetValuation` | isin, ticker, name, assetType, quantity, priceEur, costBasisEur, valueEur, percentOfInvested, currency, priceNative, costBasisNative |
-| `SleeveAllocation` | sleeveId, sleeveName, parentSleeveId, budgetPercent, directValueEur, totalValueEur, actualPercentInvested, band, status, deltaPercent |
-| `PortfolioValuation` | portfolioId, cashEur, investedValueEur, totalValueEur, totalCostBasisEur, sleeves[], unassignedAssets[], bandConfig, violationCount, hasAllPrices, stalePriceAssets[], missingSymbolAssets[], lastSyncAt |
+| Type | Key Fields |
+|------|------------|
+| `AssetValuation` | isin, ticker, name, quantity, priceEur, costBasisEur, valueEur, percentOfInvested |
+| `SleeveAllocation` | sleeveId, sleeveName, parentSleeveId, budgetPercent, totalValueEur, actualPercentInvested, band, status, deltaPercent |
+| `PortfolioValuation` | portfolioId, cashEur, investedValueEur, totalValueEur, totalCostBasisEur, sleeves[], bandConfig, violationCount, stalePriceAssets[], lastSyncAt |
 | `ChartDataPoint` | date, investedValue, costBasis |
-| `PeriodReturn` | period, currentValue, startValue, absoluteReturn, compoundedReturn, annualizedReturn, periodYears, netCashFlow, cashFlowCount |
-| `AssetPeriodReturn` | isin, ticker, currentPrice, historicalPrice, absoluteReturn, compoundedReturn, annualizedReturn, periodYears, isShortHolding |
+| `PeriodReturn` | period, currentValue, startValue, absoluteReturn, compoundedReturn, annualizedReturn, periodYears, netCashFlow |
+| `AssetPeriodReturn` | isin, currentPrice, historicalPrice, compoundedReturn, annualizedReturn, isShortHolding |
 
 ---
 
 #### Helper Functions to Port
 
-| Function | Purpose |
-|----------|---------|
-| `calculateSleeveTotal` | Recursive sleeve value including descendants |
-| `calculateMWR` | XIRR calculation with cash flows |
-| `calculateTWR` | TWR calculation (reserved for benchmarks) |
-| `formatPeriodLabel` | Format years as "1d", "2w", "3mo", "1.5y" |
-| `calculateBand` / `evaluateStatus` | Band width and status calculation (from `utils/bands.ts`) |
+| Function | Location | Purpose |
+|----------|----------|---------|
+| `calculateSleeveTotal` | valuation.ts:198 | Recursive sleeve value including descendants |
+| `calculateMWR` | valuation.ts:1683 | XIRR calculation with cash flows |
+| `calculateTWR` | valuation.ts:1597 | TWR calculation (reserved for benchmarks) |
+| `formatPeriodLabel` | valuation.ts:1805 | Format years as "1d", "2w", "3mo", "1.5y" |
+| `calculateBand` / `evaluateStatus` | utils/bands.ts | Band width and status calculation |
 
 ---
 
-#### Edge Cases Handled
+#### XIRR Dependency
 
-- **No cash flows**: Use simple annualized return
-- **Short periods (< 1 day)**: Use simple return without annualization
-- **XIRR convergence failure**: Fall back to simple annualized return
-- **Zero starting value**: Return 0%
-- **Missing prices**: Fall back to cost basis for valuation
-- **Short holdings**: Calculate from asset inception, show holding period label
+TypeScript uses the `xirr` npm package. For Dart, either:
+1. Port the Newton-Raphson algorithm (~50 lines)
+2. Find a Dart package (e.g., `financial` on pub.dev)
 
----
-
-#### Dependencies
-
-| TypeScript | Dart Equivalent |
-|------------|-----------------|
-| `xirr` npm package | Need XIRR implementation or Dart package |
-| `drizzle-orm` | Serverpod ORM |
-| `zod` | Built-in Dart types |
-
-**XIRR in Dart**: Either port the Newton-Raphson algorithm or use a Dart package. The algorithm iteratively solves for rate `r` where `Σ CFᵢ × (1+r)^(-tᵢ) = 0`.
+The algorithm solves for rate `r` where `Σ CFᵢ × (1+r)^(-tᵢ) = 0`.
 
 ### Yahoo Oracle Summary
 

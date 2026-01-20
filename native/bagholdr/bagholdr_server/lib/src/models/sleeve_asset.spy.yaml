@@ -1,0 +1,26 @@
+### SleeveAsset - Junction table linking sleeves to assets
+### Enables many-to-many relationship between sleeves and assets
+class: SleeveAsset
+table: sleeve_assets
+
+fields:
+  ### UUID primary key (v7 for lexicographic sorting)
+  id: UuidValue?, defaultPersist=random_v7
+
+  ### Reference to the sleeve (UUID)
+  sleeveId: UuidValue, relation(parent=sleeves)
+
+  ### Reference to the asset (UUID)
+  assetId: UuidValue, relation(parent=assets)
+
+indexes:
+  ### Unique composite index - each asset can only be in a sleeve once
+  sleeve_asset_unique_idx:
+    fields: sleeveId, assetId
+    unique: true
+  ### Index for efficient lookups by sleeve
+  sleeve_asset_sleeve_idx:
+    fields: sleeveId
+  ### Index for efficient lookups by asset
+  sleeve_asset_asset_idx:
+    fields: assetId

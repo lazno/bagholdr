@@ -5,7 +5,7 @@
 export const PORT = parseInt(process.env.PORT ?? '3001', 10);
 export const CORS_ORIGIN = process.env.CORS_ORIGIN ?? 'http://localhost:5173';
 // Database
-export const DB_PATH = process.env.DB_PATH ?? 'financepal.db';
+export const DB_PATH = process.env.DB_PATH ?? 'bagholdr.db';
 // Price oracle
 export const PRICE_CACHE_TTL_MS = 6 * 60 * 60 * 1000; // 6 hours
 // Yahoo Finance API

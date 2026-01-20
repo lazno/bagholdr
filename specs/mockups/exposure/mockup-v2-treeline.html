@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exposure - Treeline Scope (Dashboard V2 Style)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+  </style>
+</head>
+<body class="bg-slate-100 min-h-screen">
+  <div class="mx-auto max-w-[1200px] px-6 py-6">
+
+    <!-- Top Card -->
+    <div class="rounded-xl border border-slate-200 bg-white p-5 mb-6">
+      <!-- Header row with breadcrumb-style scope -->
+      <div class="flex items-center justify-between mb-5">
+        <div class="flex items-center gap-2">
+          <span class="text-sm font-semibold text-slate-900">Exposure</span>
+          <span class="text-slate-300">/</span>
+          <!-- Breadcrumb navigation -->
+          <button class="text-sm text-slate-500 hover:text-slate-700">Portfolio</button>
+          <span class="text-slate-300">/</span>
+          <button class="text-sm text-slate-500 hover:text-slate-700">Satellite</button>
+          <span class="text-slate-300">/</span>
+          <span class="text-sm font-medium text-slate-900">Growth</span>
+          <!-- Quick scope switcher -->
+          <div class="relative ml-2 group">
+            <button class="p-1 rounded hover:bg-slate-100">
+              <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M19 9l-7 7-7-7"/>
+              </svg>
+            </button>
+            <!-- Dropdown (shown on hover/click) -->
+            <div class="hidden group-hover:block absolute top-full left-0 mt-1 w-48 bg-white rounded-lg shadow-lg border border-slate-200 py-1 z-10">
+              <button class="w-full px-3 py-1.5 text-left text-sm hover:bg-slate-50">Portfolio (all)</button>
+              <button class="w-full px-3 py-1.5 text-left text-sm hover:bg-slate-50 pl-6">Core</button>
+              <button class="w-full px-3 py-1.5 text-left text-sm hover:bg-slate-50 pl-9 text-slate-500">Fixed Income</button>
+              <button class="w-full px-3 py-1.5 text-left text-sm hover:bg-slate-50 pl-9 text-slate-500">Large Cap</button>
+              <button class="w-full px-3 py-1.5 text-left text-sm hover:bg-slate-50 pl-6">Satellite</button>
+              <button class="w-full px-3 py-1.5 text-left text-sm hover:bg-slate-50 pl-9 bg-slate-100 font-medium">Growth</button>
+              <button class="w-full px-3 py-1.5 text-left text-sm hover:bg-slate-50 pl-9 text-slate-500">Speculative</button>
+            </div>
+          </div>
+        </div>
+        <div class="flex items-center gap-4">
+          <span class="text-xs text-slate-400">€164,500 · 18 assets</span>
+          <button class="px-3 py-1.5 text-xs font-medium border border-slate-200 rounded-lg hover:bg-slate-50">
+            Refresh
+          </button>
+        </div>
+      </div>
+
+      <!-- Dimension selector as segmented control -->
+      <div class="flex items-center gap-4">
+        <div class="inline-flex rounded-lg border border-slate-200 p-0.5 bg-slate-50">
+          <button class="px-4 py-1.5 text-xs font-medium rounded-md bg-white shadow-sm text-slate-900">
+            Sector
+            <span class="ml-1 w-1.5 h-1.5 inline-block rounded-full bg-red-500"></span>
+          </button>
+          <button class="px-4 py-1.5 text-xs font-medium text-slate-500 hover:text-slate-700 rounded-md">
+            Industry
+            <span class="ml-1 w-1.5 h-1.5 inline-block rounded-full bg-red-500"></span>
+          </button>
+          <button class="px-4 py-1.5 text-xs font-medium text-slate-500 hover:text-slate-700 rounded-md">
+            Country
+            <span class="ml-1 w-1.5 h-1.5 inline-block rounded-full bg-red-500"></span>
+          </button>
+          <button class="px-4 py-1.5 text-xs font-medium text-slate-500 hover:text-slate-700 rounded-md">
+            Market Cap
+          </button>
+        </div>
+        <div class="flex-1"></div>
+        <span class="text-xs text-slate-400">Max rule: 25%</span>
+      </div>
+    </div>
+
+    <!-- Issues Bar (compact) -->
+    <div class="flex items-center gap-2 px-4 py-2 bg-amber-50 border border-amber-200 rounded-xl mb-6">
+      <span class="font-semibold text-amber-800 text-xs flex items-center gap-1.5">
+        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="8" x2="12" y2="12"/>
+        </svg>
+        4 violations
+      </span>
+      <span class="w-px h-4 bg-amber-200"></span>
+      <div class="flex gap-1.5 flex-wrap">
+        <span class="px-2 py-0.5 text-[11px] bg-white border border-amber-200 rounded text-amber-700">Tech 32%</span>
+        <span class="px-2 py-0.5 text-[11px] bg-white border border-amber-200 rounded text-amber-700">Sw-Infra 22%</span>
+        <span class="px-2 py-0.5 text-[11px] bg-white border border-amber-200 rounded text-amber-700">Semis 18%</span>
+        <span class="px-2 py-0.5 text-[11px] bg-white border border-amber-200 rounded text-amber-700">US 65%</span>
+      </div>
+    </div>
+
+    <!-- Main Content (full width, single card) -->
+    <div class="rounded-xl border border-slate-200 bg-white overflow-hidden">
+      <!-- Breakdown + Drilldown in 2 columns -->
+      <div class="grid grid-cols-[1fr_340px]">
+        <!-- Left: Breakdown -->
+        <div class="border-r border-slate-100">
+          <div class="flex items-center justify-between px-5 py-3 border-b border-slate-100">
+            <span class="text-xs font-semibold uppercase tracking-wider text-slate-500">Sector Breakdown</span>
+            <span class="text-xs text-slate-400">11 categories</span>
+          </div>
+
+          <div class="p-4 space-y-2">
+            <div class="flex items-center gap-3 p-2 -mx-2 rounded-lg bg-blue-50 border border-blue-100 cursor-pointer">
+              <div class="w-2 h-2 rounded-full bg-red-500"></div>
+              <span class="w-32 text-sm font-medium text-slate-800 truncate">Technology</span>
+              <div class="flex-1 h-4 bg-white rounded relative overflow-hidden border border-slate-200">
+                <div class="h-full bg-red-500 rounded-l" style="width: 32%"></div>
+                <div class="absolute top-0 bottom-0 w-0.5 bg-slate-700" style="left: 25%"></div>
+              </div>
+              <span class="w-12 text-sm font-bold tabular-nums text-right text-red-600">32%</span>
+            </div>
+
+            <div class="flex items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-slate-50 cursor-pointer">
+              <div class="w-2 h-2 rounded-full bg-transparent"></div>
+              <span class="w-32 text-sm text-slate-600 truncate">Healthcare</span>
+              <div class="flex-1 h-4 bg-slate-100 rounded overflow-hidden">
+                <div class="h-full bg-blue-500 rounded" style="width: 22%"></div>
+              </div>
+              <span class="w-12 text-sm font-semibold tabular-nums text-right">22%</span>
+            </div>
+
+            <div class="flex items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-slate-50 cursor-pointer">
+              <div class="w-2 h-2 rounded-full bg-transparent"></div>
+              <span class="w-32 text-sm text-slate-600 truncate">Financials</span>
+              <div class="flex-1 h-4 bg-slate-100 rounded overflow-hidden">
+                <div class="h-full bg-blue-500 rounded" style="width: 18%"></div>
+              </div>
+              <span class="w-12 text-sm font-semibold tabular-nums text-right">18%</span>
+            </div>
+
+            <div class="flex items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-slate-50 cursor-pointer">
+              <div class="w-2 h-2 rounded-full bg-transparent"></div>
+              <span class="w-32 text-sm text-slate-600 truncate">Consumer Cyclical</span>
+              <div class="flex-1 h-4 bg-slate-100 rounded overflow-hidden">
+                <div class="h-full bg-blue-500 rounded" style="width: 12%"></div>
+              </div>
+              <span class="w-12 text-sm font-semibold tabular-nums text-right">12%</span>
+            </div>
+
+            <div class="flex items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-slate-50 cursor-pointer">
+              <div class="w-2 h-2 rounded-full bg-transparent"></div>
+              <span class="w-32 text-sm text-slate-600 truncate">Industrials</span>
+              <div class="flex-1 h-4 bg-slate-100 rounded overflow-hidden">
+                <div class="h-full bg-blue-500 rounded" style="width: 8%"></div>
+              </div>
+              <span class="w-12 text-sm font-semibold tabular-nums text-right">8%</span>
+            </div>
+
+            <div class="flex items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-slate-50 cursor-pointer">
+              <div class="w-2 h-2 rounded-full bg-transparent"></div>
+              <span class="w-32 text-sm text-slate-600 truncate">Energy</span>
+              <div class="flex-1 h-4 bg-slate-100 rounded overflow-hidden">
+                <div class="h-full bg-blue-500 rounded" style="width: 5%"></div>
+              </div>
+              <span class="w-12 text-sm font-semibold tabular-nums text-right">5%</span>
+            </div>
+
+            <div class="flex items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-slate-50 cursor-pointer">
+              <div class="w-2 h-2 rounded-full bg-transparent"></div>
+              <span class="w-32 text-sm text-slate-400 truncate">Cash + Other</span>
+              <div class="flex-1 h-4 bg-slate-100 rounded overflow-hidden">
+                <div class="h-full bg-slate-400 rounded" style="width: 3%"></div>
+              </div>
+              <span class="w-12 text-sm font-semibold tabular-nums text-right text-slate-400">3%</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Drilldown -->
+        <div class="bg-slate-50">
+          <div class="flex items-center justify-between px-4 py-3 border-b border-slate-200">
+            <span class="text-xs font-semibold uppercase tracking-wider text-slate-500">Technology</span>
+            <span class="text-sm font-bold text-red-600">32%</span>
+          </div>
+
+          <div class="p-3 space-y-2">
+            <div class="bg-white rounded-lg p-3 border border-slate-200 hover:border-slate-300 cursor-pointer">
+              <div class="flex items-center justify-between mb-1">
+                <span class="font-semibold text-slate-900">AAPL</span>
+                <span class="text-sm font-bold tabular-nums text-slate-700">7.6%</span>
+              </div>
+              <div class="flex items-center gap-2 text-xs text-slate-500">
+                <span class="px-1.5 py-0.5 bg-slate-100 rounded">Stock</span>
+                <span>Apple Inc.</span>
+              </div>
+            </div>
+
+            <div class="bg-white rounded-lg p-3 border border-slate-200 hover:border-slate-300 cursor-pointer">
+              <div class="flex items-center justify-between mb-1">
+                <span class="font-semibold text-slate-900">VWCE</span>
+                <span class="text-sm font-bold tabular-nums text-slate-700">8.0%</span>
+              </div>
+              <div class="flex items-center gap-2 text-xs text-slate-500">
+                <span class="px-1.5 py-0.5 bg-blue-50 border border-blue-200 rounded text-blue-600">ETF @ 25%</span>
+                <span>Vanguard FTSE All-World</span>
+              </div>
+            </div>
+
+            <div class="bg-white rounded-lg p-3 border border-slate-200 hover:border-slate-300 cursor-pointer">
+              <div class="flex items-center justify-between mb-1">
+                <span class="font-semibold text-slate-900">QQQ</span>
+                <span class="text-sm font-bold tabular-nums text-slate-700">7.3%</span>
+              </div>
+              <div class="flex items-center gap-2 text-xs text-slate-500">
+                <span class="px-1.5 py-0.5 bg-blue-50 border border-blue-200 rounded text-blue-600">ETF @ 50%</span>
+                <span>Invesco QQQ Trust</span>
+              </div>
+            </div>
+
+            <div class="bg-white rounded-lg p-3 border border-slate-200 hover:border-slate-300 cursor-pointer">
+              <div class="flex items-center justify-between mb-1">
+                <span class="font-semibold text-slate-900">MSFT</span>
+                <span class="text-sm font-bold tabular-nums text-slate-700">5.6%</span>
+              </div>
+              <div class="flex items-center gap-2 text-xs text-slate-500">
+                <span class="px-1.5 py-0.5 bg-slate-100 rounded">Stock</span>
+                <span>Microsoft Corporation</span>
+              </div>
+            </div>
+
+            <div class="bg-white rounded-lg p-3 border border-slate-200 hover:border-slate-300 cursor-pointer">
+              <div class="flex items-center justify-between mb-1">
+                <span class="font-semibold text-slate-900">NVDA</span>
+                <span class="text-sm font-bold tabular-nums text-slate-700">3.5%</span>
+              </div>
+              <div class="flex items-center gap-2 text-xs text-slate-500">
+                <span class="px-1.5 py-0.5 bg-slate-100 rounded">Stock</span>
+                <span>NVIDIA Corporation</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Rules footer -->
+      <div class="px-5 py-3 border-t border-slate-200 bg-white flex items-center gap-3">
+        <span class="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Sector Rules:</span>
+        <span class="px-2.5 py-1 text-xs bg-red-50 border border-red-200 text-red-600 rounded-md flex items-center gap-1.5">
+          <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>
+          Max any sector: 25%
+        </span>
+        <button class="px-2.5 py-1 text-xs border border-dashed border-slate-300 text-slate-400 rounded-md hover:border-slate-400">
+          + Add Rule
+        </button>
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>

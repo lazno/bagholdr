@@ -35,6 +35,9 @@ importers:
       ws:
         specifier: ^8.19.0
         version: 8.19.0
+      xirr:
+        specifier: ^1.1.0
+        version: 1.1.0
       zod:
         specifier: ^4.3.5
         version: 4.3.5
@@ -765,6 +768,9 @@ packages:
   napi-build-utils@2.0.0:
     resolution: {integrity: sha512-GEbrYkbfF7MoNaoh2iGG84Mnf/WZfB0GdGEsM8wz7Expx/LlWf5U8t9nvJKXSp3qr5IsEbK04cBGhol/KwOsWA==}
 
+  newton-raphson-method@1.0.2:
+    resolution: {integrity: sha512-UoBJJxNVVQhviRvled1bL76IjmPls4dNLPeF661FW2eNrv/pKKfRDpOdlN+vo9XamZvj8OMt/KtjOBTFN6I0gw==}
+
   node-abi@3.85.0:
     resolution: {integrity: sha512-zsFhmbkAzwhTft6nd3VxcG0cvJsT70rL+BIGHWVq5fi6MwGrHwzqKaxXE+Hl2GmnGItnDKPPkO5/LQqjVkIdFg==}
     engines: {node: '>=10'}
@@ -867,6 +873,9 @@ packages:
         optional: true
       utf-8-validate:
         optional: true
+
+  xirr@1.1.0:
+    resolution: {integrity: sha512-Ivl/gbn5rCkJqig0B+40GQyk1Rqjo0SMW7pTnplV+VG7zlXEzJ6SYdukYmjejCWFY1TGerqPbdwenR0LK5yAWw==}
 
   zod@4.3.5:
     resolution: {integrity: sha512-k7Nwx6vuWx1IJ9Bjuf4Zt1PEllcwe7cls3VNzm4CQ1/hgtFUK2bRNG3rvnpPUhFjmqJKAKtjV576KnUkHocg/g==}
@@ -1315,6 +1324,8 @@ snapshots:
 
   napi-build-utils@2.0.0: {}
 
+  newton-raphson-method@1.0.2: {}
+
   node-abi@3.85.0:
     dependencies:
       semver: 7.7.3
@@ -1424,5 +1435,9 @@ snapshots:
   wrappy@1.0.2: {}
 
   ws@8.19.0: {}
+
+  xirr@1.1.0:
+    dependencies:
+      newton-raphson-method: 1.0.2
 
   zod@4.3.5: {}

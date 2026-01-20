@@ -1,0 +1,23 @@
+### Holding - Current position derived from orders
+### Global table shared across all portfolios (like TypeScript schema)
+class: Holding
+table: holdings
+
+fields:
+  ### UUID primary key (v7 for lexicographic sorting)
+  id: UuidValue?, defaultPersist=random_v7
+
+  ### Reference to the asset (UUID)
+  assetId: UuidValue, relation(parent=assets)
+
+  ### Current quantity held (positive value)
+  quantity: double
+
+  ### Total cost basis in EUR (sum of all purchase costs minus sales)
+  totalCostEur: double
+
+indexes:
+  ### Each asset can only have one holding record
+  holding_asset_idx:
+    fields: assetId
+    unique: true

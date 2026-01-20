@@ -1,5 +1,5 @@
 {
-  "name": "financepal-server",
+  "name": "bagholdr-server",
   "version": "0.0.1",
   "type": "module",
   "scripts": {
@@ -8,7 +8,9 @@
     "start": "node dist/index.js",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "drizzle-kit studio",
+    "verify:xirr": "tsx src/utils/verify-xirr.ts",
+    "export:xirr": "tsx src/utils/export-xirr-data.ts"
   },
   "dependencies": {
     "@hono/node-server": "^1.13.7",
@@ -20,6 +22,7 @@
     "nanoid": "^5.1.6",
     "node-cron": "^3.0.3",
     "ws": "^8.19.0",
+    "xirr": "^1.1.0",
     "zod": "^4.3.5"
   },
   "devDependencies": {

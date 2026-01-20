@@ -69,10 +69,18 @@ function parseNumber(value) {
     return isNaN(num) ? 0 : num;
 }
 /**
- * Check if this is a Buy or Sell transaction type
+ * Check if this is a transaction type we want to import
  */
-function isBuyOrSell(type) {
-    return type === 'Buy' || type === 'Sell';
+function isImportableTransaction(type) {
+    return type === 'Buy' || type === 'Sell' || type === 'Commissions';
+}
+/**
+ * Map CSV transaction type to our internal type
+ */
+function mapTransactionType(type) {
+    if (type === 'Commissions')
+        return 'Commission';
+    return type;
 }
 /**
  * Parse Directa CSV content
@@ -108,8 +116,8 @@ export function parseDirectaCSV(content) {
             const [transactionDateRaw, , // valueDate - not used
             transactionType, ticker, isin, , // protocol - not used
             description, quantityRaw, amountEurRaw, currencyAmountRaw, currency, orderReference] = parts;
-            // Skip non-Buy/Sell transactions
-            if (!isBuyOrSell(transactionType)) {
+            // Skip transactions we don't want to import
+            if (!isImportableTransaction(transactionType)) {
                 skippedRows++;
                 continue;
             }
@@ -122,7 +130,7 @@ export function parseDirectaCSV(content) {
                 });
                 continue;
             }
-            // Skip rows without ISIN (shouldn't happen for Buy/Sell)
+            // Skip rows without ISIN (shouldn't happen for Buy/Sell/Commission)
             if (!isin || isin.trim() === '') {
                 errors.push({
                     line: lineNumber,
@@ -133,13 +141,26 @@ export function parseDirectaCSV(content) {
             const quantity = parseNumber(quantityRaw);
             const amountEur = parseNumber(amountEurRaw);
             const currencyAmount = parseNumber(currencyAmountRaw);
+            // Map transaction type and determine quantity sign
+            const mappedType = mapTransactionType(transactionType);
+            let finalQuantity;
+            if (mappedType === 'Buy') {
+                finalQuantity = Math.abs(quantity);
+            }
+            else if (mappedType === 'Sell') {
+                finalQuantity = -Math.abs(quantity);
+            }
+            else {
+                // Commission: quantity is 0
+                finalQuantity = 0;
+            }
             orders.push({
                 isin: isin.trim(),
                 ticker: ticker.trim(),
                 name: description.trim(),
                 transactionDate: new Date(isoDate),
-                transactionType,
-                quantity: transactionType === 'Buy' ? Math.abs(quantity) : -Math.abs(quantity),
+                transactionType: mappedType,
+                quantity: finalQuantity,
                 amountEur: Math.abs(amountEur),
                 currencyAmount: Math.abs(currencyAmount),
                 currency: currency.trim() || 'EUR',

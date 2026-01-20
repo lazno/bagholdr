@@ -89,7 +89,7 @@ async function rateLimitedFetch(url: string): Promise<Response> {
 	return yahooRateLimiter.enqueue(async () => {
 		const response = await fetch(url, {
 			headers: {
-				'User-Agent': 'FinancePal/1.0',
+				'User-Agent': 'Bagholdr/1.0',
 				Accept: 'application/json'
 			}
 		});

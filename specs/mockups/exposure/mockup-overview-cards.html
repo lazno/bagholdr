@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exposure - Overview Cards</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: #f8fafc;
+      color: #1e293b;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+    .header h1 { font-size: 20px; font-weight: 600; }
+    .header-right { display: flex; gap: 12px; align-items: center; }
+    .scope-selector {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .scope-selector:hover { background: #f8fafc; }
+    .btn {
+      padding: 8px 16px;
+      border-radius: 6px;
+      border: 1px solid #e2e8f0;
+      background: white;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .btn:hover { background: #f8fafc; }
+
+    /* Violations bar */
+    .violations-bar {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .violations-bar .icon { color: #dc2626; font-weight: 600; }
+    .violation-chip {
+      background: white;
+      border: 1px solid #fecaca;
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-size: 12px;
+      color: #dc2626;
+      cursor: pointer;
+    }
+    .violation-chip:hover { background: #fef2f2; }
+
+    /* Cards grid */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+    }
+
+    /* Dimension card */
+    .dim-card {
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .dim-card.expanded {
+      grid-column: 1 / -1;
+    }
+    .dim-card-header {
+      padding: 16px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #f1f5f9;
+      cursor: pointer;
+    }
+    .dim-card-header:hover { background: #f8fafc; }
+    .dim-card-header h3 {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #64748b;
+      font-weight: 500;
+    }
+    .dim-card-header .violation-badge {
+      background: #dc2626;
+      color: white;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 11px;
+      font-weight: 500;
+    }
+    .expand-btn {
+      background: none;
+      border: none;
+      color: #64748b;
+      cursor: pointer;
+      font-size: 12px;
+    }
+
+    /* Mini bars (collapsed view) */
+    .mini-bars {
+      padding: 16px 20px;
+    }
+    .mini-bar-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+    .mini-bar-row:last-child { margin-bottom: 0; }
+    .mini-label {
+      width: 100px;
+      font-size: 12px;
+      color: #1e293b;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .mini-track {
+      flex: 1;
+      height: 8px;
+      background: #f1f5f9;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .mini-fill {
+      height: 100%;
+      background: #3b82f6;
+      border-radius: 4px;
+    }
+    .mini-fill.violation { background: #dc2626; }
+    .mini-value {
+      width: 40px;
+      text-align: right;
+      font-size: 12px;
+      font-weight: 500;
+      font-variant-numeric: tabular-nums;
+    }
+    .more-link {
+      text-align: center;
+      padding: 12px;
+      border-top: 1px solid #f1f5f9;
+      font-size: 12px;
+      color: #64748b;
+      cursor: pointer;
+    }
+    .more-link:hover { color: #3b82f6; background: #f8fafc; }
+
+    /* Expanded view */
+    .expanded-content {
+      padding: 20px;
+    }
+    .expanded-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+    .full-bar-list { display: flex; flex-direction: column; gap: 10px; }
+    .full-bar-row {
+      display: grid;
+      grid-template-columns: 140px 1fr 50px;
+      align-items: center;
+      gap: 12px;
+      padding: 6px 8px;
+      margin: -6px -8px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .full-bar-row:hover { background: #f8fafc; }
+    .full-bar-row.selected { background: #eff6ff; }
+    .full-bar-row.violation { background: #fef2f2; }
+    .full-label {
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .full-label .alert { color: #dc2626; }
+    .full-track {
+      height: 20px;
+      background: #f1f5f9;
+      border-radius: 4px;
+      overflow: hidden;
+      position: relative;
+    }
+    .full-fill {
+      height: 100%;
+      background: #3b82f6;
+      border-radius: 4px;
+    }
+    .full-fill.violation { background: #dc2626; }
+    .full-limit {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: #1e293b;
+    }
+    .full-value {
+      font-size: 13px;
+      font-weight: 500;
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Drilldown panel */
+    .drilldown-panel {
+      background: #f8fafc;
+      border-radius: 8px;
+      padding: 16px;
+    }
+    .drilldown-panel h4 {
+      font-size: 13px;
+      font-weight: 500;
+      margin-bottom: 12px;
+    }
+    .drilldown-list { font-size: 13px; }
+    .drilldown-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .drilldown-item:last-child { border-bottom: none; }
+    .drilldown-item .name { color: #1e293b; }
+    .drilldown-item .type {
+      font-size: 10px;
+      background: #e2e8f0;
+      padding: 2px 6px;
+      border-radius: 3px;
+      color: #64748b;
+      margin-left: 8px;
+    }
+    .drilldown-item .contribution {
+      font-variant-numeric: tabular-nums;
+      color: #64748b;
+    }
+
+    /* Summary footer */
+    .summary-footer {
+      display: flex;
+      gap: 24px;
+      padding: 16px 20px;
+      background: #f8fafc;
+      border-top: 1px solid #e2e8f0;
+      font-size: 12px;
+      color: #64748b;
+    }
+    .summary-footer span { color: #1e293b; font-weight: 500; }
+
+    /* Rules panel */
+    .rules-panel {
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      margin-top: 24px;
+      padding: 20px;
+    }
+    .rules-panel h3 {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #64748b;
+      margin-bottom: 16px;
+    }
+    .rules-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+    .rule-card {
+      background: #f8fafc;
+      border-radius: 8px;
+      padding: 12px;
+      font-size: 12px;
+    }
+    .rule-card .dim {
+      font-size: 10px;
+      text-transform: uppercase;
+      color: #64748b;
+      margin-bottom: 4px;
+    }
+    .rule-card .rule-text { font-weight: 500; }
+    .rule-card.violated {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+    }
+    .rule-card.violated .rule-text { color: #dc2626; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <h1>Exposure Analysis</h1>
+      <div class="header-right">
+        <div class="scope-selector">
+          Scope: <strong>Portfolio (all)</strong> v
+        </div>
+        <button class="btn">Refresh Metadata</button>
+      </div>
+    </div>
+
+    <!-- Violations bar -->
+    <div class="violations-bar">
+      <span class="icon">!</span>
+      <span>2 rules exceeded:</span>
+      <span class="violation-chip">Sector: Technology 32% > 25%</span>
+      <span class="violation-chip">Country: United States 65% > 60%</span>
+    </div>
+
+    <!-- Cards grid -->
+    <div class="cards-grid">
+      <!-- Sector card (expanded) -->
+      <div class="dim-card expanded">
+        <div class="dim-card-header">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <h3>Sector</h3>
+            <span class="violation-badge">1 violation</span>
+          </div>
+          <button class="expand-btn">- Collapse</button>
+        </div>
+        <div class="expanded-content">
+          <div class="expanded-grid">
+            <div class="full-bar-list">
+              <div class="full-bar-row violation selected">
+                <div class="full-label">Technology <span class="alert">!</span></div>
+                <div class="full-track">
+                  <div class="full-fill violation" style="width: 32%;"></div>
+                  <div class="full-limit" style="left: 25%;"></div>
+                </div>
+                <div class="full-value">32%</div>
+              </div>
+              <div class="full-bar-row">
+                <div class="full-label">Healthcare</div>
+                <div class="full-track">
+                  <div class="full-fill" style="width: 22%;"></div>
+                </div>
+                <div class="full-value">22%</div>
+              </div>
+              <div class="full-bar-row">
+                <div class="full-label">Financials</div>
+                <div class="full-track">
+                  <div class="full-fill" style="width: 18%;"></div>
+                </div>
+                <div class="full-value">18%</div>
+              </div>
+              <div class="full-bar-row">
+                <div class="full-label">Consumer Cyclical</div>
+                <div class="full-track">
+                  <div class="full-fill" style="width: 12%;"></div>
+                </div>
+                <div class="full-value">12%</div>
+              </div>
+              <div class="full-bar-row">
+                <div class="full-label">Industrials</div>
+                <div class="full-track">
+                  <div class="full-fill" style="width: 8%;"></div>
+                </div>
+                <div class="full-value">8%</div>
+              </div>
+              <div class="full-bar-row">
+                <div class="full-label">Energy</div>
+                <div class="full-track">
+                  <div class="full-fill" style="width: 4%;"></div>
+                </div>
+                <div class="full-value">4%</div>
+              </div>
+              <div class="full-bar-row">
+                <div class="full-label">Cash + Other</div>
+                <div class="full-track">
+                  <div class="full-fill" style="width: 4%; background: #94a3b8;"></div>
+                </div>
+                <div class="full-value">4%</div>
+              </div>
+            </div>
+            <div class="drilldown-panel">
+              <h4>Technology - Contributing Assets</h4>
+              <div class="drilldown-list">
+                <div class="drilldown-item">
+                  <span class="name">AAPL <span class="type">Stock</span></span>
+                  <span class="contribution">7.6%</span>
+                </div>
+                <div class="drilldown-item">
+                  <span class="name">MSFT <span class="type">Stock</span></span>
+                  <span class="contribution">5.6%</span>
+                </div>
+                <div class="drilldown-item">
+                  <span class="name">VWCE <span class="type">ETF 25%</span></span>
+                  <span class="contribution">8.0%</span>
+                </div>
+                <div class="drilldown-item">
+                  <span class="name">QQQ <span class="type">ETF 50%</span></span>
+                  <span class="contribution">7.3%</span>
+                </div>
+                <div class="drilldown-item">
+                  <span class="name">NVDA <span class="type">Stock</span></span>
+                  <span class="contribution">3.5%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="summary-footer">
+          <div>Total: <span>$164,500</span></div>
+          <div>Categories: <span>11</span></div>
+          <div>Unknown: <span>2%</span></div>
+        </div>
+      </div>
+
+      <!-- Industry card (collapsed) -->
+      <div class="dim-card">
+        <div class="dim-card-header">
+          <h3>Industry</h3>
+          <button class="expand-btn">+ Expand</button>
+        </div>
+        <div class="mini-bars">
+          <div class="mini-bar-row">
+            <span class="mini-label">Software</span>
+            <div class="mini-track"><div class="mini-fill" style="width: 18%;"></div></div>
+            <span class="mini-value">18%</span>
+          </div>
+          <div class="mini-bar-row">
+            <span class="mini-label">Semiconductors</span>
+            <div class="mini-track"><div class="mini-fill" style="width: 12%;"></div></div>
+            <span class="mini-value">12%</span>
+          </div>
+          <div class="mini-bar-row">
+            <span class="mini-label">Banks</span>
+            <div class="mini-track"><div class="mini-fill" style="width: 10%;"></div></div>
+            <span class="mini-value">10%</span>
+          </div>
+          <div class="mini-bar-row">
+            <span class="mini-label">Pharma</span>
+            <div class="mini-track"><div class="mini-fill" style="width: 8%;"></div></div>
+            <span class="mini-value">8%</span>
+          </div>
+        </div>
+        <div class="more-link">+20 more industries</div>
+      </div>
+
+      <!-- Country card (collapsed) -->
+      <div class="dim-card">
+        <div class="dim-card-header">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <h3>Country</h3>
+            <span class="violation-badge">1 violation</span>
+          </div>
+          <button class="expand-btn">+ Expand</button>
+        </div>
+        <div class="mini-bars">
+          <div class="mini-bar-row">
+            <span class="mini-label">United States</span>
+            <div class="mini-track"><div class="mini-fill violation" style="width: 65%;"></div></div>
+            <span class="mini-value">65%</span>
+          </div>
+          <div class="mini-bar-row">
+            <span class="mini-label">Germany</span>
+            <div class="mini-track"><div class="mini-fill" style="width: 12%;"></div></div>
+            <span class="mini-value">12%</span>
+          </div>
+          <div class="mini-bar-row">
+            <span class="mini-label">Japan</span>
+            <div class="mini-track"><div class="mini-fill" style="width: 8%;"></div></div>
+            <span class="mini-value">8%</span>
+          </div>
+          <div class="mini-bar-row">
+            <span class="mini-label">UK</span>
+            <div class="mini-track"><div class="mini-fill" style="width: 5%;"></div></div>
+            <span class="mini-value">5%</span>
+          </div>
+        </div>
+        <div class="more-link">+8 more countries</div>
+      </div>
+
+      <!-- Market Cap card (collapsed) -->
+      <div class="dim-card">
+        <div class="dim-card-header">
+          <h3>Market Cap</h3>
+          <button class="expand-btn">+ Expand</button>
+        </div>
+        <div class="mini-bars">
+          <div class="mini-bar-row">
+            <span class="mini-label">Mega Cap</span>
+            <div class="mini-track"><div class="mini-fill" style="width: 45%;"></div></div>
+            <span class="mini-value">45%</span>
+          </div>
+          <div class="mini-bar-row">
+            <span class="mini-label">Large Cap</span>
+            <div class="mini-track"><div class="mini-fill" style="width: 30%;"></div></div>
+            <span class="mini-value">30%</span>
+          </div>
+          <div class="mini-bar-row">
+            <span class="mini-label">Mid Cap</span>
+            <div class="mini-track"><div class="mini-fill" style="width: 15%;"></div></div>
+            <span class="mini-value">15%</span>
+          </div>
+          <div class="mini-bar-row">
+            <span class="mini-label">Small Cap</span>
+            <div class="mini-track"><div class="mini-fill" style="width: 7%;"></div></div>
+            <span class="mini-value">7%</span>
+          </div>
+        </div>
+        <div class="more-link">+1 more category</div>
+      </div>
+    </div>
+
+    <!-- Rules panel -->
+    <div class="rules-panel">
+      <h3>Exposure Rules</h3>
+      <div class="rules-grid">
+        <div class="rule-card violated">
+          <div class="dim">Sector</div>
+          <div class="rule-text">Max any: 25%</div>
+        </div>
+        <div class="rule-card violated">
+          <div class="dim">Country</div>
+          <div class="rule-text">US max: 60%</div>
+        </div>
+        <div class="rule-card">
+          <div class="dim">Market Cap</div>
+          <div class="rule-text">Mega max: 50%</div>
+        </div>
+        <div class="rule-card" style="border: 1px dashed #cbd5e1; background: transparent; text-align: center; color: #64748b;">
+          + Add Rule
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

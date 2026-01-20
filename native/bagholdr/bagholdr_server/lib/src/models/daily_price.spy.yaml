@@ -1,0 +1,47 @@
+### DailyPrice - Historical daily OHLCV data from Yahoo Finance
+### Used for charting and performance calculations
+class: DailyPrice
+table: daily_prices
+
+fields:
+  ### UUID primary key (v7 for lexicographic sorting)
+  id: UuidValue?, defaultPersist=random_v7
+
+  ### Yahoo Finance symbol (e.g., "AAPL", "MSFT")
+  ticker: String
+
+  ### Date in YYYY-MM-DD format
+  date: String
+
+  ### Open price for the day
+  open: double
+
+  ### Highest price during the day
+  high: double
+
+  ### Lowest price during the day
+  low: double
+
+  ### Closing price for the day
+  close: double
+
+  ### Adjusted close (accounts for splits/dividends)
+  adjClose: double
+
+  ### Trading volume
+  volume: int
+
+  ### Currency of the price data (e.g., EUR, USD)
+  currency: String
+
+  ### When this price data was fetched from Yahoo
+  fetchedAt: DateTime
+
+indexes:
+  ### Unique index on ticker+date - each ticker has one price per day
+  daily_price_ticker_date_idx:
+    fields: ticker, date
+    unique: true
+  ### Index for efficient lookups by ticker
+  daily_price_ticker_idx:
+    fields: ticker

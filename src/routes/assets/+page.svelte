@@ -49,6 +49,17 @@
 	let clearingAssetHistoricalData = false;
 	let clearAssetHistoricalDataResult: { success: boolean; message: string } | null = null;
 
+	// Bulk selection state
+	let selectedIsins: Set<string> = new Set();
+	let bulkAssetType: 'stock' | 'etf' | 'bond' | 'fund' | 'commodity' | 'other' = 'etf';
+	let bulkUpdating = false;
+	let bulkUpdateResult: { success: boolean; message: string } | null = null;
+
+	// Archive state
+	let archivingIsin: string | null = null;
+	let bulkArchiving = false;
+	let showArchivedAssets = false;
+
 	// Chart modal state
 	let chartAsset: AssetWithHolding | null = null;
 	let chartData: LineData<Time>[] = [];
@@ -478,6 +489,107 @@
 			clearingAssetHistoricalData = false;
 		}
 	}
+
+	// Bulk selection functions
+	function toggleSelectAll() {
+		if (selectedIsins.size === displayedAssets.length) {
+			selectedIsins = new Set();
+		} else {
+			selectedIsins = new Set(displayedAssets.map(a => a.isin));
+		}
+	}
+
+	function toggleSelect(isin: string) {
+		if (selectedIsins.has(isin)) {
+			selectedIsins.delete(isin);
+		} else {
+			selectedIsins.add(isin);
+		}
+		selectedIsins = selectedIsins; // Trigger reactivity
+	}
+
+	function clearSelection() {
+		selectedIsins = new Set();
+		bulkUpdateResult = null;
+	}
+
+	async function bulkUpdateAssetType() {
+		if (selectedIsins.size === 0) return;
+
+		bulkUpdating = true;
+		bulkUpdateResult = null;
+
+		try {
+			const result = await trpc.assets.bulkUpdateType.mutate({
+				isins: Array.from(selectedIsins),
+				assetType: bulkAssetType
+			});
+			bulkUpdateResult = {
+				success: true,
+				message: `Updated ${result.updatedCount} asset${result.updatedCount !== 1 ? 's' : ''} to ${bulkAssetType}`
+			};
+			// Reload assets and clear selection
+			await loadAssets();
+			selectedIsins = new Set();
+		} catch (err) {
+			bulkUpdateResult = {
+				success: false,
+				message: err instanceof Error ? err.message : 'Failed to update assets'
+			};
+		} finally {
+			bulkUpdating = false;
+		}
+	}
+
+	// Filter assets by archived status
+	$: displayedAssets = showArchivedAssets ? assets : assets.filter(a => !a.archived);
+	$: archivedCount = assets.filter(a => a.archived).length;
+	$: allSelected = displayedAssets.length > 0 && selectedIsins.size === displayedAssets.length;
+	$: someSelected = selectedIsins.size > 0 && selectedIsins.size < displayedAssets.length;
+
+	async function toggleArchive(isin: string, currentlyArchived: boolean) {
+		archivingIsin = isin;
+		try {
+			await trpc.assets.setArchived.mutate({ isin, archived: !currentlyArchived });
+			await loadAssets();
+			// Clear from selection if archived
+			if (!currentlyArchived) {
+				selectedIsins.delete(isin);
+				selectedIsins = selectedIsins;
+			}
+		} catch (err) {
+			error = err instanceof Error ? err.message : 'Failed to archive asset';
+		} finally {
+			archivingIsin = null;
+		}
+	}
+
+	async function bulkArchive(archive: boolean) {
+		if (selectedIsins.size === 0) return;
+
+		bulkArchiving = true;
+		bulkUpdateResult = null;
+
+		try {
+			const result = await trpc.assets.bulkSetArchived.mutate({
+				isins: Array.from(selectedIsins),
+				archived: archive
+			});
+			bulkUpdateResult = {
+				success: true,
+				message: `${archive ? 'Archived' : 'Unarchived'} ${result.updatedCount} asset${result.updatedCount !== 1 ? 's' : ''}`
+			};
+			await loadAssets();
+			selectedIsins = new Set();
+		} catch (err) {
+			bulkUpdateResult = {
+				success: false,
+				message: err instanceof Error ? err.message : 'Failed to archive assets'
+			};
+		} finally {
+			bulkArchiving = false;
+		}
+	}
 </script>
 
 <div class="min-h-screen bg-gray-50">
@@ -568,14 +680,26 @@
 						</p>
 					{/if}
 				</div>
-				<label class="flex items-center gap-2 text-sm text-gray-600">
-					<input
-						type="checkbox"
-						bind:checked={showSoldAssets}
-						class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-					/>
-					Show sold assets (qty = 0)
-				</label>
+				<div class="flex items-center gap-6">
+					<label class="flex items-center gap-2 text-sm text-gray-600">
+						<input
+							type="checkbox"
+							bind:checked={showSoldAssets}
+							class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+						/>
+						Show sold assets (qty = 0)
+					</label>
+					{#if archivedCount > 0}
+						<label class="flex items-center gap-2 text-sm text-gray-600">
+							<input
+								type="checkbox"
+								bind:checked={showArchivedAssets}
+								class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+							/>
+							Show archived ({archivedCount})
+						</label>
+					{/if}
+				</div>
 			</div>
 		</div>
 	</header>
@@ -741,18 +865,38 @@
 				<div class="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent"></div>
 				<p class="mt-4 text-gray-600">Loading assets...</p>
 			</div>
-		{:else if assets.length === 0}
+		{:else if displayedAssets.length === 0}
 			<div class="text-center py-12">
-				<p class="text-gray-500">No assets yet.</p>
-				<a href="/import" class="mt-4 inline-block rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700">
-					Import Orders
-				</a>
+				{#if assets.length === 0}
+					<p class="text-gray-500">No assets yet.</p>
+					<a href="/import" class="mt-4 inline-block rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700">
+						Import Orders
+					</a>
+				{:else}
+					<p class="text-gray-500">All assets are archived.</p>
+					<button
+						onclick={() => (showArchivedAssets = true)}
+						class="mt-4 inline-block rounded bg-gray-600 px-4 py-2 text-white hover:bg-gray-700"
+					>
+						Show Archived Assets
+					</button>
+				{/if}
 			</div>
 		{:else}
 			<div class="rounded-lg bg-white shadow overflow-hidden">
 				<table class="w-full">
 					<thead class="bg-gray-50">
 						<tr>
+							<th class="px-4 py-3 text-left">
+								<input
+									type="checkbox"
+									checked={allSelected}
+									indeterminate={someSelected}
+									onchange={toggleSelectAll}
+									class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+									title="Select all"
+								/>
+							</th>
 							<th class="px-4 py-3 text-left text-sm font-semibold text-gray-900">Asset</th>
 							<th class="px-4 py-3 text-left text-sm font-semibold text-gray-900">ISIN</th>
 							<th class="px-4 py-3 text-left text-sm font-semibold text-gray-900">Broker Ticker</th>
@@ -765,14 +909,31 @@
 						</tr>
 					</thead>
 					<tbody class="divide-y divide-gray-200">
-						{#each assets as asset}
+						{#each displayedAssets as asset}
 							{@const price = prices.get(asset.isin)}
 							{@const isResolving = resolvingSymbols.has(asset.isin)}
 							{@const isSyncing = asset.yahooSymbol === $currentlySyncingTicker}
 							{@const justUpdated = $recentlyUpdated.has(asset.isin)}
-							<tr class="hover:bg-gray-50 transition-colors duration-300 {justUpdated ? 'bg-green-50' : ''}">
+							{@const isSelected = selectedIsins.has(asset.isin)}
+							{@const isArchiving = archivingIsin === asset.isin}
+							<tr class="hover:bg-gray-50 transition-colors duration-300 {justUpdated ? 'bg-green-50' : ''} {isSelected ? 'bg-blue-50' : ''} {asset.archived ? 'opacity-60 bg-gray-50' : ''}">
 								<td class="px-4 py-3">
-									<div class="font-medium text-gray-900">{asset.name}</div>
+									<input
+										type="checkbox"
+										checked={isSelected}
+										onchange={() => toggleSelect(asset.isin)}
+										class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+									/>
+								</td>
+								<td class="px-4 py-3">
+									<div class="flex items-center gap-2">
+										<span class="font-medium text-gray-900">{asset.name}</span>
+										{#if asset.archived}
+											<span class="inline-flex rounded-full bg-gray-200 px-2 py-0.5 text-xs font-medium text-gray-600">
+												Archived
+											</span>
+										{/if}
+									</div>
 								</td>
 								<td class="px-4 py-3 font-mono text-xs text-gray-500">{asset.isin}</td>
 								<td class="px-4 py-3 text-gray-600">{asset.ticker}</td>
@@ -865,6 +1026,20 @@
 										>
 											Edit
 										</button>
+										<button
+											onclick={() => toggleArchive(asset.isin, asset.archived)}
+											disabled={isArchiving}
+											class="{asset.archived ? 'text-green-600 hover:text-green-800' : 'text-gray-500 hover:text-gray-700'} text-sm disabled:opacity-50"
+											title={asset.archived ? 'Unarchive asset' : 'Archive asset'}
+										>
+											{#if isArchiving}
+												...
+											{:else if asset.archived}
+												Unarchive
+											{:else}
+												Archive
+											{/if}
+										</button>
 									</div>
 								</td>
 							</tr>
@@ -876,6 +1051,72 @@
 
 	</main>
 </div>
+
+<!-- Bulk Action Bar -->
+{#if selectedIsins.size > 0}
+	<div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-40">
+		<div class="mx-auto max-w-7xl px-4 py-3">
+			<div class="flex items-center justify-between">
+				<div class="flex items-center gap-4">
+					<span class="text-sm font-medium text-gray-700">
+						{selectedIsins.size} asset{selectedIsins.size !== 1 ? 's' : ''} selected
+					</span>
+					<button
+						onclick={clearSelection}
+						class="text-sm text-gray-500 hover:text-gray-700"
+					>
+						Clear selection
+					</button>
+				</div>
+				<div class="flex items-center gap-3">
+					<label class="flex items-center gap-2">
+						<span class="text-sm text-gray-600">Set type to:</span>
+						<select
+							bind:value={bulkAssetType}
+							class="rounded border-gray-300 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500"
+						>
+							<option value="stock">Stock</option>
+							<option value="etf">ETF</option>
+							<option value="bond">Bond</option>
+							<option value="fund">Fund</option>
+							<option value="commodity">Commodity</option>
+							<option value="other">Other</option>
+						</select>
+					</label>
+					<button
+						onclick={bulkUpdateAssetType}
+						disabled={bulkUpdating || bulkArchiving}
+						class="rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+					>
+						{bulkUpdating ? 'Updating...' : 'Apply'}
+					</button>
+					<div class="h-6 border-l border-gray-300"></div>
+					<button
+						onclick={() => bulkArchive(true)}
+						disabled={bulkArchiving || bulkUpdating}
+						class="rounded bg-gray-600 px-4 py-2 text-sm font-medium text-white hover:bg-gray-700 disabled:opacity-50"
+					>
+						{bulkArchiving ? 'Archiving...' : 'Archive'}
+					</button>
+					{#if showArchivedAssets}
+						<button
+							onclick={() => bulkArchive(false)}
+							disabled={bulkArchiving || bulkUpdating}
+							class="rounded bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50"
+						>
+							{bulkArchiving ? 'Unarchiving...' : 'Unarchive'}
+						</button>
+					{/if}
+				</div>
+			</div>
+			{#if bulkUpdateResult}
+				<div class="mt-2 text-sm {bulkUpdateResult.success ? 'text-green-600' : 'text-red-600'}">
+					{bulkUpdateResult.message}
+				</div>
+			{/if}
+		</div>
+	</div>
+{/if}
 
 <!-- Consolidated Edit Modal -->
 {#if editingAsset}

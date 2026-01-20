@@ -74,7 +74,7 @@ export const importRouter = router({
 						ticker: z.string(),
 						name: z.string(),
 						transactionDate: z.coerce.date(),
-						transactionType: z.enum(['Buy', 'Sell']),
+						transactionType: z.enum(['Buy', 'Sell', 'Commission']),
 						quantity: z.number(),
 						amountEur: z.number(),
 						currencyAmount: z.number(),

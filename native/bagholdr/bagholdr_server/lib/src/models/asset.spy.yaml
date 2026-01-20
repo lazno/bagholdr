@@ -1,0 +1,41 @@
+### Asset - Financial instruments identified by ISIN
+### Global table shared across all portfolios
+class: Asset
+table: assets
+
+fields:
+  ### UUID primary key (v7 for lexicographic sorting)
+  id: UuidValue?, defaultPersist=random_v7
+
+  ### ISIN (International Securities Identification Number) - unique business identifier
+  isin: String
+
+  ### Broker's ticker symbol (from import)
+  ticker: String
+
+  ### Human-readable name
+  name: String
+
+  ### Optional description
+  description: String?
+
+  ### Classification: stock, etf, bond, fund, commodity, other
+  assetType: AssetType
+
+  ### Trading currency (e.g., EUR, USD)
+  currency: String
+
+  ### Yahoo Finance symbol - resolved from ISIN, used for price fetching
+  yahooSymbol: String?
+
+  ### JSON metadata for ETF look-through (holdings, sectors, factors)
+  ### e.g., {"holdings": [{"name": "Apple", "weight": 5.2}], "sectors": [{"name": "Tech", "weight": 30}]}
+  metadata: String?
+
+  ### Whether asset is excluded from calculations and dashboard views
+  archived: bool
+
+indexes:
+  asset_isin_idx:
+    fields: isin
+    unique: true
