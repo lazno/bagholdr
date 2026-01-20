@@ -47,6 +47,7 @@ pnpm-debug.log*
 coverage/
 
 # Playwright
+/tests/screenshots/*
 /tests/screenshots/svelte/
 /tests/screenshots/flutter/
 /tests/screenshots/emulator/
