@@ -1380,8 +1380,8 @@ See **NAPP-018** for detailed asset list specifications.
 
 ### NAPP-017: Holdings Endpoint `[implement]`
 
-**Priority**: High | **Status**: `[blocked]`
-**Blocked by**: NAPP-015
+**Priority**: High | **Status**: `[x]`
+**Blocked by**: NAPP-015 (complete)
 
 **File**: `bagholdr_server/lib/src/endpoints/holdings_endpoint.dart`
 
@@ -1439,25 +1439,25 @@ class HoldingsListResponse {
 ---
 
 **Tasks**:
-- [ ] Create `HoldingsEndpoint` class
-- [ ] Add `getHoldings()` method with all parameters
-- [ ] Implement value and cost basis calculations
-- [ ] Implement P/L calculation
-- [ ] Implement weight calculation
-- [ ] Implement MWR calculation for period (compounded)
-- [ ] Implement TWR calculation for period
-- [ ] Implement sleeve filtering (hierarchical)
-- [ ] Implement search filtering
-- [ ] Implement pagination
-- [ ] Run `serverpod generate`
+- [x] Create `HoldingsEndpoint` class
+- [x] Add `getHoldings()` method with all parameters
+- [x] Implement value and cost basis calculations
+- [x] Implement P/L calculation
+- [x] Implement weight calculation
+- [x] Implement MWR calculation for period (compounded)
+- [x] Implement TWR calculation for period
+- [x] Implement sleeve filtering (hierarchical)
+- [x] Implement search filtering
+- [x] Implement pagination
+- [x] Run `serverpod generate`
 
 **Acceptance Criteria**:
-- [ ] Returns all required fields (including MWR, TWR)
-- [ ] P/L calculated correctly
-- [ ] MWR calculated correctly
-- [ ] TWR calculated correctly (nullable if failed)
-- [ ] Sleeve filter includes child sleeves
-- [ ] Pagination works correctly
+- [x] Returns all required fields (including MWR, TWR)
+- [x] P/L calculated correctly
+- [x] MWR calculated correctly
+- [x] TWR calculated correctly (nullable if failed)
+- [x] Sleeve filter includes child sleeves
+- [x] Pagination works correctly
 
 ---
 
@@ -2283,6 +2283,8 @@ _(To be completed by NAPP-026)_
 - **NAPP-013a**: Time Range Bar Component (widgets/time_range_bar.dart - 6 equal-width period buttons with TimePeriod enum, active/inactive styling matching mockup, default 1Y selection)
 - **NAPP-014**: Research Valuation Logic (documented 3 endpoints: getPortfolioValuation, getChartData, getHistoricalReturns; core calculations: portfolio value, cost basis via Average Cost Method, MWR/XIRR returns, recursive sleeve totals, band evaluation; 5 helper functions to port; edge cases documented; XIRR dependency identified)
 - **NAPP-013b**: Hero Value Display Component (hero_value_display.dart - displays invested value, MWR % (green/red), TWR % (grey), absolute return, cash, total; supports hideBalances mode; 6 tests passing)
+- **NAPP-015**: Valuation Endpoint (ported from TypeScript: portfolio value, cost basis via Average Cost Method, asset valuations, sleeve allocations, MWR/TWR calculations, band evaluation; returns PortfolioValuation with all fields; includes known issues documentation)
+- **NAPP-017**: Holdings Endpoint (holdings_endpoint.dart - getHoldings() with pagination, sleeve/search filtering, MWR/TWR per asset; HoldingResponse with symbol/name/isin/value/costBasis/pl/weight/mwr/twr/sleeveId/sleeveName/assetId/quantity; 7 unit tests)
 
 ---
 
