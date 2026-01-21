@@ -1,0 +1,22 @@
+info:
+  name: get issues
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: "{{host}}/issues/getIssues?portfolioId=019bdcfd-1e5f-7f1f-9d59-452213735f3a"
+  params:
+    - name: portfolioId
+      value: 019bdcfd-1e5f-7f1f-9d59-452213735f3a
+      type: query
+  body:
+    type: json
+    data: ""
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

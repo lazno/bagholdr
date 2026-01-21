@@ -1,0 +1,8 @@
+### IssuesResponse - Response from getIssues endpoint
+class: IssuesResponse
+fields:
+  ### List of detected issues
+  issues: List<Issue>
+
+  ### Total count of issues
+  totalCount: int

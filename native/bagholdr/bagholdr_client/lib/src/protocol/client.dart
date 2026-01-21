@@ -19,14 +19,15 @@ import 'package:serverpod_auth_core_client/serverpod_auth_core_client.dart'
 import 'package:bagholdr_client/src/protocol/holdings_list_response.dart'
     as _i5;
 import 'package:bagholdr_client/src/protocol/return_period.dart' as _i6;
-import 'package:bagholdr_client/src/protocol/portfolio.dart' as _i7;
-import 'package:bagholdr_client/src/protocol/sleeve_tree_response.dart' as _i8;
-import 'package:bagholdr_client/src/protocol/portfolio_valuation.dart' as _i9;
-import 'package:bagholdr_client/src/protocol/chart_data_result.dart' as _i10;
-import 'package:bagholdr_client/src/protocol/chart_range.dart' as _i11;
+import 'package:bagholdr_client/src/protocol/issues_response.dart' as _i7;
+import 'package:bagholdr_client/src/protocol/portfolio.dart' as _i8;
+import 'package:bagholdr_client/src/protocol/sleeve_tree_response.dart' as _i9;
+import 'package:bagholdr_client/src/protocol/portfolio_valuation.dart' as _i10;
+import 'package:bagholdr_client/src/protocol/chart_data_result.dart' as _i11;
+import 'package:bagholdr_client/src/protocol/chart_range.dart' as _i12;
 import 'package:bagholdr_client/src/protocol/historical_returns_result.dart'
-    as _i12;
-import 'protocol.dart' as _i13;
+    as _i13;
+import 'protocol.dart' as _i14;
 
 /// By extending [EmailIdpBaseEndpoint], the email identity provider endpoints
 /// are made available on the server and enable the corresponding sign-in widget
@@ -283,6 +284,28 @@ class EndpointHoldings extends _i2.EndpointRef {
   );
 }
 
+/// Endpoint for detecting portfolio issues/health indicators.
+///
+/// Detects allocation drift, stale prices, and sync status issues.
+/// {@category Endpoint}
+class EndpointIssues extends _i2.EndpointRef {
+  EndpointIssues(_i2.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'issues';
+
+  /// Get portfolio issues
+  ///
+  /// [portfolioId] - Portfolio to check issues for
+  _i3.Future<_i7.IssuesResponse> getIssues({
+    required _i2.UuidValue portfolioId,
+  }) => caller.callServerEndpoint<_i7.IssuesResponse>(
+    'issues',
+    'getIssues',
+    {'portfolioId': portfolioId},
+  );
+}
+
 /// Endpoint for portfolio operations.
 /// {@category Endpoint}
 class EndpointPortfolio extends _i2.EndpointRef {
@@ -292,8 +315,8 @@ class EndpointPortfolio extends _i2.EndpointRef {
   String get name => 'portfolio';
 
   /// Returns all portfolios.
-  _i3.Future<List<_i7.Portfolio>> getPortfolios() =>
-      caller.callServerEndpoint<List<_i7.Portfolio>>(
+  _i3.Future<List<_i8.Portfolio>> getPortfolios() =>
+      caller.callServerEndpoint<List<_i8.Portfolio>>(
         'portfolio',
         'getPortfolios',
         {},
@@ -315,10 +338,10 @@ class EndpointSleeves extends _i2.EndpointRef {
   ///
   /// [portfolioId] - Portfolio to fetch sleeves for
   /// [period] - Time period for return calculations
-  _i3.Future<_i8.SleeveTreeResponse> getSleeveTree({
+  _i3.Future<_i9.SleeveTreeResponse> getSleeveTree({
     required _i2.UuidValue portfolioId,
     required _i6.ReturnPeriod period,
-  }) => caller.callServerEndpoint<_i8.SleeveTreeResponse>(
+  }) => caller.callServerEndpoint<_i9.SleeveTreeResponse>(
     'sleeves',
     'getSleeveTree',
     {
@@ -348,9 +371,9 @@ class EndpointValuation extends _i2.EndpointRef {
   String get name => 'valuation';
 
   /// Get full portfolio valuation with allocation breakdown
-  _i3.Future<_i9.PortfolioValuation> getPortfolioValuation(
+  _i3.Future<_i10.PortfolioValuation> getPortfolioValuation(
     _i2.UuidValue portfolioId,
-  ) => caller.callServerEndpoint<_i9.PortfolioValuation>(
+  ) => caller.callServerEndpoint<_i10.PortfolioValuation>(
     'valuation',
     'getPortfolioValuation',
     {'portfolioId': portfolioId},
@@ -358,10 +381,10 @@ class EndpointValuation extends _i2.EndpointRef {
 
   /// Get historical chart data for portfolio value visualization.
   /// Returns daily data points with portfolio value and cost basis over time.
-  _i3.Future<_i10.ChartDataResult> getChartData(
+  _i3.Future<_i11.ChartDataResult> getChartData(
     _i2.UuidValue portfolioId,
-    _i11.ChartRange range,
-  ) => caller.callServerEndpoint<_i10.ChartDataResult>(
+    _i12.ChartRange range,
+  ) => caller.callServerEndpoint<_i11.ChartDataResult>(
     'valuation',
     'getChartData',
     {
@@ -372,9 +395,9 @@ class EndpointValuation extends _i2.EndpointRef {
 
   /// Get historical returns for different time periods.
   /// Calculates portfolio value at historical dates and compares to current value.
-  _i3.Future<_i12.HistoricalReturnsResult> getHistoricalReturns(
+  _i3.Future<_i13.HistoricalReturnsResult> getHistoricalReturns(
     _i2.UuidValue portfolioId,
-  ) => caller.callServerEndpoint<_i12.HistoricalReturnsResult>(
+  ) => caller.callServerEndpoint<_i13.HistoricalReturnsResult>(
     'valuation',
     'getHistoricalReturns',
     {'portfolioId': portfolioId},
@@ -412,7 +435,7 @@ class Client extends _i2.ServerpodClientShared {
     bool? disconnectStreamsOnLostInternetConnection,
   }) : super(
          host,
-         _i13.Protocol(),
+         _i14.Protocol(),
          securityContext: securityContext,
          streamingConnectionTimeout: streamingConnectionTimeout,
          connectionTimeout: connectionTimeout,
@@ -424,6 +447,7 @@ class Client extends _i2.ServerpodClientShared {
     emailIdp = EndpointEmailIdp(this);
     jwtRefresh = EndpointJwtRefresh(this);
     holdings = EndpointHoldings(this);
+    issues = EndpointIssues(this);
     portfolio = EndpointPortfolio(this);
     sleeves = EndpointSleeves(this);
     valuation = EndpointValuation(this);
@@ -435,6 +459,8 @@ class Client extends _i2.ServerpodClientShared {
   late final EndpointJwtRefresh jwtRefresh;
 
   late final EndpointHoldings holdings;
+
+  late final EndpointIssues issues;
 
   late final EndpointPortfolio portfolio;
 
@@ -449,6 +475,7 @@ class Client extends _i2.ServerpodClientShared {
     'emailIdp': emailIdp,
     'jwtRefresh': jwtRefresh,
     'holdings': holdings,
+    'issues': issues,
     'portfolio': portfolio,
     'sleeves': sleeves,
     'valuation': valuation,

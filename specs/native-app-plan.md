@@ -1003,8 +1003,8 @@ HeroValueDisplay(
 
 ### NAPP-013c: Issues Bar Component `[implement]`
 
-**Priority**: High | **Status**: `[blocked]`
-**Blocked by**: NAPP-022 (needs issues data types)
+**Priority**: High | **Status**: `[ ]`
+**Blocked by**: None (NAPP-022 complete)
 
 Build the collapsible issues bar. Reference mockup: [`specs/mockups/native/interactive-w2-refined.html`](mockups/native/interactive-w2-refined.html)
 
@@ -1846,7 +1846,7 @@ Endpoint should return sleeve tree with:
 
 ### NAPP-022: Issues Endpoint `[implement]`
 
-**Priority**: High | **Status**: `[ ]`
+**Priority**: High | **Status**: `[x]`
 **Blocked by**: None (NAPP-020 complete)
 
 **File**: `bagholdr_server/lib/src/endpoints/issues_endpoint.dart`
@@ -1898,18 +1898,18 @@ class IssuesResponse {
 ---
 
 **Tasks**:
-- [ ] Create `IssuesEndpoint` class
-- [ ] Implement allocation drift detection using portfolio band settings
-- [ ] Implement stale price detection (24h threshold)
-- [ ] Implement sync status check
-- [ ] Return sorted by severity (warnings first)
-- [ ] Run `serverpod generate`
+- [x] Create `IssuesEndpoint` class
+- [x] Implement allocation drift detection using portfolio band settings
+- [x] Implement stale price detection (24h threshold)
+- [x] Implement sync status check
+- [x] Return sorted by severity (warnings first)
+- [x] Run `serverpod generate`
 
 **Acceptance Criteria**:
-- [ ] Returns correct issues for test portfolio
-- [ ] Allocation drift calculated correctly
-- [ ] Stale prices detected correctly
-- [ ] Messages formatted correctly
+- [x] Returns correct issues for test portfolio
+- [x] Allocation drift calculated correctly
+- [x] Stale prices detected correctly
+- [x] Messages formatted correctly
 
 ---
 
@@ -2287,6 +2287,7 @@ _(To be completed by NAPP-026)_
 - **NAPP-017**: Holdings Endpoint (holdings_endpoint.dart - getHoldings() with pagination, sleeve/search filtering, MWR/TWR per asset; HoldingResponse with symbol/name/isin/value/costBasis/pl/weight/mwr/twr/sleeveId/sleeveName/assetId/quantity; 7 unit tests)
 - **NAPP-018**: Holdings/Assets List UI (assets_section.dart - section header with title/count badge, search bar, horizontally scrollable 3-column table with Asset/Performance/Weight columns, asset rows with name/symbol/value/P&L/MWR/TWR/weight, pagination button, wired to dashboard; 16 unit tests)
 - **NAPP-020**: Sleeves Endpoint (sleeves_endpoint.dart - getSleeveTree() returning SleeveTreeResponse with hierarchical SleeveNode tree; calculates allocation percentages, drift status (ok/over/under), MWR/TWR per sleeve for period, asset counts; color mapping; 11 unit tests; end-to-end tested)
+- **NAPP-022**: Issues Endpoint (issues_endpoint.dart - getIssues() returning IssuesResponse with Issue list; detects over/under allocation drift using portfolio band settings, stale prices (24h threshold), sync status (last import time); issues sorted by severity (warnings first); 15 unit tests; end-to-end tested)
 
 ---
 

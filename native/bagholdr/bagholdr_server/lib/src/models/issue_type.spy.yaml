@@ -1,0 +1,7 @@
+### Issue type enum
+enum: IssueType
+values:
+  - overAllocation
+  - underAllocation
+  - stalePrice
+  - syncStatus

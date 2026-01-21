@@ -1,0 +1,26 @@
+### Issue - Portfolio issue/health indicator
+class: Issue
+fields:
+  ### Issue type (overAllocation, underAllocation, stalePrice, syncStatus)
+  type: IssueType
+
+  ### Issue severity (warning, info)
+  severity: IssueSeverity
+
+  ### Human-readable message
+  message: String
+
+  ### Sleeve ID (for allocation issues)
+  sleeveId: String?
+
+  ### Sleeve name (for allocation issues)
+  sleeveName: String?
+
+  ### Asset ID (for stale price issues)
+  assetId: String?
+
+  ### Percentage points of drift (for allocation issues)
+  driftPp: double?
+
+  ### Color for the sleeve (for allocation issues)
+  color: String?

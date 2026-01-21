@@ -1,0 +1,22 @@
+info:
+  name: get sleeve tree
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{host}}/sleeves/getSleeveTree"
+  body:
+    type: json
+    data: |-
+      {
+          "portfolioId": "019bdcfd-1e5f-7f1f-9d59-452213735f3a",
+          "period": "all"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
