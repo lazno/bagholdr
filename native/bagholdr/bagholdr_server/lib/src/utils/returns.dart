@@ -70,7 +70,8 @@ double xirr(List<XirrTransaction> transactions, {double guess = 0.1}) {
   }
 
   // Newton-Raphson iteration
-  double rate = guess;
+  // Clamp initial guess to valid range to avoid immediate non-finite results
+  double rate = guess.clamp(minRate, maxRate);
   const maxIterations = 100;
   const tolerance = 1e-10;
   const npvTolerance = 1e-10;
@@ -121,10 +122,15 @@ double xirr(List<XirrTransaction> transactions, {double guess = 0.1}) {
   double npvLow = npv(low);
   double npvHigh = npv(high);
 
+  // Check if root is already at endpoints
+  if (npvLow.isFinite && npvLow.abs() < npvTolerance) return low;
+  if (npvHigh.isFinite && npvHigh.abs() < npvTolerance) return high;
+
   // If same sign, try to find a valid bracket by scanning
   if (npvLow * npvHigh > 0) {
     // Try a grid search to find a sign change
-    const steps = 20;
+    // Use 200 steps for finer resolution to catch narrow zero-crossings
+    const steps = 200;
     final stepSize = (maxRate - minRate) / steps;
     double? foundLow;
     double? foundHigh;
@@ -134,6 +140,9 @@ double xirr(List<XirrTransaction> transactions, {double guess = 0.1}) {
     for (var i = 0; i <= steps; i++) {
       final testRate = minRate + i * stepSize;
       final testNpv = npv(testRate);
+
+      // Skip non-finite values (overflow/underflow edge cases)
+      if (!testNpv.isFinite) continue;
 
       if (prevNpv != null && prevNpv * testNpv < 0) {
         // Found a sign change
@@ -182,10 +191,26 @@ double xirr(List<XirrTransaction> transactions, {double guess = 0.1}) {
   throw StateError('XIRR calculation failed to converge');
 }
 
-/// Cash flow for MWR calculation
+/// External cash flow (contribution or withdrawal) for return calculations.
+///
+/// In the context of portfolio tracking:
+/// - A "buy" order represents an external contribution (money flowing INTO the portfolio)
+/// - A "sell" order represents a withdrawal (money flowing OUT of the portfolio)
+///
+/// These are EXTERNAL flows that change the total capital in the portfolio.
+/// Internal trades (e.g., selling Stock A to buy Stock B) are NOT cash flows
+/// because they don't change the total portfolio value.
+///
+/// **Timing assumption**: Cash flows are assumed to occur at the START of the
+/// specified date, before any market movement on that day.
 class CashFlow {
-  final String date; // YYYY-MM-DD
-  final double amount; // Positive for buys (inflows), negative for sells (outflows)
+  /// Date of the cash flow (YYYY-MM-DD format)
+  final String date;
+
+  /// Amount of the cash flow:
+  /// - Positive = contribution/deposit (buy order - money flows IN)
+  /// - Negative = withdrawal (sell order - money flows OUT)
+  final double amount;
 
   const CashFlow({required this.date, required this.amount});
 }
@@ -339,4 +364,223 @@ String formatPeriodLabel(double years) {
   if (days < 30) return '${(days / 7).round()}w';
   if (days < 365) return '${(days / 30).round()}mo';
   return '${years.toStringAsFixed(1)}y';
+}
+
+/// Result of TWR calculation
+class TwrResult {
+  /// Compounded return over the period (e.g., 0.15 = 15% total return)
+  /// Null if calculation failed (e.g., portfolio value hit zero)
+  final double? twr;
+
+  /// Number of cash flows in the period
+  final int cashFlowCount;
+
+  /// Whether the calculation completed successfully
+  final bool isValid;
+
+  /// Error message if calculation failed
+  final String? error;
+
+  const TwrResult({
+    required this.twr,
+    required this.cashFlowCount,
+    this.isValid = true,
+    this.error,
+  });
+
+  /// Create a failed result
+  const TwrResult.failed(this.error)
+      : twr = null,
+        cashFlowCount = 0,
+        isValid = false;
+}
+
+/// Calculate Time-Weighted Return (TWR) for a period.
+///
+/// TWR measures portfolio performance independent of external cash flows.
+/// It answers: "How would $1 invested at the start have grown?"
+///
+/// ## Algorithm
+/// 1. Break the period into sub-periods at each cash flow date
+/// 2. Calculate return for each sub-period: (end - start) / start
+/// 3. Geometrically link: TWR = [(1+R1) × (1+R2) × ... × (1+Rn)] - 1
+///
+/// ## Date Semantics
+///
+/// The return is measured from **end of startDate** to **end of endDate**.
+/// This means startDate's market movement is NOT included in the return.
+///
+/// Example: TWR from Jan 1 to Dec 31 measures growth from Jan 1 close to Dec 31 close.
+/// If you want to include Jan 1's return, use Dec 31 (prior year) as startDate.
+///
+/// ## Timing Contract
+///
+/// **Cash flows** are assumed to occur at START of day:
+/// - A deposit on July 1st means: money available at market open July 1st
+/// - A withdrawal on July 1st means: money removed at market open July 1st
+///
+/// **getPortfolioValueAtDate(date)** must return END-of-day value:
+/// - Holdings as of that date (orders on date D included in holdings for D)
+/// - Prices as of market close on that date
+/// - For non-trading days (weekends/holidays), must return the most recent
+///   available valuation (using last known prices)
+/// - Must return a finite, non-negative value (will fail otherwise)
+///
+/// This "start-of-day flow + EOD valuation" convention is an approximation.
+/// It assumes overnight movement between prior close and market open is negligible.
+/// Alternative conventions exist (e.g., EOD flows) but this is internally consistent.
+///
+/// ## Edge Cases
+/// - Returns [TwrResult.failed] if portfolio value drops to zero or negative mid-period
+/// - Returns [TwrResult.failed] if start value is zero but there are cash flows
+/// - Returns TWR of 0 if start value is zero and no cash flows (nothing to measure)
+/// - Returns [TwrResult.failed] if callback returns non-finite or negative values
+/// - Handles multiple cash flows on the same day by aggregating them
+///
+/// ## Parameters
+/// - [startDate] - Period start date (YYYY-MM-DD). EOD value is the starting point.
+/// - [endDate] - Period end date (YYYY-MM-DD). EOD value is the ending point.
+/// - [cashFlows] - List of external contributions/withdrawals (see [CashFlow]).
+///   The returned [cashFlowCount] is the raw number of flows, not unique dates.
+/// - [getPortfolioValueAtDate] - Callback returning EOD portfolio value for any date.
+TwrResult calculateTWR({
+  required String startDate,
+  required String endDate,
+  required List<CashFlow> cashFlows,
+  required double Function(String date) getPortfolioValueAtDate,
+}) {
+  // Helper to validate callback results
+  String? validateValue(double value, String date) {
+    if (!value.isFinite) {
+      return 'Invalid portfolio value (non-finite) for $date';
+    }
+    if (value < 0) {
+      return 'Invalid portfolio value (negative) for $date';
+    }
+    return null;
+  }
+
+  // Filter and sort cash flows within the range (exclusive start, inclusive end)
+  // Exclusive start because startDate's value is our starting point (already invested)
+  final flowsInRange = cashFlows
+      .where((cf) => cf.date.compareTo(startDate) > 0 && cf.date.compareTo(endDate) <= 0)
+      .toList()
+    ..sort((a, b) => a.date.compareTo(b.date));
+
+  final startValue = getPortfolioValueAtDate(startDate);
+
+  // Validate start value
+  final startError = validateValue(startValue, startDate);
+  if (startError != null) {
+    return TwrResult.failed(startError);
+  }
+
+  // Edge case: no starting capital
+  if (startValue == 0) {
+    if (flowsInRange.isNotEmpty) {
+      // Can't measure return when starting from zero with contributions
+      return const TwrResult.failed(
+        'Cannot calculate TWR: no starting capital on startDate but cash flows exist',
+      );
+    }
+    // No capital and no flows - nothing to measure
+    return const TwrResult(twr: 0, cashFlowCount: 0);
+  }
+
+  // If no cash flows, use simple return
+  if (flowsInRange.isEmpty) {
+    final endValue = getPortfolioValueAtDate(endDate);
+    final endError = validateValue(endValue, endDate);
+    if (endError != null) {
+      return TwrResult.failed(endError);
+    }
+    return TwrResult(
+      twr: (endValue - startValue) / startValue,
+      cashFlowCount: 0,
+    );
+  }
+
+  // Group cash flows by date (multiple orders on same day are one event)
+  final flowsByDate = <String, double>{};
+  for (final flow in flowsInRange) {
+    flowsByDate[flow.date] = (flowsByDate[flow.date] ?? 0) + flow.amount;
+  }
+
+  final uniqueDates = flowsByDate.keys.toList()..sort();
+
+  // Helper: get previous calendar date
+  // Note: The callback is responsible for handling non-trading days
+  // (e.g., returning Friday's value when asked for Saturday)
+  String getPreviousDate(String dateStr) {
+    final date = DateTime.parse(dateStr);
+    final prevDate = date.subtract(const Duration(days: 1));
+    return '${prevDate.year.toString().padLeft(4, '0')}-'
+        '${prevDate.month.toString().padLeft(2, '0')}-'
+        '${prevDate.day.toString().padLeft(2, '0')}';
+  }
+
+  // Calculate sub-period returns using geometric linking
+  double twrProduct = 1;
+  String subPeriodStart = startDate;
+  double subPeriodStartValue = startValue;
+
+  for (final flowDate in uniqueDates) {
+    // Value "just before" the cash flow = end of previous day
+    // This captures all market movement up to but not including flowDate
+    final dayBefore = getPreviousDate(flowDate);
+    final valueBeforeFlow = dayBefore.compareTo(subPeriodStart) >= 0
+        ? getPortfolioValueAtDate(dayBefore)
+        : subPeriodStartValue;
+
+    // Validate valueBeforeFlow
+    final beforeError = validateValue(valueBeforeFlow, dayBefore);
+    if (beforeError != null) {
+      return TwrResult.failed(beforeError);
+    }
+
+    // Check if market losses dropped portfolio to zero
+    if (valueBeforeFlow == 0) {
+      return TwrResult.failed(
+        'Portfolio value dropped to zero by $dayBefore (market losses). TWR undefined.',
+      );
+    }
+
+    // Calculate and chain sub-period return
+    // Note: subPeriodStartValue > 0 is guaranteed by earlier checks
+    final subReturn = (valueBeforeFlow - subPeriodStartValue) / subPeriodStartValue;
+    twrProduct *= 1 + subReturn;
+
+    // New starting point for next sub-period:
+    // Value just before flow + the cash flow amount
+    // This represents the capital base immediately after the flow
+    final cashFlowAmount = flowsByDate[flowDate]!;
+    subPeriodStartValue = valueBeforeFlow + cashFlowAmount;
+    subPeriodStart = flowDate;
+
+    // Check if flow resulted in zero/negative value (full withdrawal)
+    if (subPeriodStartValue <= 0 && flowDate != endDate) {
+      return TwrResult.failed(
+        'Portfolio fully withdrawn on $flowDate. TWR undefined for remaining period.',
+      );
+    }
+  }
+
+  // Final sub-period (from last cash flow to end date)
+  final endValue = getPortfolioValueAtDate(endDate);
+
+  // Validate end value
+  final endError = validateValue(endValue, endDate);
+  if (endError != null) {
+    return TwrResult.failed(endError);
+  }
+
+  if (subPeriodStartValue > 0) {
+    final finalReturn = (endValue - subPeriodStartValue) / subPeriodStartValue;
+    twrProduct *= 1 + finalReturn;
+  }
+
+  return TwrResult(
+    twr: twrProduct - 1,
+    cashFlowCount: flowsInRange.length,
+  );
 }

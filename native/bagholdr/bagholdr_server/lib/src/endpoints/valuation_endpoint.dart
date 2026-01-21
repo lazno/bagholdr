@@ -4,7 +4,7 @@ import 'package:serverpod/serverpod.dart' hide Order;
 
 import '../generated/protocol.dart';
 import '../utils/bands.dart';
-import '../utils/xirr.dart';
+import '../utils/returns.dart';
 
 /// Endpoint for portfolio valuation and allocation calculations.
 ///
@@ -1061,6 +1061,14 @@ class ValuationEndpoint extends Endpoint {
           cashFlows: cashFlows,
         );
 
+        // Calculate TWR (time-weighted return) for portfolio performance comparison
+        final twrResult = calculateTWR(
+          startDate: comparisonDate,
+          endDate: todayStr,
+          cashFlows: cashFlows,
+          getPortfolioValueAtDate: (date) => calculatePortfolioValue(date, false),
+        );
+
         final isAllPeriod = period == ReturnPeriod.all;
 
         // Absolute return
@@ -1080,6 +1088,11 @@ class ValuationEndpoint extends Endpoint {
           displayReturnPercent = mwrResult.compoundedReturn;
         }
 
+        // TWR may be null if calculation failed (e.g., portfolio hit zero value)
+        final twrPercent = twrResult.isValid && twrResult.twr != null
+            ? (twrResult.twr! * 10000).round() / 100
+            : null;
+
         returns[period.name] = PeriodReturn(
           period: period,
           currentValue: currentValue,
@@ -1087,6 +1100,7 @@ class ValuationEndpoint extends Endpoint {
           absoluteReturn: (absoluteReturn * 100).round() / 100,
           compoundedReturn: (displayReturnPercent * 10000).round() / 100,
           annualizedReturn: (mwrResult.annualizedReturn * 10000).round() / 100,
+          twr: twrPercent,
           periodYears: (mwrResult.periodYears * 100).round() / 100,
           comparisonDate: comparisonDate,
           netCashFlow: (mwrResult.netCashFlow * 100).round() / 100,

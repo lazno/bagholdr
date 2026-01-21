@@ -230,19 +230,22 @@ The XIRR algorithm uses Newton-Raphson iteration to find the rate.
 
 #### Display Format
 
-Returns are shown in two forms:
+Returns are shown as two metrics (consistent across portfolio, sleeves, assets):
 
-1. **Compounded Return**: Total % gain/loss over the period
+1. **MWR (compounded)**: Your actual return on invested money
+   - Big green/red number
    - Formula: `(1 + annualized)^years - 1`
-   - Example: +33.4%
+   - Example: +12.2%
 
-2. **Annualized Return (p.a.)**: Annual rate of return
-   - Direct output from XIRR
-   - Example: +8.5% p.a.
+2. **TWR**: Portfolio performance (ignores when you added/removed money)
+   - Grey secondary number
+   - Example: TWR +10.5%
 
-UI display: `+33.4% (+8.5% p.a.)`
+UI display: `+12.2%` (big, colored) + `TWR +10.5%` (grey)
 
-The annualized form is particularly useful for comparing returns across different time periods.
+Showing both allows users to see if their timing helped or hurt them:
+- If MWR > TWR: Good timing (added money before gains)
+- If MWR < TWR: Poor timing (added money before losses)
 
 #### Absolute Return
 
@@ -301,9 +304,21 @@ For individual assets, if an asset was purchased after the selected period start
 - A visual indicator shows the actual holding period (e.g., "6mo")
 - Both compounded and annualized returns reflect the shorter actual period
 
-### Time-Weighted Return (TWR) - Reserved for Benchmarks
+### Time-Weighted Return (TWR)
 
-TWR is kept available for future benchmark comparison features. It measures pure investment performance by neutralizing the timing of cash flows.
+TWR measures pure investment performance by neutralizing the timing of cash flows. It's displayed alongside MWR on the dashboard.
+
+#### TWR vs MWR on Dashboard
+
+| Display | Metric | Purpose |
+|---------|--------|---------|
+| Big number (green/red) | MWR (compounded) | "What was my actual return on my money?" |
+| Grey number | TWR | "How did the portfolio perform (ignoring when I added/removed money)?" |
+
+Showing both allows users to see if their timing helped or hurt them:
+- If MWR > TWR: Good timing (added money before gains, withdrew before losses)
+- If MWR < TWR: Poor timing (added money before losses, withdrew before gains)
+- If MWR ≈ TWR: Timing had little impact
 
 #### TWR Formula
 
@@ -312,10 +327,29 @@ TWR breaks the period into sub-periods at each cash flow and geometrically links
 ```
 TWR = [(1 + R₁) × (1 + R₂) × ... × (1 + Rₙ)] - 1
 
-Where Rᵢ = (Ending Value - Beginning Value) / Beginning Value
+Where Rᵢ = (Value After Flow - Value Before Flow) / Value Before Flow
 ```
 
-TWR is useful for comparing portfolio performance against benchmarks (like S&P 500) because it removes the impact of when you personally added or removed money.
+#### Timing Assumptions
+
+- **Cash flows**: Assumed to occur at the **start** of the specified date, before market movement
+- **Portfolio values**: Retrieved as **end-of-day (EOD)** values
+- **Date range**: TWR from `startDate` to `endDate` measures performance from EOD(startDate) to EOD(endDate)
+  - This excludes `startDate`'s market movement but includes `endDate`'s
+
+#### Edge Cases
+
+| Scenario | Behavior |
+|----------|----------|
+| Zero portfolio value at start (no flows) | Returns 0% |
+| Zero portfolio value at start (with flows) | Returns failed (cannot measure performance) |
+| Portfolio drops to zero mid-period | Returns failed (cannot recover from zero) |
+| Non-trading day cash flow | Uses nearest prior trading day's price |
+| Negative/non-finite portfolio value | Returns failed with error |
+
+#### Why TWR for Benchmarking
+
+TWR is useful for comparing portfolio performance against benchmarks (like S&P 500) because it removes the impact of when you personally added or removed money. A fund manager's performance should be judged by TWR since they don't control when investors add/withdraw capital.
 
 ---
 

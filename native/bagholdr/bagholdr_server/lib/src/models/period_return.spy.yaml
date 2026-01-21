@@ -20,6 +20,9 @@ fields:
   ### Annualized percentage return (p.a.)
   annualizedReturn: double
 
+  ### Time-weighted return (portfolio performance, ignoring cash flow timing)
+  twr: double?
+
   ### Length of period in years
   periodYears: double
 

@@ -950,24 +950,32 @@ Build the value display portion of the hero section. Reference mockup: [`specs/m
 
 **File**: `bagholdr_flutter/lib/widgets/hero_value_display.dart`
 
-**Design** (from mockup):
+**Design** (MWR + TWR display):
 ```
 ┌─────────────────────────────────────────┐
 │ INVESTED                    CASH        │
 │ €113,482                    €6,452      │
 │ +12.2%  +€12,348                        │
-│ (8.4% p.a.)                 TOTAL       │
+│ TWR +10.5%                  TOTAL       │
 │                             €119,934    │
 └─────────────────────────────────────────┘
 ```
+
+**Return Display Strategy** (consistent across portfolio, sleeves, assets):
+- **+12.2%** (big green/red): MWR compounded — your actual return on invested money
+- **TWR +10.5%** (grey): Portfolio performance — ignores when you added/removed money
+
+Showing both allows users to see if their timing helped or hurt them:
+- If MWR > TWR: Good timing (added money before gains)
+- If MWR < TWR: Poor timing (added money before losses)
 
 **Widget Interface**:
 ```dart
 HeroValueDisplay(
   investedValue: double,
-  returnPct: double,
-  returnAbs: double,
-  xirr: double,
+  mwr: double,              // MWR compounded return (big number)
+  twr: double?,             // TWR return (grey, nullable if calculation failed)
+  returnAbs: double,        // Absolute return in €
   cashBalance: double,
   totalValue: double,
   hideBalances: bool,
@@ -976,10 +984,13 @@ HeroValueDisplay(
 
 **Tasks**:
 - [ ] Create `HeroValueDisplay` widget
-- [ ] Left column: INVESTED label, amount (28px bold), return %, return €, XIRR
+- [ ] Left column: INVESTED label, amount (28px bold)
+- [ ] Left column: MWR % (16px, green/red), absolute return € (13px, green/red)
+- [ ] Left column: TWR % (11px grey)
 - [ ] Right column: CASH label + value, TOTAL label + value (muted)
-- [ ] Color returns green/red based on sign
+- [ ] Color MWR/absolute return green/red based on sign
 - [ ] Support `hideBalances` mode (show ••••• for amounts)
+- [ ] Handle null TWR gracefully (hide or show "N/A")
 - [ ] Match mockup typography exactly
 - [ ] Take screenshot to verify
 
@@ -1081,7 +1092,7 @@ Understand the existing valuation logic before porting. **No code changes — ju
 Translate valuation logic from TypeScript to Dart. Powers the Hero section of the dashboard.
 
 **References**:
-- **Formulas**: [specs/calculus-spec.md](calculus-spec.md) — cost basis, MWR/XIRR, bands
+- **Formulas**: [specs/calculus-spec.md](calculus-spec.md) — cost basis, MWR/XIRR, TWR, bands
 - **Porting guide**: [Valuation Logic Summary](#valuation-logic-summary) — endpoints, types, helper functions
 - **Source code**: `server/src/trpc/routers/valuation.ts`
 - **Mockup**: [specs/mockups/native/interactive-w2-refined.html](mockups/native/interactive-w2-refined.html)
@@ -1097,14 +1108,21 @@ Translate valuation logic from TypeScript to Dart. Powers the Hero section of th
 - [x] Port `getChartData` — historical value + cost basis series
 - [x] Port helper functions: `calculateSleeveTotal`, `calculateMWR`, `formatPeriodLabel`
 - [x] Port or find XIRR implementation for Dart
+- [x] Implement `calculateTWR` — Time-Weighted Return for portfolio performance (ignores cash flow timing)
 - [x] Run `serverpod generate`
 - [x] Validate against existing backend (same inputs → same outputs)
 
+**Return Display Strategy**:
+- **MWR (compounded)**: Big green/red number — user's actual return on their money
+- **TWR**: Grey number — portfolio performance (ignores timing of deposits/withdrawals)
+- Shows both so users can see if their timing helped or hurt them
+
 **Acceptance Criteria**:
-- [ ] Returns correct portfolio value
-- [ ] MWR/XIRR matches existing app for all periods (1M, 3M, 6M, YTD, 1Y, ALL)
-- [ ] Cost basis matches existing app (Average Cost Method)
-- [ ] Sleeve totals calculated recursively
+- [x] Returns correct portfolio value
+- [x] MWR/XIRR matches existing app for all periods (1M, 3M, 6M, YTD, 1Y, ALL)
+- [x] TWR calculated correctly for all periods
+- [x] Cost basis matches existing app (Average Cost Method)
+- [x] Sleeve totals calculated recursively
 
 ---
 
@@ -1177,9 +1195,13 @@ Percentages (returns, weights, allocations) remain visible.
 |---------|------|--------|
 | Label | "INVESTED" | Uppercase, 11px, grey |
 | Amount | Sum of all holding values | `€{amount}` with thousand separator, 28px bold |
-| Return % | TWR for selected period | `+12.2%` or `-5.3%`, 16px, green/red |
+| MWR % | MWR compounded for selected period | `+12.2%` or `-5.3%`, 16px, green/red |
 | Return € | Absolute gain/loss | `+€12,348` or `-€5,200`, 13px, green/red |
-| XIRR | Annualized return | `(8.4% p.a.)`, 11px grey, in parentheses |
+| TWR | Portfolio performance (ignores timing) | `TWR +10.5%`, 11px grey |
+
+**Return metrics explained** (consistent across portfolio, sleeves, assets):
+- **MWR %**: Your actual return on invested money (big number, colored)
+- **TWR**: Portfolio performance, ignores when you added/removed money (grey)
 
 **Right column (secondary)**:
 
@@ -1294,8 +1316,8 @@ Percentages (returns, weights, allocations) remain visible.
 | Name | Sleeve name | 15px bold |
 | Meta | Asset count | "12 assets" or "2 sleeves · 18 assets" |
 | Value | Sleeve total value | `€{amount}`, 16px bold |
-| Return | TWR for period | `+12.2%`, 12px, colored |
-| XIRR | Annualized | `(8.4% p.a.)`, 11px grey |
+| MWR | MWR compounded for period | `+12.2%`, 12px, colored |
+| TWR | TWR for period | `TWR +10.5%`, 11px grey |
 
 **Allocation metrics row** (specific sleeve only):
 
@@ -1388,8 +1410,8 @@ class HoldingResponse {
   double costBasis;      // Total cost basis
   double pl;             // Profit/Loss (value - costBasis)
   double weight;         // Portfolio weight % (value / total * 100)
-  double twr;            // Time-weighted return % for period
-  double xirr;           // Annualized internal rate of return %
+  double mwr;            // MWR compounded return % for period (big number)
+  double? twr;           // TWR return % for period (grey, nullable if failed)
   int sleeveId;          // Sleeve assignment
   String sleeveName;     // Sleeve name for display
 }
@@ -1409,8 +1431,8 @@ class HoldingsListResponse {
 - **costBasis**: Sum of (order.quantity * order.price) for all buy orders, minus sold
 - **pl**: `value - costBasis`
 - **weight**: `value / portfolioTotalValue * 100`
-- **twr**: Time-weighted return using Modified Dietz or daily valuation
-- **xirr**: Calculated from cash flows (order dates and amounts)
+- **mwr**: MWR compounded return (calculated via XIRR internally)
+- **twr**: Time-weighted return (nullable if calculation failed)
 
 ---
 
@@ -1420,18 +1442,18 @@ class HoldingsListResponse {
 - [ ] Implement value and cost basis calculations
 - [ ] Implement P/L calculation
 - [ ] Implement weight calculation
+- [ ] Implement MWR calculation for period (compounded)
 - [ ] Implement TWR calculation for period
-- [ ] Implement XIRR calculation
 - [ ] Implement sleeve filtering (hierarchical)
 - [ ] Implement search filtering
 - [ ] Implement pagination
 - [ ] Run `serverpod generate`
 
 **Acceptance Criteria**:
-- [ ] Returns all required fields
+- [ ] Returns all required fields (including MWR, TWR)
 - [ ] P/L calculated correctly
-- [ ] TWR matches existing TypeScript implementation
-- [ ] XIRR matches existing TypeScript implementation
+- [ ] MWR calculated correctly
+- [ ] TWR calculated correctly (nullable if failed)
 - [ ] Sleeve filter includes child sleeves
 - [ ] Pagination works correctly
 
@@ -1499,9 +1521,10 @@ Layout: Name on top, then "Ticker · Value" on second line
 | Element | Data | Format |
 |---------|------|--------|
 | P/L | Profit/Loss € | `+€4,655` or `-€200`, 13px bold, green/red |
-| Returns | TWR + XIRR | `+12.3% · 9.2% p.a.`, 10px grey |
+| MWR | MWR compounded | `+12.3%`, 10px, colored (green/red) |
+| TWR | TWR for period | `TWR +10.5%`, 10px grey |
 
-Layout: P/L on top, Returns below
+Layout: P/L on top, MWR below, TWR on third line
 
 **Column 3: Weight**
 
@@ -1615,8 +1638,8 @@ Returns sleeve hierarchy with allocation data for the Strategy section. Referenc
 class SleeveTreeResponse {
   List<SleeveNode> sleeves;
   double totalValue;     // Total portfolio value (for "All" view)
-  double totalReturn;    // Portfolio TWR for period
-  double totalXirr;      // Portfolio XIRR
+  double totalMwr;       // Portfolio MWR compounded for period (big number)
+  double? totalTwr;      // Portfolio TWR for period (grey, nullable if failed)
   int totalAssetCount;   // Total assets across all sleeves
 }
 
@@ -1634,8 +1657,8 @@ class SleeveNode {
 
   // Values
   double value;          // Total value in this sleeve
-  double returnPct;      // TWR for period
-  double xirr;           // Annualized return
+  double mwr;            // MWR compounded for period (big number)
+  double? twr;           // TWR for period (grey, nullable if failed)
 
   // Counts
   int assetCount;        // Direct assets in sleeve
@@ -1681,8 +1704,8 @@ driftStatus =
 - [ ] Build hierarchical structure from flat sleeve list
 - [ ] Calculate current allocation % per sleeve
 - [ ] Calculate drift vs target
-- [ ] Calculate TWR per sleeve for period
-- [ ] Calculate XIRR per sleeve
+- [ ] Calculate MWR per sleeve for period (compounded)
+- [ ] Calculate TWR per sleeve for period (nullable if failed)
 - [ ] Include asset counts
 - [ ] Run `serverpod generate`
 
@@ -1690,7 +1713,7 @@ driftStatus =
 - [ ] Returns correct hierarchy
 - [ ] Allocation percentages sum correctly
 - [ ] Drift calculated correctly against portfolio bands
-- [ ] Returns match existing TypeScript implementation
+- [ ] MWR and TWR calculated correctly for each sleeve
 - [ ] Colors assigned correctly
 
 ---
@@ -2207,7 +2230,7 @@ _These sections are filled in by research tasks._
 |----------|----------|---------|
 | `calculateSleeveTotal` | valuation.ts:198 | Recursive sleeve value including descendants |
 | `calculateMWR` | valuation.ts:1683 | XIRR calculation with cash flows |
-| `calculateTWR` | valuation.ts:1597 | TWR calculation (reserved for benchmarks) |
+| `calculateTWR` | returns.dart | TWR calculation for portfolio performance (shown alongside MWR) |
 | `formatPeriodLabel` | valuation.ts:1805 | Format years as "1d", "2w", "3mo", "1.5y" |
 | `calculateBand` / `evaluateStatus` | utils/bands.ts | Band width and status calculation |
 
