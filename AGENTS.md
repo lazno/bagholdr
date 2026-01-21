@@ -47,6 +47,28 @@ These rules apply to ALL code changes in the repository.
   - Dart server: `cd native/bagholdr/bagholdr_server && dart test`
   - Flutter: `cd native/bagholdr/bagholdr_flutter && flutter test`
 
+### Endpoint Testing (MANDATORY)
+
+**Unit tests are NOT sufficient for endpoints.** ORM queries, type mismatches, and database issues only surface at runtime.
+
+When implementing any API endpoint, you MUST:
+1. Start the server with a real database
+2. Make an actual HTTP request (via curl, Postman, Bruno, or integration test)
+3. Verify the response is correct (not just that it doesn't error)
+
+```bash
+# Serverpod endpoint testing
+cd native/bagholdr/bagholdr_server
+docker compose up -d
+dart bin/main.dart --apply-migrations
+
+# Then test via POST request:
+# URL: http://localhost:8080/<endpoint>/<method>
+# Body: JSON with parameters
+```
+
+**Do NOT mark an endpoint task complete until you have verified it works with a real HTTP request.**
+
 ### Visual Verification
 
 - UI changes require screenshot verification

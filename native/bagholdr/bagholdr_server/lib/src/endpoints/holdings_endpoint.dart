@@ -33,7 +33,7 @@ class HoldingsEndpoint extends Endpoint {
     // Get all holdings with quantity > 0
     final allHoldings = await Holding.db.find(
       session,
-      where: (t) => t.quantity > 0,
+      where: (t) => t.quantity > 0.0,
     );
 
     // Get all non-archived assets
