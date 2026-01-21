@@ -51,23 +51,11 @@ These rules apply to ALL code changes in the repository.
 
 **Unit tests are NOT sufficient for endpoints.** ORM queries, type mismatches, and database issues only surface at runtime.
 
-When implementing any API endpoint, you MUST:
+When implementing any API endpoint, you MUST perform an end-to-end test before marking the task complete:
 1. Start the server with a real database
-2. Make an actual HTTP request (via curl, Postman, Bruno, or integration test)
-3. Verify the response is correct (not just that it doesn't error)
+2. Call the endpoint and verify it returns the expected response
 
-```bash
-# Serverpod endpoint testing
-cd native/bagholdr/bagholdr_server
-docker compose up -d
-dart bin/main.dart --apply-migrations
-
-# Then test via POST request:
-# URL: http://localhost:8080/<endpoint>/<method>
-# Body: JSON with parameters
-```
-
-**Do NOT mark an endpoint task complete until you have verified it works with a real HTTP request.**
+**Do NOT mark an endpoint task complete until you have verified it works end-to-end.**
 
 ### Visual Verification
 
