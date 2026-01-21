@@ -943,8 +943,8 @@ TimeRangeBar(
 
 ### NAPP-013b: Hero Value Display Component `[implement]`
 
-**Priority**: High | **Status**: `[blocked]`
-**Blocked by**: NAPP-015 (needs valuation data types)
+**Priority**: High | **Status**: `[x]`
+**Blocked by**: None (NAPP-015 complete)
 
 Build the value display portion of the hero section. Reference mockup: [`specs/mockups/native/interactive-w2-refined.html`](mockups/native/interactive-w2-refined.html)
 
@@ -983,21 +983,21 @@ HeroValueDisplay(
 ```
 
 **Tasks**:
-- [ ] Create `HeroValueDisplay` widget
-- [ ] Left column: INVESTED label, amount (28px bold)
-- [ ] Left column: MWR % (16px, green/red), absolute return € (13px, green/red)
-- [ ] Left column: TWR % (11px grey)
-- [ ] Right column: CASH label + value, TOTAL label + value (muted)
-- [ ] Color MWR/absolute return green/red based on sign
-- [ ] Support `hideBalances` mode (show ••••• for amounts)
-- [ ] Handle null TWR gracefully (hide or show "N/A")
-- [ ] Match mockup typography exactly
-- [ ] Take screenshot to verify
+- [x] Create `HeroValueDisplay` widget
+- [x] Left column: INVESTED label, amount (28px bold)
+- [x] Left column: MWR % (16px, green/red), absolute return € (13px, green/red)
+- [x] Left column: TWR % (11px grey)
+- [x] Right column: CASH label + value, TOTAL label + value (muted)
+- [x] Color MWR/absolute return green/red based on sign
+- [x] Support `hideBalances` mode (show ••••• for amounts)
+- [x] Handle null TWR gracefully (hide or show "N/A")
+- [x] Match mockup typography exactly
+- [x] Take screenshot to verify
 
 **Acceptance Criteria**:
-- [ ] Widget matches mockup exactly
-- [ ] Hide balances mode works
-- [ ] Screenshot verified
+- [x] Widget matches mockup exactly
+- [x] Hide balances mode works
+- [x] Screenshot verified
 
 ---
 
@@ -2282,6 +2282,7 @@ _(To be completed by NAPP-026)_
 - **NAPP-013**: Portfolio Selector Component (widgets/portfolio_selector.dart - dropdown with bottom sheet for portfolio selection, matches mockup header design)
 - **NAPP-013a**: Time Range Bar Component (widgets/time_range_bar.dart - 6 equal-width period buttons with TimePeriod enum, active/inactive styling matching mockup, default 1Y selection)
 - **NAPP-014**: Research Valuation Logic (documented 3 endpoints: getPortfolioValuation, getChartData, getHistoricalReturns; core calculations: portfolio value, cost basis via Average Cost Method, MWR/XIRR returns, recursive sleeve totals, band evaluation; 5 helper functions to port; edge cases documented; XIRR dependency identified)
+- **NAPP-013b**: Hero Value Display Component (hero_value_display.dart - displays invested value, MWR % (green/red), TWR % (grey), absolute return, cash, total; supports hideBalances mode; 6 tests passing)
 
 ---
 

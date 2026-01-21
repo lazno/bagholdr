@@ -2,6 +2,7 @@ import 'package:bagholdr_client/bagholdr_client.dart';
 import 'package:flutter/material.dart';
 
 import '../main.dart';
+import '../widgets/hero_value_display.dart';
 import '../widgets/portfolio_selector.dart';
 import '../widgets/time_range_bar.dart';
 
@@ -20,6 +21,7 @@ class _PortfolioListScreenState extends State<PortfolioListScreen> {
   late Future<List<Portfolio>> _portfoliosFuture;
   Portfolio? _selectedPortfolio;
   TimePeriod _selectedPeriod = TimePeriod.oneYear;
+  bool _hideBalances = false;
 
   @override
   void initState() {
@@ -103,17 +105,17 @@ class _PortfolioListScreenState extends State<PortfolioListScreen> {
             ),
             titleSpacing: 0,
             actions: [
-              // Hide balances toggle (placeholder)
+              // Hide balances toggle
               IconButton(
-                icon: const Icon(Icons.visibility_outlined),
+                icon: Icon(
+                  _hideBalances
+                      ? Icons.visibility_off_outlined
+                      : Icons.visibility_outlined,
+                ),
                 onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Hide balances toggle (placeholder)'),
-                      behavior: SnackBarBehavior.floating,
-                      duration: Duration(seconds: 1),
-                    ),
-                  );
+                  setState(() {
+                    _hideBalances = !_hideBalances;
+                  });
                 },
               ),
               // Status indicator (placeholder)
@@ -158,41 +160,83 @@ class _PortfolioListScreenState extends State<PortfolioListScreen> {
   }
 
   Widget _buildDashboardPlaceholder(Portfolio portfolio) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.dashboard_outlined,
-              size: 64,
-              color: Theme.of(context).colorScheme.primary,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              portfolio.name,
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Hero section with value display
+          Container(
+            color: Theme.of(context).colorScheme.surface,
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // HeroValueDisplay with sample data
+                HeroValueDisplay(
+                  investedValue: 113482.0,
+                  mwr: 0.122, // +12.2% MWR
+                  twr: 0.105, // +10.5% TWR
+                  returnAbs: 12348.0,
+                  cashBalance: 6452.0,
+                  totalValue: 119934.0,
+                  hideBalances: _hideBalances,
+                ),
+                const SizedBox(height: 24),
+                // Placeholder for chart
+                Container(
+                  height: 200,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.surfaceContainerLow,
+                    borderRadius: BorderRadius.circular(8),
                   ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Dashboard content will go here',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  child: Center(
+                    child: Text(
+                      'Chart placeholder\n(NAPP-023)',
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+                          ),
+                    ),
                   ),
+                ),
+              ],
             ),
-            const SizedBox(height: 24),
-            Text(
-              'Tap the portfolio name in the header\nto switch portfolios',
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
+          const SizedBox(height: 8),
+          // Placeholder for remaining dashboard sections
+          Container(
+            color: Theme.of(context).colorScheme.surface,
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Strategy',
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                ),
+                const SizedBox(height: 16),
+                Container(
+                  height: 150,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.surfaceContainerLow,
+                    borderRadius: BorderRadius.circular(8),
                   ),
+                  child: Center(
+                    child: Text(
+                      'Strategy section placeholder\n(Ring chart, Issues, Sleeves)',
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+                          ),
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
