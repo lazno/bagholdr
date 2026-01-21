@@ -197,15 +197,19 @@ Screenshots are saved to `tests/screenshots/` (gitignored).
 
 ### Dart/Flutter
 
-- Use theme colors, never hardcode:
+- **ALWAYS use theme-aware colors** - no exceptions unless explicitly stated otherwise:
 
   ```dart
-  // BAD
+  // BAD - never do this
   color: Color(0xFF111111)
+  color: Color(0xFFFFFBEB)  // Even "nice" colors break in dark mode
 
-  // GOOD
+  // GOOD - use theme colors
   color: Theme.of(context).colorScheme.surface
+  color: context.financialColors.issueBarBackground
   ```
+
+  This applies to ALL colors: backgrounds, borders, text, icons, everything. Hardcoded colors break dark mode.
 
 - Use `FinancialColors` extension for gains/losses:
 
