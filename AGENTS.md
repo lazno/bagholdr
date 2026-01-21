@@ -19,6 +19,7 @@ At the start of each new session, read `glossary.md` to familiarize yourself wit
 Bagholdr is a portfolio rebalancing application with two implementations:
 
 **Web App (TypeScript)**:
+
 - **Svelte 5** - Frontend (uses SvelteKit tooling for build)
 - **Hono** - Backend server (`server/`)
 - **tRPC** - End-to-end type-safe API (via `@hono/trpc-server`)
@@ -26,6 +27,7 @@ Bagholdr is a portfolio rebalancing application with two implementations:
 - **Tailwind CSS** - Styling
 
 **Native App (Dart)**:
+
 - **Flutter** - Cross-platform UI (`native/bagholdr/bagholdr_flutter`)
 - **Serverpod** - Backend server (`native/bagholdr/bagholdr_server`)
 - **PostgreSQL** - Database (via Docker)
@@ -52,6 +54,7 @@ These rules apply to ALL code changes in the repository.
 **Unit tests are NOT sufficient for endpoints.** ORM queries, type mismatches, and database issues only surface at runtime.
 
 When implementing any API endpoint, you MUST perform an end-to-end test before marking the task complete:
+
 1. Start the server with a real database
 2. Call the endpoint and verify it returns the expected response
 
@@ -61,7 +64,7 @@ When implementing any API endpoint, you MUST perform an end-to-end test before m
 
 - UI changes require screenshot verification
 - Take screenshots BEFORE marking a task complete
-- For Flutter UI: test on BOTH web and mobile (see commands below)
+- IMPORTANT: For UI work: ALWAYS test on BOTH web and mobile emulator (see commands below). Acceptance criterias are not met until you tested on both: web AND emulator.
 
 ### Code Quality
 
@@ -181,6 +184,7 @@ Screenshots are saved to `tests/screenshots/` (gitignored).
 ### Dart/Flutter
 
 - Use theme colors, never hardcode:
+
   ```dart
   // BAD
   color: Color(0xFF111111)
@@ -188,13 +192,17 @@ Screenshots are saved to `tests/screenshots/` (gitignored).
   // GOOD
   color: Theme.of(context).colorScheme.surface
   ```
+
 - Use `FinancialColors` extension for gains/losses:
+
   ```dart
   final colors = Theme.of(context).extension<FinancialColors>()!;
   color: colors.positive  // green for gains
   color: colors.negative  // red for losses
   ```
+
 - Formatters in `lib/utils/formatters.dart`:
+
   ```dart
   formatCurrency(1234.56)        // €1,234.56
   formatCurrencyCompact(113482)  // €113k
@@ -280,6 +288,7 @@ export const assetsRouter = router({
 ### "serverpod: command not found"
 
 Use full path (do NOT modify global PATH):
+
 ```bash
 "$HOME/.pub-cache/bin/serverpod" generate
 ```
@@ -287,6 +296,7 @@ Use full path (do NOT modify global PATH):
 ### Database connection failed
 
 Ensure Docker is running:
+
 ```bash
 cd native/bagholdr/bagholdr_server
 docker compose up -d
@@ -300,6 +310,7 @@ Check that Serverpod is running on port 8080 and CORS is configured.
 ### Generated code out of sync
 
 Regenerate after model changes:
+
 ```bash
 "$HOME/.pub-cache/bin/serverpod" generate
 ```
@@ -307,6 +318,7 @@ Regenerate after model changes:
 ### Hot reload not working
 
 Make sure Flutter is running in debug mode and fswatch is installed:
+
 ```bash
 brew install fswatch
 ```

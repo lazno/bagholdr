@@ -235,7 +235,10 @@ class _SearchBar extends StatelessWidget {
   }
 }
 
-/// Horizontally scrollable asset table.
+/// Responsive asset table that fills available width.
+///
+/// On wider screens, the Asset column expands to fill space.
+/// On narrow screens (< minWidth), enables horizontal scrolling.
 class _AssetTable extends StatelessWidget {
   const _AssetTable({
     required this.holdings,
@@ -245,36 +248,69 @@ class _AssetTable extends StatelessWidget {
   final List<HoldingResponse> holdings;
   final ValueChanged<HoldingResponse> onAssetTap;
 
-  // Fixed column widths for horizontal scrolling table
-  static const double _assetColWidth = 240.0;
+  // Fixed widths for Performance and Weight columns
   static const double _perfColWidth = 115.0;
   static const double _weightColWidth = 55.0;
+  // Minimum width for Asset column
+  static const double _minAssetColWidth = 180.0;
+  // Minimum total width before scrolling kicks in
+  static const double _minTableWidth =
+      _minAssetColWidth + _perfColWidth + _weightColWidth;
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: SizedBox(
-        width: _assetColWidth + _perfColWidth + _weightColWidth,
-        child: Column(
-          children: [
-            const _AssetTableHeader(),
-            ...holdings.map(
-              (holding) => _AssetRow(
-                holding: holding,
-                onTap: () => onAssetTap(holding),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final availableWidth = constraints.maxWidth;
+
+        // If screen is wide enough, use full width with flexible Asset column
+        if (availableWidth >= _minTableWidth) {
+          return Column(
+            children: [
+              _AssetTableHeader(
+                assetColWidth: availableWidth - _perfColWidth - _weightColWidth,
               ),
+              ...holdings.map(
+                (holding) => _AssetRow(
+                  holding: holding,
+                  onTap: () => onAssetTap(holding),
+                  assetColWidth:
+                      availableWidth - _perfColWidth - _weightColWidth,
+                ),
+              ),
+            ],
+          );
+        }
+
+        // On narrow screens, enable horizontal scrolling
+        return SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: SizedBox(
+            width: _minTableWidth,
+            child: Column(
+              children: [
+                _AssetTableHeader(assetColWidth: _minAssetColWidth),
+                ...holdings.map(
+                  (holding) => _AssetRow(
+                    holding: holding,
+                    onTap: () => onAssetTap(holding),
+                    assetColWidth: _minAssetColWidth,
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }
 
 /// Asset table header row.
 class _AssetTableHeader extends StatelessWidget {
-  const _AssetTableHeader();
+  const _AssetTableHeader({required this.assetColWidth});
+
+  final double assetColWidth;
 
   @override
   Widget build(BuildContext context) {
@@ -299,7 +335,7 @@ class _AssetTableHeader extends StatelessWidget {
       child: Row(
         children: [
           SizedBox(
-            width: _AssetTable._assetColWidth,
+            width: assetColWidth,
             child: Text(
               'ASSET',
               style: headerStyle,
@@ -332,10 +368,12 @@ class _AssetRow extends StatelessWidget {
   const _AssetRow({
     required this.holding,
     required this.onTap,
+    required this.assetColWidth,
   });
 
   final HoldingResponse holding;
   final VoidCallback onTap;
+  final double assetColWidth;
 
   @override
   Widget build(BuildContext context) {
@@ -362,7 +400,7 @@ class _AssetRow extends StatelessWidget {
           children: [
             // Column 1: Asset (name, symbol, value)
             SizedBox(
-              width: _AssetTable._assetColWidth,
+              width: assetColWidth,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
