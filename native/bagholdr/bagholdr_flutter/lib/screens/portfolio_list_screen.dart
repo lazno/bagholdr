@@ -2,6 +2,7 @@ import 'package:bagholdr_client/bagholdr_client.dart';
 import 'package:flutter/material.dart';
 
 import '../main.dart';
+import '../widgets/assets_section.dart';
 import '../widgets/hero_value_display.dart';
 import '../widgets/portfolio_selector.dart';
 import '../widgets/time_range_bar.dart';
@@ -23,6 +24,14 @@ class _PortfolioListScreenState extends State<PortfolioListScreen> {
   TimePeriod _selectedPeriod = TimePeriod.oneYear;
   bool _hideBalances = false;
 
+  // Assets section state
+  List<HoldingResponse> _holdings = [];
+  int _totalCount = 0;
+  int _filteredCount = 0;
+  String _searchQuery = '';
+  int _displayedCount = 8;
+  bool _isLoadingHoldings = false;
+
   @override
   void initState() {
     super.initState();
@@ -36,14 +45,65 @@ class _PortfolioListScreenState extends State<PortfolioListScreen> {
       setState(() {
         _selectedPortfolio = portfolios.first;
       });
+      // Load holdings for the first portfolio
+      _loadHoldings(portfolios.first.id!);
     }
     return portfolios;
+  }
+
+  Future<void> _loadHoldings(UuidValue portfolioId) async {
+    setState(() => _isLoadingHoldings = true);
+
+    try {
+      final period = toReturnPeriod(_selectedPeriod);
+      final response = await client.holdings.getHoldings(
+        portfolioId: portfolioId,
+        period: period,
+        search: _searchQuery.isEmpty ? null : _searchQuery,
+        offset: 0,
+        limit: _displayedCount,
+      );
+
+      setState(() {
+        _holdings = response.holdings;
+        _totalCount = response.totalCount;
+        _filteredCount = response.filteredCount;
+        _isLoadingHoldings = false;
+      });
+    } catch (e) {
+      setState(() => _isLoadingHoldings = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error loading holdings: $e')),
+        );
+      }
+    }
+  }
+
+  void _onSearchChanged(String query) {
+    setState(() {
+      _searchQuery = query;
+      _displayedCount = 8;
+    });
+    if (_selectedPortfolio != null) {
+      _loadHoldings(_selectedPortfolio!.id!);
+    }
+  }
+
+  void _onLoadMore() {
+    setState(() => _displayedCount += 8);
+    if (_selectedPortfolio != null) {
+      _loadHoldings(_selectedPortfolio!.id!);
+    }
   }
 
   void _onPortfolioChanged(Portfolio portfolio) {
     setState(() {
       _selectedPortfolio = portfolio;
+      _searchQuery = '';
+      _displayedCount = 8;
     });
+    _loadHoldings(portfolio.id!);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('Switched to: ${portfolio.name}'),
@@ -141,14 +201,11 @@ class _PortfolioListScreenState extends State<PortfolioListScreen> {
                 onChanged: (period) {
                   setState(() {
                     _selectedPeriod = period;
+                    _displayedCount = 8;
                   });
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Period: ${period.label}'),
-                      behavior: SnackBarBehavior.floating,
-                      duration: const Duration(seconds: 1),
-                    ),
-                  );
+                  if (_selectedPortfolio != null) {
+                    _loadHoldings(_selectedPortfolio!.id!);
+                  }
                 },
               ),
               Expanded(child: _buildDashboardPlaceholder(selected)),
@@ -203,7 +260,7 @@ class _PortfolioListScreenState extends State<PortfolioListScreen> {
             ),
           ),
           const SizedBox(height: 8),
-          // Placeholder for remaining dashboard sections
+          // Strategy placeholder section
           Container(
             color: Theme.of(context).colorScheme.surface,
             padding: const EdgeInsets.all(16),
@@ -235,6 +292,27 @@ class _PortfolioListScreenState extends State<PortfolioListScreen> {
                 ),
               ],
             ),
+          ),
+          const SizedBox(height: 8),
+          // Assets section (NAPP-018)
+          AssetsSection(
+            holdings: _holdings,
+            totalCount: _totalCount,
+            filteredCount: _filteredCount,
+            selectedSleeveName: 'All',
+            searchQuery: _searchQuery,
+            onSearchChanged: _onSearchChanged,
+            onLoadMore: _onLoadMore,
+            hasMore: _holdings.length < _filteredCount,
+            onAssetTap: (holding) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Tapped: ${holding.name}'),
+                  duration: const Duration(seconds: 1),
+                ),
+              );
+            },
+            isLoading: _isLoadingHoldings,
           ),
         ],
       ),

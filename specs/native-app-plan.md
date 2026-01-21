@@ -1463,8 +1463,8 @@ class HoldingsListResponse {
 
 ### NAPP-018: Holdings/Assets List UI `[implement]`
 
-**Priority**: High | **Status**: `[blocked]`
-**Blocked by**: NAPP-017
+**Priority**: High | **Status**: `[x]`
+**Blocked by**: None (NAPP-017 complete)
 
 The Assets section is embedded in the dashboard (NAPP-016), not a separate screen. Reference mockup: [`specs/mockups/native/interactive-w2-refined.html`](mockups/native/interactive-w2-refined.html)
 
@@ -2285,6 +2285,7 @@ _(To be completed by NAPP-026)_
 - **NAPP-013b**: Hero Value Display Component (hero_value_display.dart - displays invested value, MWR % (green/red), TWR % (grey), absolute return, cash, total; supports hideBalances mode; 6 tests passing)
 - **NAPP-015**: Valuation Endpoint (ported from TypeScript: portfolio value, cost basis via Average Cost Method, asset valuations, sleeve allocations, MWR/TWR calculations, band evaluation; returns PortfolioValuation with all fields; includes known issues documentation)
 - **NAPP-017**: Holdings Endpoint (holdings_endpoint.dart - getHoldings() with pagination, sleeve/search filtering, MWR/TWR per asset; HoldingResponse with symbol/name/isin/value/costBasis/pl/weight/mwr/twr/sleeveId/sleeveName/assetId/quantity; 7 unit tests)
+- **NAPP-018**: Holdings/Assets List UI (assets_section.dart - section header with title/count badge, search bar, horizontally scrollable 3-column table with Asset/Performance/Weight columns, asset rows with name/symbol/value/P&L/MWR/TWR/weight, pagination button, wired to dashboard; 16 unit tests)
 
 ---
 
