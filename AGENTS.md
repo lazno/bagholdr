@@ -14,6 +14,8 @@ Technical reference for AI agents working on this codebase.
 
 At the start of each new session, read `glossary.md` to familiarize yourself with project terminology and find relevant specification files for the current task.
 
+For UI tasks, start servers early - see [Screenshots > Efficient Workflow](#efficient-workflow).
+
 ## Project Overview
 
 Bagholdr is a portfolio rebalancing application with two implementations:
@@ -145,6 +147,18 @@ docker compose down -v && docker compose up -d
 
 ## Screenshots
 
+### Efficient Workflow
+
+**Start servers at the beginning of UI tasks, not when you need screenshots.**
+
+For Flutter UI work:
+1. Start everything at session start: `./native/scripts/start.sh --web`
+2. Start emulator: `/Users/norbertlazzeri/Library/Android/sdk/emulator/emulator -avd Medium_Phone_API_36.1 -no-audio -no-boot-anim &`
+3. Optionally enable hot reload watcher: `./native/scripts/watch-reload.sh web`
+4. Make changes → verify immediately → no waiting for builds
+
+This avoids long `sleep` commands waiting for servers to start when you're ready to take screenshots.
+
 ### Svelte Web App
 
 Both servers must be running (`pnpm dev` + `cd server && pnpm dev`).
@@ -160,7 +174,7 @@ pnpm screenshot /portfolios/1 detail  # saves as tests/screenshots/detail.png
 ### Flutter App
 
 ```bash
-# Web screenshot
+# Web screenshot (Flutter web must be running on port 3001)
 pnpm screenshot /path name --flutter
 
 # Mobile screenshot (emulator must be running)
