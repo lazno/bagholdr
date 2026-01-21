@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../main.dart';
 import '../widgets/assets_section.dart';
 import '../widgets/hero_value_display.dart';
+import '../widgets/issues_bar.dart';
 import '../widgets/portfolio_selector.dart';
 import '../widgets/time_range_bar.dart';
 
@@ -32,6 +33,9 @@ class _PortfolioListScreenState extends State<PortfolioListScreen> {
   int _displayedCount = 8;
   bool _isLoadingHoldings = false;
 
+  // Issues state
+  List<Issue> _issues = [];
+
   @override
   void initState() {
     super.initState();
@@ -45,10 +49,23 @@ class _PortfolioListScreenState extends State<PortfolioListScreen> {
       setState(() {
         _selectedPortfolio = portfolios.first;
       });
-      // Load holdings for the first portfolio
+      // Load holdings and issues for the first portfolio
       _loadHoldings(portfolios.first.id!);
+      _loadIssues(portfolios.first.id!);
     }
     return portfolios;
+  }
+
+  Future<void> _loadIssues(UuidValue portfolioId) async {
+    try {
+      final response = await client.issues.getIssues(portfolioId: portfolioId);
+      setState(() {
+        _issues = response.issues;
+      });
+    } catch (e) {
+      // Silently fail for issues - they're not critical
+      debugPrint('Error loading issues: $e');
+    }
   }
 
   Future<void> _loadHoldings(UuidValue portfolioId) async {
@@ -104,6 +121,7 @@ class _PortfolioListScreenState extends State<PortfolioListScreen> {
       _displayedCount = 8;
     });
     _loadHoldings(portfolio.id!);
+    _loadIssues(portfolio.id!);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('Switched to: ${portfolio.name}'),
@@ -260,33 +278,50 @@ class _PortfolioListScreenState extends State<PortfolioListScreen> {
             ),
           ),
           const SizedBox(height: 8),
-          // Strategy placeholder section
+          // Strategy section
           Container(
             color: Theme.of(context).colorScheme.surface,
-            padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Strategy',
-                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
-                ),
-                const SizedBox(height: 16),
-                Container(
-                  height: 150,
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.surfaceContainerLow,
-                    borderRadius: BorderRadius.circular(8),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+                  child: Text(
+                    'Strategy',
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
                   ),
-                  child: Center(
-                    child: Text(
-                      'Strategy section placeholder\n(Ring chart, Issues, Sleeves)',
-                      textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: Theme.of(context).colorScheme.onSurfaceVariant,
-                          ),
+                ),
+                // Issues bar (NAPP-013c)
+                IssuesBar(
+                  issues: _issues,
+                  onIssueTap: (issue) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Issue tapped: ${issue.message}'),
+                        duration: const Duration(seconds: 1),
+                      ),
+                    );
+                  },
+                ),
+                // Ring chart placeholder
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Container(
+                    height: 150,
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.surfaceContainerLow,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Center(
+                      child: Text(
+                        'Strategy section placeholder\n(Ring chart, Sleeves - NAPP-021)',
+                        textAlign: TextAlign.center,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              color: Theme.of(context).colorScheme.onSurfaceVariant,
+                            ),
+                      ),
                     ),
                   ),
                 ),

@@ -1003,7 +1003,7 @@ HeroValueDisplay(
 
 ### NAPP-013c: Issues Bar Component `[implement]`
 
-**Priority**: High | **Status**: `[ ]`
+**Priority**: High | **Status**: `[x]`
 **Blocked by**: None (NAPP-022 complete)
 
 Build the collapsible issues bar. Reference mockup: [`specs/mockups/native/interactive-w2-refined.html`](mockups/native/interactive-w2-refined.html)
@@ -1037,19 +1037,19 @@ IssuesBar(
 ```
 
 **Tasks**:
-- [ ] Create `IssuesBar` widget
-- [ ] Yellow background (#fffbeb)
-- [ ] Collapsed: badge with count, text, chevron
-- [ ] Tap to expand/collapse with animation
-- [ ] Expanded: scrollable list (max 160px height)
-- [ ] Issue item: colored dot, text, action text
-- [ ] Match mockup colors exactly
-- [ ] Take screenshot of both states
+- [x] Create `IssuesBar` widget
+- [x] Yellow background (#fffbeb)
+- [x] Collapsed: badge with count, text, chevron
+- [x] Tap to expand/collapse with animation
+- [x] Expanded: scrollable list (max 160px height)
+- [x] Issue item: colored dot, text, action text
+- [x] Match mockup colors exactly
+- [x] Take screenshot of both states
 
 **Acceptance Criteria**:
-- [ ] Widget matches mockup exactly
-- [ ] Expand/collapse animation works
-- [ ] Screenshot verified (both states)
+- [x] Widget matches mockup exactly
+- [x] Expand/collapse animation works
+- [x] Screenshot verified (both states)
 
 ---
 
@@ -2288,6 +2288,7 @@ _(To be completed by NAPP-026)_
 - **NAPP-018**: Holdings/Assets List UI (assets_section.dart - section header with title/count badge, search bar, horizontally scrollable 3-column table with Asset/Performance/Weight columns, asset rows with name/symbol/value/P&L/MWR/TWR/weight, pagination button, wired to dashboard; 16 unit tests)
 - **NAPP-020**: Sleeves Endpoint (sleeves_endpoint.dart - getSleeveTree() returning SleeveTreeResponse with hierarchical SleeveNode tree; calculates allocation percentages, drift status (ok/over/under), MWR/TWR per sleeve for period, asset counts; color mapping; 11 unit tests; end-to-end tested)
 - **NAPP-022**: Issues Endpoint (issues_endpoint.dart - getIssues() returning IssuesResponse with Issue list; detects over/under allocation drift using portfolio band settings, stale prices (24h threshold), sync status (last import time); issues sorted by severity (warnings first); 15 unit tests; end-to-end tested)
+- **NAPP-013c**: Issues Bar Component (issues_bar.dart - collapsible yellow bar with badge count, expand/collapse animation, issue items with colored dots and action text; 11 unit tests; integrated into dashboard; verified on web and mobile)
 
 ---
 
