@@ -1616,8 +1616,8 @@ Satellite → Safe Haven, Growth
 
 ### NAPP-020: Sleeves Endpoint `[implement]`
 
-**Priority**: Medium | **Status**: `[blocked]`
-**Blocked by**: NAPP-015
+**Priority**: Medium | **Status**: `[x]`
+**Blocked by**: None (NAPP-015 complete)
 
 **File**: `bagholdr_server/lib/src/endpoints/sleeves_endpoint.dart`
 
@@ -1701,29 +1701,29 @@ driftStatus =
 ---
 
 **Tasks**:
-- [ ] Create `SleevesEndpoint` class
-- [ ] Add `getSleeveTree()` method
-- [ ] Build hierarchical structure from flat sleeve list
-- [ ] Calculate current allocation % per sleeve
-- [ ] Calculate drift vs target
-- [ ] Calculate MWR per sleeve for period (compounded)
-- [ ] Calculate TWR per sleeve for period (nullable if failed)
-- [ ] Include asset counts
-- [ ] Run `serverpod generate`
+- [x] Create `SleevesEndpoint` class
+- [x] Add `getSleeveTree()` method
+- [x] Build hierarchical structure from flat sleeve list
+- [x] Calculate current allocation % per sleeve
+- [x] Calculate drift vs target
+- [x] Calculate MWR per sleeve for period (compounded)
+- [x] Calculate TWR per sleeve for period (nullable if failed)
+- [x] Include asset counts
+- [x] Run `serverpod generate`
 
 **Acceptance Criteria**:
-- [ ] Returns correct hierarchy
-- [ ] Allocation percentages sum correctly
-- [ ] Drift calculated correctly against portfolio bands
-- [ ] MWR and TWR calculated correctly for each sleeve
-- [ ] Colors assigned correctly
+- [x] Returns correct hierarchy
+- [x] Allocation percentages sum correctly
+- [x] Drift calculated correctly against portfolio bands
+- [x] MWR and TWR calculated correctly for each sleeve
+- [x] Colors assigned correctly
 
 ---
 
 ### NAPP-021: Sleeves/Strategy UI `[implement]`
 
-**Priority**: Medium | **Status**: `[blocked]`
-**Blocked by**: NAPP-020
+**Priority**: Medium | **Status**: `[ ]`
+**Blocked by**: None (NAPP-020 complete)
 
 The Strategy section is embedded in the dashboard (NAPP-016). This task covers the sleeve-specific widgets. Reference mockup: [`specs/mockups/native/interactive-w2-refined.html`](mockups/native/interactive-w2-refined.html)
 
@@ -1846,8 +1846,8 @@ Endpoint should return sleeve tree with:
 
 ### NAPP-022: Issues Endpoint `[implement]`
 
-**Priority**: High | **Status**: `[blocked]`
-**Blocked by**: NAPP-020
+**Priority**: High | **Status**: `[ ]`
+**Blocked by**: None (NAPP-020 complete)
 
 **File**: `bagholdr_server/lib/src/endpoints/issues_endpoint.dart`
 
@@ -2286,6 +2286,7 @@ _(To be completed by NAPP-026)_
 - **NAPP-015**: Valuation Endpoint (ported from TypeScript: portfolio value, cost basis via Average Cost Method, asset valuations, sleeve allocations, MWR/TWR calculations, band evaluation; returns PortfolioValuation with all fields; includes known issues documentation)
 - **NAPP-017**: Holdings Endpoint (holdings_endpoint.dart - getHoldings() with pagination, sleeve/search filtering, MWR/TWR per asset; HoldingResponse with symbol/name/isin/value/costBasis/pl/weight/mwr/twr/sleeveId/sleeveName/assetId/quantity; 7 unit tests)
 - **NAPP-018**: Holdings/Assets List UI (assets_section.dart - section header with title/count badge, search bar, horizontally scrollable 3-column table with Asset/Performance/Weight columns, asset rows with name/symbol/value/P&L/MWR/TWR/weight, pagination button, wired to dashboard; 16 unit tests)
+- **NAPP-020**: Sleeves Endpoint (sleeves_endpoint.dart - getSleeveTree() returning SleeveTreeResponse with hierarchical SleeveNode tree; calculates allocation percentages, drift status (ok/over/under), MWR/TWR per sleeve for period, asset counts; color mapping; 11 unit tests; end-to-end tested)
 
 ---
 

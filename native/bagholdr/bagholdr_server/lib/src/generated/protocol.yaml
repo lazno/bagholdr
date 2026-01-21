@@ -12,6 +12,8 @@ holdings:
   - getHoldings:
 portfolio:
   - getPortfolios:
+sleeves:
+  - getSleeveTree:
 valuation:
   - getPortfolioValuation:
   - getChartData:

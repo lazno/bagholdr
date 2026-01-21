@@ -1,0 +1,18 @@
+### SleeveTreeResponse - Sleeve hierarchy with allocation data for the Strategy section
+class: SleeveTreeResponse
+
+fields:
+  ### Root-level sleeves (non-cash sleeves with no parent)
+  sleeves: List<SleeveNode>
+
+  ### Total portfolio value in EUR (invested holdings, excludes cash)
+  totalValue: double
+
+  ### Portfolio MWR compounded return for period (big green/red number)
+  totalMwr: double
+
+  ### Portfolio TWR return for period (grey, null if calculation failed)
+  totalTwr: double?
+
+  ### Total assets across all sleeves
+  totalAssetCount: int

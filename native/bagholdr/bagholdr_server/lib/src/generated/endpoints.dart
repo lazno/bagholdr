@@ -15,13 +15,14 @@ import '../auth/email_idp_endpoint.dart' as _i2;
 import '../auth/jwt_refresh_endpoint.dart' as _i3;
 import '../endpoints/holdings_endpoint.dart' as _i4;
 import '../endpoints/portfolio_endpoint.dart' as _i5;
-import '../endpoints/valuation_endpoint.dart' as _i6;
-import 'package:bagholdr_server/src/generated/return_period.dart' as _i7;
-import 'package:bagholdr_server/src/generated/chart_range.dart' as _i8;
+import '../endpoints/sleeves_endpoint.dart' as _i6;
+import '../endpoints/valuation_endpoint.dart' as _i7;
+import 'package:bagholdr_server/src/generated/return_period.dart' as _i8;
+import 'package:bagholdr_server/src/generated/chart_range.dart' as _i9;
 import 'package:serverpod_auth_idp_server/serverpod_auth_idp_server.dart'
-    as _i9;
-import 'package:serverpod_auth_core_server/serverpod_auth_core_server.dart'
     as _i10;
+import 'package:serverpod_auth_core_server/serverpod_auth_core_server.dart'
+    as _i11;
 
 class Endpoints extends _i1.EndpointDispatch {
   @override
@@ -51,7 +52,13 @@ class Endpoints extends _i1.EndpointDispatch {
           'portfolio',
           null,
         ),
-      'valuation': _i6.ValuationEndpoint()
+      'sleeves': _i6.SleevesEndpoint()
+        ..initialize(
+          server,
+          'sleeves',
+          null,
+        ),
+      'valuation': _i7.ValuationEndpoint()
         ..initialize(
           server,
           'valuation',
@@ -266,7 +273,7 @@ class Endpoints extends _i1.EndpointDispatch {
             ),
             'period': _i1.ParameterDescription(
               name: 'period',
-              type: _i1.getType<_i7.ReturnPeriod>(),
+              type: _i1.getType<_i8.ReturnPeriod>(),
               nullable: false,
             ),
             'sleeveId': _i1.ParameterDescription(
@@ -323,6 +330,37 @@ class Endpoints extends _i1.EndpointDispatch {
         ),
       },
     );
+    connectors['sleeves'] = _i1.EndpointConnector(
+      name: 'sleeves',
+      endpoint: endpoints['sleeves']!,
+      methodConnectors: {
+        'getSleeveTree': _i1.MethodConnector(
+          name: 'getSleeveTree',
+          params: {
+            'portfolioId': _i1.ParameterDescription(
+              name: 'portfolioId',
+              type: _i1.getType<_i1.UuidValue>(),
+              nullable: false,
+            ),
+            'period': _i1.ParameterDescription(
+              name: 'period',
+              type: _i1.getType<_i8.ReturnPeriod>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['sleeves'] as _i6.SleevesEndpoint).getSleeveTree(
+                    session,
+                    portfolioId: params['portfolioId'],
+                    period: params['period'],
+                  ),
+        ),
+      },
+    );
     connectors['valuation'] = _i1.EndpointConnector(
       name: 'valuation',
       endpoint: endpoints['valuation']!,
@@ -340,7 +378,7 @@ class Endpoints extends _i1.EndpointDispatch {
               (
                 _i1.Session session,
                 Map<String, dynamic> params,
-              ) async => (endpoints['valuation'] as _i6.ValuationEndpoint)
+              ) async => (endpoints['valuation'] as _i7.ValuationEndpoint)
                   .getPortfolioValuation(
                     session,
                     params['portfolioId'],
@@ -356,7 +394,7 @@ class Endpoints extends _i1.EndpointDispatch {
             ),
             'range': _i1.ParameterDescription(
               name: 'range',
-              type: _i1.getType<_i8.ChartRange>(),
+              type: _i1.getType<_i9.ChartRange>(),
               nullable: false,
             ),
           },
@@ -364,7 +402,7 @@ class Endpoints extends _i1.EndpointDispatch {
               (
                 _i1.Session session,
                 Map<String, dynamic> params,
-              ) async => (endpoints['valuation'] as _i6.ValuationEndpoint)
+              ) async => (endpoints['valuation'] as _i7.ValuationEndpoint)
                   .getChartData(
                     session,
                     params['portfolioId'],
@@ -384,7 +422,7 @@ class Endpoints extends _i1.EndpointDispatch {
               (
                 _i1.Session session,
                 Map<String, dynamic> params,
-              ) async => (endpoints['valuation'] as _i6.ValuationEndpoint)
+              ) async => (endpoints['valuation'] as _i7.ValuationEndpoint)
                   .getHistoricalReturns(
                     session,
                     params['portfolioId'],
@@ -392,9 +430,9 @@ class Endpoints extends _i1.EndpointDispatch {
         ),
       },
     );
-    modules['serverpod_auth_idp'] = _i9.Endpoints()
+    modules['serverpod_auth_idp'] = _i10.Endpoints()
       ..initializeEndpoints(server);
-    modules['serverpod_auth_core'] = _i10.Endpoints()
+    modules['serverpod_auth_core'] = _i11.Endpoints()
       ..initializeEndpoints(server);
   }
 }

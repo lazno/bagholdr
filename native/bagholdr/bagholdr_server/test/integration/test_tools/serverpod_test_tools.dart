@@ -20,11 +20,12 @@ import 'package:bagholdr_server/src/generated/holdings_list_response.dart'
     as _i5;
 import 'package:bagholdr_server/src/generated/return_period.dart' as _i6;
 import 'package:bagholdr_server/src/generated/portfolio.dart' as _i7;
-import 'package:bagholdr_server/src/generated/portfolio_valuation.dart' as _i8;
-import 'package:bagholdr_server/src/generated/chart_data_result.dart' as _i9;
-import 'package:bagholdr_server/src/generated/chart_range.dart' as _i10;
+import 'package:bagholdr_server/src/generated/sleeve_tree_response.dart' as _i8;
+import 'package:bagholdr_server/src/generated/portfolio_valuation.dart' as _i9;
+import 'package:bagholdr_server/src/generated/chart_data_result.dart' as _i10;
+import 'package:bagholdr_server/src/generated/chart_range.dart' as _i11;
 import 'package:bagholdr_server/src/generated/historical_returns_result.dart'
-    as _i11;
+    as _i12;
 import 'package:bagholdr_server/src/generated/protocol.dart';
 import 'package:bagholdr_server/src/generated/endpoints.dart';
 export 'package:serverpod_test/serverpod_test_public_exports.dart';
@@ -140,6 +141,8 @@ class TestEndpoints {
 
   late final _PortfolioEndpoint portfolio;
 
+  late final _SleevesEndpoint sleeves;
+
   late final _ValuationEndpoint valuation;
 }
 
@@ -163,6 +166,10 @@ class _InternalTestEndpoints extends TestEndpoints
       serializationManager,
     );
     portfolio = _PortfolioEndpoint(
+      endpoints,
+      serializationManager,
+    );
+    sleeves = _SleevesEndpoint(
       endpoints,
       serializationManager,
     );
@@ -558,6 +565,52 @@ class _PortfolioEndpoint {
   }
 }
 
+class _SleevesEndpoint {
+  _SleevesEndpoint(
+    this._endpointDispatch,
+    this._serializationManager,
+  );
+
+  final _i2.EndpointDispatch _endpointDispatch;
+
+  final _i2.SerializationManager _serializationManager;
+
+  _i3.Future<_i8.SleeveTreeResponse> getSleeveTree(
+    _i1.TestSessionBuilder sessionBuilder, {
+    required _i2.UuidValue portfolioId,
+    required _i6.ReturnPeriod period,
+  }) async {
+    return _i1.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _i1.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'sleeves',
+            method: 'getSleeveTree',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'sleeves',
+          methodName: 'getSleeveTree',
+          parameters: _i1.testObjectToJson({
+            'portfolioId': portfolioId,
+            'period': period,
+          }),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _i3.Future<_i8.SleeveTreeResponse>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+}
+
 class _ValuationEndpoint {
   _ValuationEndpoint(
     this._endpointDispatch,
@@ -568,7 +621,7 @@ class _ValuationEndpoint {
 
   final _i2.SerializationManager _serializationManager;
 
-  _i3.Future<_i8.PortfolioValuation> getPortfolioValuation(
+  _i3.Future<_i9.PortfolioValuation> getPortfolioValuation(
     _i1.TestSessionBuilder sessionBuilder,
     _i2.UuidValue portfolioId,
   ) async {
@@ -591,7 +644,7 @@ class _ValuationEndpoint {
                   _localUniqueSession,
                   _localCallContext.arguments,
                 )
-                as _i3.Future<_i8.PortfolioValuation>);
+                as _i3.Future<_i9.PortfolioValuation>);
         return _localReturnValue;
       } finally {
         await _localUniqueSession.close();
@@ -599,10 +652,10 @@ class _ValuationEndpoint {
     });
   }
 
-  _i3.Future<_i9.ChartDataResult> getChartData(
+  _i3.Future<_i10.ChartDataResult> getChartData(
     _i1.TestSessionBuilder sessionBuilder,
     _i2.UuidValue portfolioId,
-    _i10.ChartRange range,
+    _i11.ChartRange range,
   ) async {
     return _i1.callAwaitableFunctionAndHandleExceptions(() async {
       var _localUniqueSession =
@@ -626,7 +679,7 @@ class _ValuationEndpoint {
                   _localUniqueSession,
                   _localCallContext.arguments,
                 )
-                as _i3.Future<_i9.ChartDataResult>);
+                as _i3.Future<_i10.ChartDataResult>);
         return _localReturnValue;
       } finally {
         await _localUniqueSession.close();
@@ -634,7 +687,7 @@ class _ValuationEndpoint {
     });
   }
 
-  _i3.Future<_i11.HistoricalReturnsResult> getHistoricalReturns(
+  _i3.Future<_i12.HistoricalReturnsResult> getHistoricalReturns(
     _i1.TestSessionBuilder sessionBuilder,
     _i2.UuidValue portfolioId,
   ) async {
@@ -657,7 +710,7 @@ class _ValuationEndpoint {
                   _localUniqueSession,
                   _localCallContext.arguments,
                 )
-                as _i3.Future<_i11.HistoricalReturnsResult>);
+                as _i3.Future<_i12.HistoricalReturnsResult>);
         return _localReturnValue;
       } finally {
         await _localUniqueSession.close();

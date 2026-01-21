@@ -1,0 +1,45 @@
+### SleeveNode - Sleeve in the hierarchy tree with allocation and return data
+class: SleeveNode
+
+fields:
+  ### Sleeve ID (UUID)
+  id: String
+
+  ### Sleeve display name
+  name: String
+
+  ### Parent sleeve ID (null for top-level sleeves)
+  parentId: String?
+
+  ### Hex color code (e.g., "#3b82f6")
+  color: String
+
+  ### Target allocation percentage
+  targetPct: double
+
+  ### Actual current allocation percentage
+  currentPct: double
+
+  ### Drift from target in percentage points
+  driftPp: double
+
+  ### Drift status: "ok", "over", or "under"
+  driftStatus: String
+
+  ### Total value in EUR (includes descendant sleeves)
+  value: double
+
+  ### MWR compounded return for period (big green/red number)
+  mwr: double
+
+  ### TWR return for period (grey, null if calculation failed)
+  twr: double?
+
+  ### Number of direct assets in this sleeve
+  assetCount: int
+
+  ### Number of direct child sleeves
+  childSleeveCount: int
+
+  ### Child sleeves (for tree rendering, null for leaves)
+  children: List<SleeveNode>?
