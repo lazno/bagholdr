@@ -8,6 +8,8 @@ emailIdp:
   - finishPasswordReset:
 jwtRefresh:
   - refreshAccessToken:
+holdings:
+  - getHoldings:
 portfolio:
   - getPortfolios:
 valuation:

@@ -1,0 +1,42 @@
+### HoldingResponse - Individual holding data for the assets section
+class: HoldingResponse
+
+fields:
+  ### Asset symbol (e.g., "X.IUSQ")
+  symbol: String
+
+  ### Asset name
+  name: String
+
+  ### Asset ISIN
+  isin: String
+
+  ### Current market value (quantity * price)
+  value: double
+
+  ### Total cost basis in EUR
+  costBasis: double
+
+  ### Profit/Loss (value - costBasis)
+  pl: double
+
+  ### Portfolio weight % (value / total * 100)
+  weight: double
+
+  ### MWR compounded return % for period (big green/red number)
+  mwr: double
+
+  ### TWR return % for period (grey, null if calculation failed)
+  twr: double?
+
+  ### Sleeve ID (UUID string)
+  sleeveId: String?
+
+  ### Sleeve name for display
+  sleeveName: String?
+
+  ### Asset ID (UUID string)
+  assetId: String
+
+  ### Quantity held
+  quantity: double

@@ -16,13 +16,16 @@ import 'package:serverpod_client/serverpod_client.dart' as _i2;
 import 'dart:async' as _i3;
 import 'package:serverpod_auth_core_client/serverpod_auth_core_client.dart'
     as _i4;
-import 'package:bagholdr_client/src/protocol/portfolio.dart' as _i5;
-import 'package:bagholdr_client/src/protocol/portfolio_valuation.dart' as _i6;
-import 'package:bagholdr_client/src/protocol/chart_data_result.dart' as _i7;
-import 'package:bagholdr_client/src/protocol/chart_range.dart' as _i8;
+import 'package:bagholdr_client/src/protocol/holdings_list_response.dart'
+    as _i5;
+import 'package:bagholdr_client/src/protocol/return_period.dart' as _i6;
+import 'package:bagholdr_client/src/protocol/portfolio.dart' as _i7;
+import 'package:bagholdr_client/src/protocol/portfolio_valuation.dart' as _i8;
+import 'package:bagholdr_client/src/protocol/chart_data_result.dart' as _i9;
+import 'package:bagholdr_client/src/protocol/chart_range.dart' as _i10;
 import 'package:bagholdr_client/src/protocol/historical_returns_result.dart'
-    as _i9;
-import 'protocol.dart' as _i10;
+    as _i11;
+import 'protocol.dart' as _i12;
 
 /// By extending [EmailIdpBaseEndpoint], the email identity provider endpoints
 /// are made available on the server and enable the corresponding sign-in widget
@@ -238,6 +241,47 @@ class EndpointJwtRefresh extends _i4.EndpointRefreshJwtTokens {
   );
 }
 
+/// Endpoint for holdings/assets list data.
+///
+/// Returns holdings data for the Assets section of the dashboard.
+/// Supports filtering by sleeve (hierarchical), search, and pagination.
+/// Calculates MWR and TWR returns for each holding for the selected period.
+/// {@category Endpoint}
+class EndpointHoldings extends _i2.EndpointRef {
+  EndpointHoldings(_i2.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'holdings';
+
+  /// Get paginated holdings list with return calculations
+  ///
+  /// [portfolioId] - Portfolio to fetch holdings for
+  /// [period] - Time period for return calculations
+  /// [sleeveId] - Optional filter by sleeve (includes children)
+  /// [search] - Optional search filter (symbol or name)
+  /// [offset] - Pagination offset (default 0)
+  /// [limit] - Page size (default 8)
+  _i3.Future<_i5.HoldingsListResponse> getHoldings({
+    required _i2.UuidValue portfolioId,
+    required _i6.ReturnPeriod period,
+    _i2.UuidValue? sleeveId,
+    String? search,
+    required int offset,
+    required int limit,
+  }) => caller.callServerEndpoint<_i5.HoldingsListResponse>(
+    'holdings',
+    'getHoldings',
+    {
+      'portfolioId': portfolioId,
+      'period': period,
+      'sleeveId': sleeveId,
+      'search': search,
+      'offset': offset,
+      'limit': limit,
+    },
+  );
+}
+
 /// Endpoint for portfolio operations.
 /// {@category Endpoint}
 class EndpointPortfolio extends _i2.EndpointRef {
@@ -247,8 +291,8 @@ class EndpointPortfolio extends _i2.EndpointRef {
   String get name => 'portfolio';
 
   /// Returns all portfolios.
-  _i3.Future<List<_i5.Portfolio>> getPortfolios() =>
-      caller.callServerEndpoint<List<_i5.Portfolio>>(
+  _i3.Future<List<_i7.Portfolio>> getPortfolios() =>
+      caller.callServerEndpoint<List<_i7.Portfolio>>(
         'portfolio',
         'getPortfolios',
         {},
@@ -275,9 +319,9 @@ class EndpointValuation extends _i2.EndpointRef {
   String get name => 'valuation';
 
   /// Get full portfolio valuation with allocation breakdown
-  _i3.Future<_i6.PortfolioValuation> getPortfolioValuation(
+  _i3.Future<_i8.PortfolioValuation> getPortfolioValuation(
     _i2.UuidValue portfolioId,
-  ) => caller.callServerEndpoint<_i6.PortfolioValuation>(
+  ) => caller.callServerEndpoint<_i8.PortfolioValuation>(
     'valuation',
     'getPortfolioValuation',
     {'portfolioId': portfolioId},
@@ -285,10 +329,10 @@ class EndpointValuation extends _i2.EndpointRef {
 
   /// Get historical chart data for portfolio value visualization.
   /// Returns daily data points with portfolio value and cost basis over time.
-  _i3.Future<_i7.ChartDataResult> getChartData(
+  _i3.Future<_i9.ChartDataResult> getChartData(
     _i2.UuidValue portfolioId,
-    _i8.ChartRange range,
-  ) => caller.callServerEndpoint<_i7.ChartDataResult>(
+    _i10.ChartRange range,
+  ) => caller.callServerEndpoint<_i9.ChartDataResult>(
     'valuation',
     'getChartData',
     {
@@ -299,9 +343,9 @@ class EndpointValuation extends _i2.EndpointRef {
 
   /// Get historical returns for different time periods.
   /// Calculates portfolio value at historical dates and compares to current value.
-  _i3.Future<_i9.HistoricalReturnsResult> getHistoricalReturns(
+  _i3.Future<_i11.HistoricalReturnsResult> getHistoricalReturns(
     _i2.UuidValue portfolioId,
-  ) => caller.callServerEndpoint<_i9.HistoricalReturnsResult>(
+  ) => caller.callServerEndpoint<_i11.HistoricalReturnsResult>(
     'valuation',
     'getHistoricalReturns',
     {'portfolioId': portfolioId},
@@ -339,7 +383,7 @@ class Client extends _i2.ServerpodClientShared {
     bool? disconnectStreamsOnLostInternetConnection,
   }) : super(
          host,
-         _i10.Protocol(),
+         _i12.Protocol(),
          securityContext: securityContext,
          streamingConnectionTimeout: streamingConnectionTimeout,
          connectionTimeout: connectionTimeout,
@@ -350,6 +394,7 @@ class Client extends _i2.ServerpodClientShared {
        ) {
     emailIdp = EndpointEmailIdp(this);
     jwtRefresh = EndpointJwtRefresh(this);
+    holdings = EndpointHoldings(this);
     portfolio = EndpointPortfolio(this);
     valuation = EndpointValuation(this);
     modules = Modules(this);
@@ -358,6 +403,8 @@ class Client extends _i2.ServerpodClientShared {
   late final EndpointEmailIdp emailIdp;
 
   late final EndpointJwtRefresh jwtRefresh;
+
+  late final EndpointHoldings holdings;
 
   late final EndpointPortfolio portfolio;
 
@@ -369,6 +416,7 @@ class Client extends _i2.ServerpodClientShared {
   Map<String, _i2.EndpointRef> get endpointRefLookup => {
     'emailIdp': emailIdp,
     'jwtRefresh': jwtRefresh,
+    'holdings': holdings,
     'portfolio': portfolio,
     'valuation': valuation,
   };

@@ -1,0 +1,15 @@
+### HoldingsListResponse - Paginated list of holdings
+class: HoldingsListResponse
+
+fields:
+  ### List of holdings
+  holdings: List<HoldingResponse>
+
+  ### Total holdings count (before filtering)
+  totalCount: int
+
+  ### Count after search/sleeve filter
+  filteredCount: int
+
+  ### Total portfolio value (for weight calculation context)
+  totalValue: double
