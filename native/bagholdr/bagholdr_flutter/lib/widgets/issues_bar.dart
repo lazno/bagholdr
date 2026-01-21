@@ -1,12 +1,15 @@
 import 'package:bagholdr_client/bagholdr_client.dart';
 import 'package:flutter/material.dart';
 
+import '../theme/colors.dart';
+
 /// A collapsible issues bar that displays portfolio health indicators.
 ///
 /// Shows a count badge and expands to reveal individual issues when tapped.
+/// Uses theme-aware colors from [FinancialColors] for proper dark mode support.
 ///
 /// **Collapsed state**:
-/// - Yellow background with badge showing issue count
+/// - Themed background with badge showing issue count
 /// - Text: "Issues need attention"
 /// - Chevron (▶) indicating expandable
 ///
@@ -15,11 +18,11 @@ import 'package:flutter/material.dart';
 /// - Panel slides down showing issue list
 /// - Max height 160px, scrollable if more issues
 ///
-/// Issue types and their dot colors:
-/// - Over allocation: Orange (#f97316)
-/// - Under allocation: Blue (#3b82f6)
-/// - Stale prices: Amber (#f59e0b)
-/// - Sync status: Grey (#9ca3af)
+/// Issue dot colors use [FinancialColors]:
+/// - Over allocation: issueOver
+/// - Under allocation: issueUnder
+/// - Stale prices: issueStale
+/// - Sync status: issueSync
 ///
 /// Usage:
 /// ```dart
@@ -131,28 +134,19 @@ class _IssuesHeader extends StatelessWidget {
   final Animation<double> rotationAnimation;
   final VoidCallback onTap;
 
-  // Design colors from mockup
-  static const _backgroundColor = Color(0xFFFFFBEB);
-  static const _hoverColor = Color(0xFFFEF3C7);
-  static const _borderColor = Color(0xFFFDE68A);
-  static const _badgeColor = Color(0xFFFACC15);
-  static const _badgeTextColor = Color(0xFF713F12);
-  static const _textColor = Color(0xFF92400E);
-  static const _chevronColor = Color(0xFFD97706);
-
   @override
   Widget build(BuildContext context) {
+    final colors = context.financialColors;
+
     return Material(
-      color: _backgroundColor,
+      color: colors.issueBarBackground,
       child: InkWell(
         onTap: onTap,
-        hoverColor: _hoverColor,
-        splashColor: _hoverColor,
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             border: Border(
-              bottom: BorderSide(color: _borderColor, width: 1),
+              bottom: BorderSide(color: colors.issueBarBorder, width: 1),
             ),
           ),
           child: Row(
@@ -161,37 +155,37 @@ class _IssuesHeader extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
-                  color: _badgeColor,
+                  color: colors.issueBarBadge,
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
                   '$issueCount',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
-                    color: _badgeTextColor,
+                    color: colors.issueBarBadgeText,
                   ),
                 ),
               ),
               const SizedBox(width: 8),
               // Text
-              const Expanded(
+              Expanded(
                 child: Text(
                   'Issues need attention',
                   style: TextStyle(
                     fontSize: 12,
-                    color: _textColor,
+                    color: colors.issueBarText,
                   ),
                 ),
               ),
               // Chevron with rotation animation
               RotationTransition(
                 turns: rotationAnimation,
-                child: const Text(
+                child: Text(
                   '▶',
                   style: TextStyle(
                     fontSize: 12,
-                    color: _chevronColor,
+                    color: colors.issueBarAction,
                   ),
                 ),
               ),
@@ -213,13 +207,12 @@ class _IssuesPanel extends StatelessWidget {
   final List<Issue> issues;
   final void Function(Issue issue)? onIssueTap;
 
-  // Design colors from mockup
-  static const _backgroundColor = Color(0xFFFFFBEB);
-
   @override
   Widget build(BuildContext context) {
+    final colors = context.financialColors;
+
     return Container(
-      color: _backgroundColor,
+      color: colors.issueBarBackground,
       constraints: const BoxConstraints(maxHeight: 160),
       child: ListView.builder(
         shrinkWrap: true,
@@ -251,42 +244,31 @@ class _IssueItem extends StatelessWidget {
   final bool showBorder;
   final VoidCallback? onTap;
 
-  // Design colors from mockup
-  static const _textColor = Color(0xFF78350F);
-  static const _borderColor = Color(0xFFFDE68A);
-  static const _actionColor = Color(0xFFB45309);
-
-  // Dot colors by issue type
-  static const _overAllocationColor = Color(0xFFF97316); // Orange
-  static const _underAllocationColor = Color(0xFF3B82F6); // Blue
-  static const _stalePriceColor = Color(0xFFF59E0B); // Amber
-  static const _syncStatusColor = Color(0xFF9CA3AF); // Grey
-
-  Color _getDotColor() {
+  Color _getDotColor(FinancialColors colors) {
     // If the issue has a custom color (for allocation issues with sleeve color), use it
     if (issue.color != null && issue.color!.isNotEmpty) {
-      return _parseHexColor(issue.color!);
+      return _parseHexColor(issue.color!, colors.issueSync);
     }
 
-    // Otherwise use default colors by type
+    // Otherwise use theme colors by type
     switch (issue.type) {
       case IssueType.overAllocation:
-        return _overAllocationColor;
+        return colors.issueOver;
       case IssueType.underAllocation:
-        return _underAllocationColor;
+        return colors.issueUnder;
       case IssueType.stalePrice:
-        return _stalePriceColor;
+        return colors.issueStale;
       case IssueType.syncStatus:
-        return _syncStatusColor;
+        return colors.issueSync;
     }
   }
 
-  Color _parseHexColor(String hex) {
+  Color _parseHexColor(String hex, Color fallback) {
     final hexClean = hex.replaceFirst('#', '');
     if (hexClean.length == 6) {
       return Color(int.parse('FF$hexClean', radix: 16));
     }
-    return _syncStatusColor; // Fallback
+    return fallback;
   }
 
   String _getActionText() {
@@ -303,14 +285,16 @@ class _IssueItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.financialColors;
+
     return InkWell(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 8),
         decoration: showBorder
-            ? const BoxDecoration(
+            ? BoxDecoration(
                 border: Border(
-                  bottom: BorderSide(color: _borderColor, width: 1),
+                  bottom: BorderSide(color: colors.issueBarBorder, width: 1),
                 ),
               )
             : null,
@@ -321,7 +305,7 @@ class _IssueItem extends StatelessWidget {
               width: 6,
               height: 6,
               decoration: BoxDecoration(
-                color: _getDotColor(),
+                color: _getDotColor(colors),
                 shape: BoxShape.circle,
               ),
             ),
@@ -330,19 +314,19 @@ class _IssueItem extends StatelessWidget {
             Expanded(
               child: Text(
                 issue.message,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 12,
-                  color: _textColor,
+                  color: colors.issueBarText,
                 ),
               ),
             ),
             // Action text
             Text(
               _getActionText(),
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 10,
                 fontWeight: FontWeight.w500,
-                color: _actionColor,
+                color: colors.issueBarAction,
               ),
             ),
           ],

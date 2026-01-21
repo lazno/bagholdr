@@ -20,6 +20,12 @@ class FinancialColors extends ThemeExtension<FinancialColors> {
     required this.issueUnder,
     required this.issueStale,
     required this.issueSync,
+    required this.issueBarBackground,
+    required this.issueBarBorder,
+    required this.issueBarText,
+    required this.issueBarBadge,
+    required this.issueBarBadgeText,
+    required this.issueBarAction,
     required this.categoryPalette,
   });
 
@@ -58,6 +64,25 @@ class FinancialColors extends ThemeExtension<FinancialColors> {
   /// Sync status (grey)
   final Color issueSync;
 
+  // Issue bar colors
+  /// Issue bar background
+  final Color issueBarBackground;
+
+  /// Issue bar border
+  final Color issueBarBorder;
+
+  /// Issue bar text
+  final Color issueBarText;
+
+  /// Issue bar badge background
+  final Color issueBarBadge;
+
+  /// Issue bar badge text
+  final Color issueBarBadgeText;
+
+  /// Issue bar action text
+  final Color issueBarAction;
+
   /// Palette of distinguishable colors for categories (sleeves, sectors, etc.)
   ///
   /// Use [categoryColor] to get a color by index - it cycles through
@@ -85,6 +110,12 @@ class FinancialColors extends ThemeExtension<FinancialColors> {
     issueUnder: Color(0xFF3B82F6), // blue-500
     issueStale: Color(0xFFF59E0B), // amber-500
     issueSync: Color(0xFF9CA3AF), // gray-400
+    issueBarBackground: Color(0xFFFFFBEB), // amber-50
+    issueBarBorder: Color(0xFFFDE68A), // amber-200
+    issueBarText: Color(0xFF92400E), // amber-800
+    issueBarBadge: Color(0xFFFACC15), // amber-400
+    issueBarBadgeText: Color(0xFF713F12), // amber-900
+    issueBarAction: Color(0xFFB45309), // amber-700
     categoryPalette: _lightCategoryPalette,
   );
 
@@ -101,6 +132,12 @@ class FinancialColors extends ThemeExtension<FinancialColors> {
     issueUnder: Color(0xFF60A5FA), // blue-400
     issueStale: Color(0xFFFBBF24), // amber-400
     issueSync: Color(0xFF6B7280), // gray-500
+    issueBarBackground: Color(0xFF422006), // amber-950
+    issueBarBorder: Color(0xFF78350F), // amber-900
+    issueBarText: Color(0xFFFDE68A), // amber-200
+    issueBarBadge: Color(0xFFD97706), // amber-600
+    issueBarBadgeText: Color(0xFFFFFBEB), // amber-50
+    issueBarAction: Color(0xFFFBBF24), // amber-400
     categoryPalette: _darkCategoryPalette,
   );
 
@@ -117,6 +154,12 @@ class FinancialColors extends ThemeExtension<FinancialColors> {
     Color? issueUnder,
     Color? issueStale,
     Color? issueSync,
+    Color? issueBarBackground,
+    Color? issueBarBorder,
+    Color? issueBarText,
+    Color? issueBarBadge,
+    Color? issueBarBadgeText,
+    Color? issueBarAction,
     List<Color>? categoryPalette,
   }) {
     return FinancialColors(
@@ -131,6 +174,12 @@ class FinancialColors extends ThemeExtension<FinancialColors> {
       issueUnder: issueUnder ?? this.issueUnder,
       issueStale: issueStale ?? this.issueStale,
       issueSync: issueSync ?? this.issueSync,
+      issueBarBackground: issueBarBackground ?? this.issueBarBackground,
+      issueBarBorder: issueBarBorder ?? this.issueBarBorder,
+      issueBarText: issueBarText ?? this.issueBarText,
+      issueBarBadge: issueBarBadge ?? this.issueBarBadge,
+      issueBarBadgeText: issueBarBadgeText ?? this.issueBarBadgeText,
+      issueBarAction: issueBarAction ?? this.issueBarAction,
       categoryPalette: categoryPalette ?? this.categoryPalette,
     );
   }
@@ -152,6 +201,14 @@ class FinancialColors extends ThemeExtension<FinancialColors> {
       issueUnder: Color.lerp(issueUnder, other.issueUnder, t)!,
       issueStale: Color.lerp(issueStale, other.issueStale, t)!,
       issueSync: Color.lerp(issueSync, other.issueSync, t)!,
+      issueBarBackground:
+          Color.lerp(issueBarBackground, other.issueBarBackground, t)!,
+      issueBarBorder: Color.lerp(issueBarBorder, other.issueBarBorder, t)!,
+      issueBarText: Color.lerp(issueBarText, other.issueBarText, t)!,
+      issueBarBadge: Color.lerp(issueBarBadge, other.issueBarBadge, t)!,
+      issueBarBadgeText:
+          Color.lerp(issueBarBadgeText, other.issueBarBadgeText, t)!,
+      issueBarAction: Color.lerp(issueBarAction, other.issueBarAction, t)!,
       // For palette, just use the target (no interpolation for lists)
       categoryPalette: t < 0.5 ? categoryPalette : other.categoryPalette,
     );
