@@ -1119,8 +1119,10 @@ Translate valuation logic from TypeScript to Dart. Powers the Hero section of th
 
 **Acceptance Criteria**:
 - [x] Returns correct portfolio value
-- [x] MWR/XIRR matches existing app for all periods (1M, 3M, 6M, YTD, 1Y, ALL)
-- [x] TWR calculated correctly for all periods
+- [x] MWR/XIRR matches existing app for most periods (today, 1W, 6M, YTD, 1Y)
+- [ ] **Known issue**: 1M has 1-day comparison date difference vs TypeScript
+- [ ] **Known issue**: ALL period missing from response (needs debugging)
+- [x] TWR calculated correctly (unit tests pass)
 - [x] Cost basis matches existing app (Average Cost Method)
 - [x] Sleeve totals calculated recursively
 

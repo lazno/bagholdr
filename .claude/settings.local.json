@@ -37,7 +37,8 @@
       "Bash(flutter run:*)",
       "Bash(# Check Flutter logs for reload message tail -20 /tmp/flutter-web.log)",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(__NEW_LINE_4ebd233a95f979b6__ echo \"\")"
     ]
   }
 }

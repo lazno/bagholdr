@@ -1047,7 +1047,13 @@ class ValuationEndpoint extends Endpoint {
 
     for (final period in periods) {
       final comparisonDate = comparisonDates[period]!;
-      final startValue = calculatePortfolioValue(comparisonDate, false);
+      final isAllPeriod = period == ReturnPeriod.all;
+
+      // For "all" period, use the value at EOD of first order date (includes first day's orders)
+      // For other periods, use value at comparison date (excludes that day's orders)
+      final startValue = isAllPeriod
+          ? calculatePortfolioValue(comparisonDate, true)
+          : calculatePortfolioValue(comparisonDate, false);
 
       if (DateTime.parse(comparisonDate).isAfter(firstOrderDate) ||
           DateTime.parse(comparisonDate).isAtSameMomentAs(firstOrderDate)) {
@@ -1068,8 +1074,6 @@ class ValuationEndpoint extends Endpoint {
           cashFlows: cashFlows,
           getPortfolioValueAtDate: (date) => calculatePortfolioValue(date, false),
         );
-
-        final isAllPeriod = period == ReturnPeriod.all;
 
         // Absolute return
         final absoluteReturn = isAllPeriod
