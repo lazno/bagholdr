@@ -16,10 +16,18 @@ class XirrTransaction {
 /// where years_i is the number of years from the first transaction to transaction i
 ///
 /// Returns the annualized rate of return (e.g., 0.085 for 8.5% p.a.)
-/// Throws if calculation fails to converge
+/// Throws if calculation fails to converge or inputs are invalid
 double xirr(List<XirrTransaction> transactions, {double guess = 0.1}) {
   if (transactions.isEmpty) {
     throw ArgumentError('At least one transaction is required');
+  }
+
+  // Validate: must have both positive and negative cash flows for IRR to exist
+  final hasPositive = transactions.any((tx) => tx.amount > 0);
+  final hasNegative = transactions.any((tx) => tx.amount < 0);
+  if (!hasPositive || !hasNegative) {
+    throw ArgumentError(
+        'XIRR requires both positive and negative cash flows');
   }
 
   // Sort transactions by date
@@ -27,6 +35,10 @@ double xirr(List<XirrTransaction> transactions, {double guess = 0.1}) {
     ..sort((a, b) => a.when.compareTo(b.when));
 
   final firstDate = sorted.first.when;
+
+  // Rate bounds - tighter than before for realistic financial scenarios
+  const minRate = -0.99; // -99% (near total loss)
+  const maxRate = 5.0; // +500% annual return
 
   // Helper: calculate years between two dates
   double yearsBetween(DateTime start, DateTime end) {
@@ -36,13 +48,10 @@ double xirr(List<XirrTransaction> transactions, {double guess = 0.1}) {
 
   // Helper: calculate NPV (Net Present Value) at a given rate
   double npv(double rate) {
+    if (rate <= -1) return double.infinity;
     double total = 0;
     for (final tx in sorted) {
       final years = yearsBetween(firstDate, tx.when);
-      if (rate <= -1 && years > 0) {
-        // Avoid negative base with fractional exponent
-        return double.infinity;
-      }
       total += tx.amount / math.pow(1 + rate, years);
     }
     return total;
@@ -50,13 +59,11 @@ double xirr(List<XirrTransaction> transactions, {double guess = 0.1}) {
 
   // Helper: calculate derivative of NPV
   double npvDerivative(double rate) {
+    if (rate <= -1) return double.negativeInfinity;
     double total = 0;
     for (final tx in sorted) {
       final years = yearsBetween(firstDate, tx.when);
       if (years == 0) continue;
-      if (rate <= -1 && years > 0) {
-        return double.negativeInfinity;
-      }
       total -= years * tx.amount / math.pow(1 + rate, years + 1);
     }
     return total;
@@ -66,51 +73,87 @@ double xirr(List<XirrTransaction> transactions, {double guess = 0.1}) {
   double rate = guess;
   const maxIterations = 100;
   const tolerance = 1e-10;
+  const npvTolerance = 1e-10;
 
   for (var i = 0; i < maxIterations; i++) {
     final value = npv(rate);
     final derivative = npvDerivative(rate);
 
+    // Check for NaN/Infinity - abort Newton if numerical issues
+    if (!value.isFinite || !derivative.isFinite) {
+      break;
+    }
+
+    // Check if NPV is already close enough to zero
+    if (value.abs() < npvTolerance) {
+      return rate;
+    }
+
     if (derivative.abs() < 1e-15) {
-      // Derivative too small, can't continue
+      // Derivative too small, can't continue Newton
       break;
     }
 
     final newRate = rate - value / derivative;
 
-    // Check for convergence
-    if ((newRate - rate).abs() < tolerance) {
+    // Check for NaN after division
+    if (!newRate.isFinite) {
+      break;
+    }
+
+    // Check for convergence (both step size AND NPV should be small)
+    if ((newRate - rate).abs() < tolerance && value.abs() < npvTolerance) {
       return newRate;
     }
 
     rate = newRate;
 
     // Bound the rate to prevent divergence
-    if (rate < -0.999) rate = -0.999;
-    if (rate > 10) rate = 10;
+    if (rate < minRate) rate = minRate;
+    if (rate > maxRate) rate = maxRate;
   }
 
   // If Newton-Raphson didn't converge, try bisection method
-  double low = -0.999;
-  double high = 10.0;
+  double low = minRate;
+  double high = maxRate;
 
   // Find bracket
   double npvLow = npv(low);
   double npvHigh = npv(high);
 
-  // If same sign, expand search
+  // If same sign, try to find a valid bracket by scanning
   if (npvLow * npvHigh > 0) {
-    // Try to find a valid bracket
-    for (var i = 0; i < 20; i++) {
-      if (npvLow > 0) {
-        low *= 2;
-        if (low < -0.999) low = -0.999;
-        npvLow = npv(low);
-      } else {
-        high *= 2;
-        npvHigh = npv(high);
+    // Try a grid search to find a sign change
+    const steps = 20;
+    final stepSize = (maxRate - minRate) / steps;
+    double? foundLow;
+    double? foundHigh;
+    double? prevNpv;
+    double prevRate = minRate;
+
+    for (var i = 0; i <= steps; i++) {
+      final testRate = minRate + i * stepSize;
+      final testNpv = npv(testRate);
+
+      if (prevNpv != null && prevNpv * testNpv < 0) {
+        // Found a sign change
+        foundLow = prevRate;
+        foundHigh = testRate;
+        break;
       }
-      if (npvLow * npvHigh <= 0) break;
+      prevNpv = testNpv;
+      prevRate = testRate;
+    }
+
+    if (foundLow != null && foundHigh != null) {
+      low = foundLow;
+      high = foundHigh;
+      npvLow = npv(low);
+      npvHigh = npv(high);
+    } else {
+      // No bracket found - no solution in range
+      throw StateError(
+          'XIRR: No solution found in range [$minRate, $maxRate]');
     }
   }
 
@@ -119,7 +162,7 @@ double xirr(List<XirrTransaction> transactions, {double guess = 0.1}) {
     final mid = (low + high) / 2;
     final npvMid = npv(mid);
 
-    if (npvMid.abs() < tolerance) {
+    if (npvMid.abs() < npvTolerance) {
       return mid;
     }
 

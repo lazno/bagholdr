@@ -61,6 +61,28 @@ void main() {
       // Should be annualized to a higher rate
       expect(result, greaterThan(0.10));
     });
+
+    test('throws when all cash flows are positive', () {
+      final transactions = [
+        XirrTransaction(amount: 1000, when: DateTime(2023, 1, 1)),
+        XirrTransaction(amount: 1100, when: DateTime(2024, 1, 1)),
+      ];
+
+      expect(() => xirr(transactions), throwsArgumentError);
+    });
+
+    test('throws when all cash flows are negative', () {
+      final transactions = [
+        XirrTransaction(amount: -1000, when: DateTime(2023, 1, 1)),
+        XirrTransaction(amount: -500, when: DateTime(2024, 1, 1)),
+      ];
+
+      expect(() => xirr(transactions), throwsArgumentError);
+    });
+
+    test('throws when transactions list is empty', () {
+      expect(() => xirr([]), throwsArgumentError);
+    });
   });
 
   group('calculateMWR', () {
