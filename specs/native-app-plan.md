@@ -1782,7 +1782,7 @@ driftStatus =
 
 ### NAPP-021: Sleeves/Strategy UI `[implement]`
 
-**Priority**: Medium | **Status**: `[~]`
+**Priority**: Medium | **Status**: `[x]`
 **Blocked by**: None (NAPP-020 complete)
 
 The Strategy section is embedded in the dashboard (NAPP-016). This task covers the sleeve-specific widgets. Reference mockup: [`specs/mockups/native/interactive-w2-refined.html`](mockups/native/interactive-w2-refined.html)
@@ -1887,20 +1887,20 @@ Endpoint should return sleeve tree with:
 ---
 
 **Tasks**:
-- [ ] Create `ring_chart.dart` custom widget
-- [ ] Create `sleeve_detail_panel.dart` widget
-- [ ] Create `sleeve_pills.dart` widget
-- [ ] Implement selection synchronization across all three
-- [ ] Add color constants for sleeve colors
-- [ ] Take screenshot to verify
+- [x] Create `ring_chart.dart` custom widget
+- [x] Create `sleeve_detail_panel.dart` widget
+- [x] Create `sleeve_pills.dart` widget
+- [x] Implement selection synchronization across all three
+- [x] Add color constants for sleeve colors
+- [x] Take screenshot to verify
 
 **Acceptance Criteria**:
-- [ ] Ring chart renders correct proportions
-- [ ] Tapping segment selects sleeve
-- [ ] Selection syncs across ring, pills, detail panel
-- [ ] Dimming works for unrelated segments
-- [ ] Detail panel shows correct data
-- [ ] Screenshot matches mockup
+- [x] Ring chart renders correct proportions
+- [x] Tapping segment selects sleeve
+- [x] Selection syncs across ring, pills, detail panel
+- [x] Dimming works for unrelated segments
+- [x] Detail panel shows correct data
+- [x] Screenshot matches mockup
 
 ---
 
@@ -2072,7 +2072,7 @@ class HistoryPoint {
 
 ### NAPP-023: Research Yahoo Price Oracle `[research]`
 
-**Priority**: Medium | **Status**: `[ ]`
+**Priority**: Medium | **Status**: `[x]`
 **Blocked by**: None
 
 Understand existing price fetching logic. **No code changes.**
@@ -2081,18 +2081,18 @@ Understand existing price fetching logic. **No code changes.**
 - `server/src/oracle/yahoo.ts`
 
 **Tasks**:
-- [ ] Read yahoo.ts
-- [ ] Document:
+- [x] Read yahoo.ts
+- [x] Document:
   - How are prices fetched?
   - What API/scraping is used?
   - Rate limiting strategy?
   - Error handling?
-- [ ] List functions to port
+- [x] List functions to port
 
 **Deliverable**: Add "Yahoo Oracle Summary" section below.
 
 **Acceptance Criteria**:
-- [ ] Price oracle logic documented
+- [x] Price oracle logic documented
 
 ---
 
@@ -2308,7 +2308,113 @@ The algorithm solves for rate `r` where `Σ CFᵢ × (1+r)^(-tᵢ) = 0`.
 
 ### Yahoo Oracle Summary
 
-_(To be completed by NAPP-023)_
+**Source files**: `server/src/oracle/yahoo.ts`, `rateLimiter.ts`, `cache.ts`, `historical.ts`
+
+---
+
+#### API Endpoints Used
+
+| Endpoint | URL | Purpose |
+|----------|-----|---------|
+| Search | `https://query1.finance.yahoo.com/v1/finance/search` | ISIN to ticker symbol resolution |
+| Chart | `https://query1.finance.yahoo.com/v8/finance/chart/{symbol}` | Price data (current, historical, intraday) |
+
+**Request headers**: `User-Agent: Bagholdr/1.0`, `Accept: application/json`
+
+---
+
+#### Rate Limiting Strategy
+
+- **Global singleton** `YahooRateLimiter` class ensures all requests go through one queue
+- **Sequential processing** with minimum 2-second delay between requests (`YAHOO_MIN_REQUEST_DELAY_MS`)
+- **Throughput**: ~30 requests/min = 1800/hour (Yahoo's unofficial limit is ~2000/hour)
+- **Queue-based**: Requests are enqueued and processed in order, with timing logged
+
+---
+
+#### Error Handling
+
+Custom `YahooFinanceError` class with error codes:
+
+| Code | Trigger | Action |
+|------|---------|--------|
+| `RATE_LIMITED` | HTTP 403 | Caller should back off |
+| `HTTP_ERROR` | Other HTTP errors | Propagate to caller |
+| `NOT_FOUND` | Missing data or 404 | Mark ticker as inactive in `ticker_metadata` |
+
+---
+
+#### Data Types
+
+| Type | Fields | Description |
+|------|--------|-------------|
+| `YahooPriceInfo` | price, currency, instrumentType, timestamp | Current price response |
+| `YahooSearchResult` | symbol, exchange, exchangeDisplay, quoteType, shortname | ISIN resolution result |
+| `YahooCandle` | date, open, high, low, close, adjClose, volume | Daily OHLCV |
+| `YahooIntradayCandle` | timestamp, open, high, low, close, volume | 5-minute OHLCV |
+| `YahooDividend` | exDate, amount | Dividend event |
+| `YahooHistoricalData` | candles[], dividends[], currency | Full historical response |
+
+---
+
+#### Functions to Port
+
+**From yahoo.ts** (core API calls):
+
+| Function | Purpose | Notes |
+|----------|---------|-------|
+| `fetchAllSymbolsFromIsin(isin)` | Resolve ISIN to all available Yahoo symbols | Returns all exchanges |
+| `fetchSymbolFromIsin(isin)` | Resolve ISIN to best Yahoo symbol | Returns first match |
+| `fetchPriceData(symbol)` | Fetch current price | Returns YahooPriceInfo |
+| `fetchHistoricalData(symbol, range)` | Fetch daily candles + dividends | range: '1y', '5y', '10y', 'max' |
+| `fetchIntradayData(symbol, range)` | Fetch 5-minute candles | range: '1d', '5d' |
+| `fetchFxRate(from, to)` | Fetch FX rate via forex pairs | e.g., USDEUR=X |
+| `fetchPriceInEur(isin, knownTicker?)` | Convenience: fetch + convert to EUR | Handles FX automatically |
+| `adjustConversionRate(currency, rate)` | Handle GBp (pence) conversion | Divides by 100 for GBp |
+
+**From rateLimiter.ts**:
+
+| Class/Function | Purpose |
+|----------------|---------|
+| `YahooRateLimiter` | Queue-based rate limiter with configurable delay |
+| `enqueue<T>(execute)` | Add request to queue, returns Promise<T> |
+
+**From cache.ts** (DB caching layer):
+
+| Function | Purpose |
+|----------|---------|
+| `getPrice(db, isin, yahooSymbol, forceRefresh?)` | Get price from cache or fetch fresh |
+| `getFxRate(db, from, to)` | Get FX rate from cache or fetch fresh |
+| `clearExpiredCache(db)` | Remove entries older than TTL (6 hours) |
+| `clearAllCache(db)` | Wipe all cached data |
+
+**From historical.ts** (historical data sync):
+
+| Function | Purpose |
+|----------|---------|
+| `syncHistoricalData(db, ticker)` | Fetch 10y daily data, upsert to DB |
+| `syncIntradayData(db, ticker)` | Fetch 5d 5-minute data, upsert + purge old |
+| `needsHistoricalSync(db, ticker)` | Check if daily sync needed (not synced today) |
+| `needsIntradaySync(db, ticker)` | Check if intraday sync needed (>5 min ago) |
+| `getTickersNeedingSync(db, tickers)` | Filter to tickers needing daily sync |
+| `getTickersNeedingIntradaySync(db, tickers)` | Filter to tickers needing intraday sync |
+| `getHistoricalPrices(db, ticker, start?, end?)` | Query daily prices from DB |
+| `getIntradayPrices(db, ticker)` | Query intraday prices from DB |
+| `getDividendEvents(db, ticker, start?)` | Query dividends from DB |
+| `getTickerMetadata(db, ticker)` | Get sync status for ticker |
+| `ensureTickerMetadata(db, tickers)` | Create metadata entries if missing |
+
+---
+
+#### Special Cases
+
+1. **GBp (British pence)**: Prices from Yahoo are in pence, but FX rates are for GBP. The `adjustConversionRate()` function divides by 100 when currency is 'GBp'.
+
+2. **Historical granularity**: Using range='10y' ensures daily granularity. Using 'max' may return monthly data for very old instruments. A warning is logged if Yahoo returns different granularity than requested.
+
+3. **Intraday data retention**: Intraday prices older than 5 days are automatically purged during sync.
+
+4. **Batch inserts**: Historical sync processes candles in batches of 100 to avoid SQL statement size limits.
 
 ### Directa Parser Summary
 
@@ -2349,6 +2455,8 @@ _(To be completed by NAPP-026)_
 - **NAPP-020**: Sleeves Endpoint (sleeves_endpoint.dart - getSleeveTree() returning SleeveTreeResponse with hierarchical SleeveNode tree; calculates allocation percentages, drift status (ok/over/under), MWR/TWR per sleeve for period, asset counts; color mapping; 11 unit tests; end-to-end tested)
 - **NAPP-022**: Issues Endpoint (issues_endpoint.dart - getIssues() returning IssuesResponse with Issue list; detects over/under allocation drift using portfolio band settings, stale prices (24h threshold), sync status (last import time); issues sorted by severity (warnings first); 15 unit tests; end-to-end tested)
 - **NAPP-013c**: Issues Bar Component (issues_bar.dart - collapsible yellow bar with badge count, expand/collapse animation, issue items with colored dots and action text; 11 unit tests; integrated into dashboard; verified on web and mobile)
+- **NAPP-021**: Sleeves/Strategy UI (ring_chart.dart - two concentric donut rings with sleeve hierarchy; sleeve_detail_panel.dart - shows selected sleeve details with allocation metrics; sleeve_pills.dart - horizontal scrollable pills for sleeve selection; selection syncs across all three widgets)
+- **NAPP-023**: Research Yahoo Price Oracle (documented Yahoo Finance API integration: Search endpoint for ISIN→ticker resolution, Chart endpoint for prices; rate limiter with 2s delay for ~1800 req/hr; cache.ts for TTL-based price/FX caching; historical.ts for daily/intraday sync with batch upserts; GBp handling; 20+ functions identified for porting)
 
 ---
 
