@@ -14,7 +14,7 @@ Technical reference for AI agents working on this codebase.
 
 At the start of each new session, read `glossary.md` to familiarize yourself with project terminology and find relevant specification files for the current task.
 
-For UI tasks, start servers early - see [Screenshots > Efficient Workflow](#efficient-workflow).
+IMPORTANT: For Flutter UI tasks, run `./native/scripts/start-with-hotreload.sh` before starting implementation. This starts all services with hot reload active on both web and emulator.
 
 ## Project Overview
 
@@ -102,21 +102,21 @@ pnpm db:studio        # Open Drizzle Studio
 ### Native - Flutter (`native/bagholdr/bagholdr_flutter`)
 
 ```bash
-# Start everything (Docker + Serverpod + Flutter web)
-./native/scripts/start.sh --web
+# Start everything with hot reload (RECOMMENDED for UI work)
+./native/scripts/start-with-hotreload.sh
 
 # Stop everything
-./native/scripts/stop.sh
+./native/scripts/stop.sh --all
 
-# Hot reload workflow (recommended)
-./native/scripts/start.sh --web                    # Terminal 1
-./native/scripts/watch-reload.sh web               # Terminal 2 - auto-reload on file changes
+# Manual startup (if needed)
+./native/scripts/start.sh --web --emulator        # Start services without hot reload
+./native/scripts/start.sh --web                   # Web only
 
 # Manual Flutter commands
 cd native/bagholdr/bagholdr_flutter
-flutter run -d chrome --web-port=3001              # Run web
-flutter run -d emulator-5554                       # Run on emulator
-flutter test                                       # Run tests
+flutter run -d chrome --web-port=3001             # Run web
+flutter run -d emulator-5554                      # Run on emulator
+flutter test                                      # Run tests
 ```
 
 ### Native - Serverpod (`native/bagholdr/bagholdr_server`)
@@ -152,12 +152,22 @@ docker compose down -v && docker compose up -d
 **Start servers at the beginning of UI tasks, not when you need screenshots.**
 
 For Flutter UI work:
-1. Start everything at session start: `./native/scripts/start.sh --web`
-2. Start emulator: `/Users/norbertlazzeri/Library/Android/sdk/emulator/emulator -avd Medium_Phone_API_36.1 -no-audio -no-boot-anim &`
-3. Optionally enable hot reload watcher: `./native/scripts/watch-reload.sh web`
-4. Make changes → verify immediately → no waiting for builds
 
-This avoids long `sleep` commands waiting for servers to start when you're ready to take screenshots.
+```bash
+./native/scripts/start-with-hotreload.sh
+```
+
+This single command:
+1. Starts Docker, PostgreSQL, Redis
+2. Starts Serverpod server
+3. Starts Android emulator
+4. Starts Flutter web on port 3001
+5. Starts Flutter on emulator (waits for build to complete)
+6. Starts both hot reload watchers (web + emulator)
+
+Make changes → they hot reload automatically on both web and emulator.
+
+To stop: `./native/scripts/stop.sh --all`
 
 ### Svelte Web App
 

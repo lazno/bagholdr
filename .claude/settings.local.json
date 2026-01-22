@@ -38,7 +38,16 @@
       "Bash(# Check Flutter logs for reload message tail -20 /tmp/flutter-web.log)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(__NEW_LINE_4ebd233a95f979b6__ echo \"\")"
+      "Bash(__NEW_LINE_4ebd233a95f979b6__ echo \"\")",
+      "Bash(adb devices:*)",
+      "Bash(/Users/norbertlazzeri/Library/Android/sdk/emulator/emulator:*)",
+      "Bash(/Users/norbertlazzeri/Library/Android/sdk/platform-tools/adb wait-for-device)",
+      "Bash(/Users/norbertlazzeri/Library/Android/sdk/platform-tools/adb devices)",
+      "WebFetch(domain:pub.dev)",
+      "Bash(/Users/norbertlazzeri/dev/priv/portfolio-tracker-spikes/typescript/backholdr/native/scripts/stop.sh:*)",
+      "Bash(/Users/norbertlazzeri/dev/priv/portfolio-tracker-spikes/typescript/backholdr/native/scripts/start-with-hotreload.sh)",
+      "Bash(./native/scripts/start-with-hotreload.sh:*)",
+      "Bash(grep:*)"
     ]
   }
 }

@@ -6,6 +6,7 @@ import '../widgets/assets_section.dart';
 import '../widgets/hero_value_display.dart';
 import '../widgets/issues_bar.dart';
 import '../widgets/portfolio_selector.dart';
+import '../widgets/strategy_section_v2.dart';
 import '../widgets/time_range_bar.dart';
 
 /// Test screen demonstrating the PortfolioSelector component.
@@ -36,6 +37,11 @@ class _PortfolioListScreenState extends State<PortfolioListScreen> {
   // Issues state
   List<Issue> _issues = [];
 
+  // Strategy section state
+  SleeveTreeResponse? _sleeveTree;
+  bool _isLoadingSleeveTree = false;
+  String? _selectedSleeveId;
+
   @override
   void initState() {
     super.initState();
@@ -49,9 +55,10 @@ class _PortfolioListScreenState extends State<PortfolioListScreen> {
       setState(() {
         _selectedPortfolio = portfolios.first;
       });
-      // Load holdings and issues for the first portfolio
+      // Load holdings, issues, and sleeve tree for the first portfolio
       _loadHoldings(portfolios.first.id!);
       _loadIssues(portfolios.first.id!);
+      _loadSleeveTree(portfolios.first.id!);
     }
     return portfolios;
   }
@@ -68,14 +75,40 @@ class _PortfolioListScreenState extends State<PortfolioListScreen> {
     }
   }
 
+  Future<void> _loadSleeveTree(UuidValue portfolioId) async {
+    setState(() => _isLoadingSleeveTree = true);
+
+    try {
+      final period = toReturnPeriod(_selectedPeriod);
+      final response = await client.sleeves.getSleeveTree(
+        portfolioId: portfolioId,
+        period: period,
+      );
+      setState(() {
+        _sleeveTree = response;
+        _isLoadingSleeveTree = false;
+      });
+    } catch (e) {
+      setState(() => _isLoadingSleeveTree = false);
+      debugPrint('Error loading sleeve tree: $e');
+    }
+  }
+
   Future<void> _loadHoldings(UuidValue portfolioId) async {
     setState(() => _isLoadingHoldings = true);
 
     try {
       final period = toReturnPeriod(_selectedPeriod);
+      // Convert string sleeveId to UuidValue if selected
+      UuidValue? sleeveUuid;
+      if (_selectedSleeveId != null) {
+        sleeveUuid = UuidValue.fromString(_selectedSleeveId!);
+      }
+
       final response = await client.holdings.getHoldings(
         portfolioId: portfolioId,
         period: period,
+        sleeveId: sleeveUuid,
         search: _searchQuery.isEmpty ? null : _searchQuery,
         offset: 0,
         limit: _displayedCount,
@@ -95,6 +128,29 @@ class _PortfolioListScreenState extends State<PortfolioListScreen> {
         );
       }
     }
+  }
+
+  void _onSleeveSelected(String? sleeveId) {
+    setState(() {
+      _selectedSleeveId = sleeveId;
+      _displayedCount = 8;
+    });
+    if (_selectedPortfolio != null) {
+      _loadHoldings(_selectedPortfolio!.id!);
+    }
+  }
+
+  String _getSelectedSleeveName() {
+    if (_selectedSleeveId == null || _sleeveTree == null) return 'All';
+    for (final parent in _sleeveTree!.sleeves) {
+      if (parent.id == _selectedSleeveId) return parent.name;
+      if (parent.children != null) {
+        for (final child in parent.children!) {
+          if (child.id == _selectedSleeveId) return child.name;
+        }
+      }
+    }
+    return 'All';
   }
 
   void _onSearchChanged(String query) {
@@ -122,6 +178,7 @@ class _PortfolioListScreenState extends State<PortfolioListScreen> {
     });
     _loadHoldings(portfolio.id!);
     _loadIssues(portfolio.id!);
+    _loadSleeveTree(portfolio.id!);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('Switched to: ${portfolio.name}'),
@@ -223,6 +280,7 @@ class _PortfolioListScreenState extends State<PortfolioListScreen> {
                   });
                   if (_selectedPortfolio != null) {
                     _loadHoldings(_selectedPortfolio!.id!);
+                    _loadSleeveTree(_selectedPortfolio!.id!);
                   }
                 },
               ),
@@ -305,26 +363,37 @@ class _PortfolioListScreenState extends State<PortfolioListScreen> {
                     );
                   },
                 ),
-                // Ring chart placeholder
-                Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Container(
-                    height: 150,
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.surfaceContainerLow,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Center(
-                      child: Text(
-                        'Strategy section placeholder\n(Ring chart, Sleeves - NAPP-021)',
-                        textAlign: TextAlign.center,
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: Theme.of(context).colorScheme.onSurfaceVariant,
-                            ),
+                // Strategy section
+                if (_isLoadingSleeveTree)
+                  const Padding(
+                    padding: EdgeInsets.all(32),
+                    child: Center(child: CircularProgressIndicator()),
+                  )
+                else if (_sleeveTree != null)
+                  StrategySectionV2(
+                    sleeveTree: _sleeveTree!,
+                    hideBalances: _hideBalances,
+                    onSleeveSelected: _onSleeveSelected,
+                  )
+                else
+                  Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Container(
+                      height: 150,
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.surfaceContainerLow,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Center(
+                        child: Text(
+                          'No sleeve data available',
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                              ),
+                        ),
                       ),
                     ),
                   ),
-                ),
               ],
             ),
           ),
@@ -334,7 +403,7 @@ class _PortfolioListScreenState extends State<PortfolioListScreen> {
             holdings: _holdings,
             totalCount: _totalCount,
             filteredCount: _filteredCount,
-            selectedSleeveName: 'All',
+            selectedSleeveName: _getSelectedSleeveName(),
             searchQuery: _searchQuery,
             onSearchChanged: _onSearchChanged,
             onLoadMore: _onLoadMore,

@@ -1722,7 +1722,7 @@ driftStatus =
 
 ### NAPP-021: Sleeves/Strategy UI `[implement]`
 
-**Priority**: Medium | **Status**: `[ ]`
+**Priority**: Medium | **Status**: `[~]`
 **Blocked by**: None (NAPP-020 complete)
 
 The Strategy section is embedded in the dashboard (NAPP-016). This task covers the sleeve-specific widgets. Reference mockup: [`specs/mockups/native/interactive-w2-refined.html`](mockups/native/interactive-w2-refined.html)
