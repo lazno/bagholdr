@@ -5,6 +5,7 @@ import '../main.dart';
 import '../widgets/assets_section.dart';
 import '../widgets/hero_value_display.dart';
 import '../widgets/issues_bar.dart';
+import '../widgets/portfolio_chart.dart';
 import '../widgets/portfolio_selector.dart';
 import '../widgets/strategy_section_v2.dart';
 import '../widgets/time_range_bar.dart';
@@ -42,6 +43,10 @@ class _PortfolioListScreenState extends State<PortfolioListScreen> {
   bool _isLoadingSleeveTree = false;
   String? _selectedSleeveId;
 
+  // Chart state
+  ChartDataResult? _chartData;
+  bool _isLoadingChart = false;
+
   @override
   void initState() {
     super.initState();
@@ -55,10 +60,11 @@ class _PortfolioListScreenState extends State<PortfolioListScreen> {
       setState(() {
         _selectedPortfolio = portfolios.first;
       });
-      // Load holdings, issues, and sleeve tree for the first portfolio
+      // Load holdings, issues, sleeve tree, and chart for the first portfolio
       _loadHoldings(portfolios.first.id!);
       _loadIssues(portfolios.first.id!);
       _loadSleeveTree(portfolios.first.id!);
+      _loadChartData(portfolios.first.id!);
     }
     return portfolios;
   }
@@ -91,6 +97,25 @@ class _PortfolioListScreenState extends State<PortfolioListScreen> {
     } catch (e) {
       setState(() => _isLoadingSleeveTree = false);
       debugPrint('Error loading sleeve tree: $e');
+    }
+  }
+
+  Future<void> _loadChartData(UuidValue portfolioId) async {
+    setState(() => _isLoadingChart = true);
+
+    try {
+      final chartRange = toChartRange(_selectedPeriod);
+      final response = await client.valuation.getChartData(
+        portfolioId,
+        chartRange,
+      );
+      setState(() {
+        _chartData = response;
+        _isLoadingChart = false;
+      });
+    } catch (e) {
+      setState(() => _isLoadingChart = false);
+      debugPrint('Error loading chart data: $e');
     }
   }
 
@@ -179,6 +204,7 @@ class _PortfolioListScreenState extends State<PortfolioListScreen> {
     _loadHoldings(portfolio.id!);
     _loadIssues(portfolio.id!);
     _loadSleeveTree(portfolio.id!);
+    _loadChartData(portfolio.id!);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('Switched to: ${portfolio.name}'),
@@ -281,6 +307,7 @@ class _PortfolioListScreenState extends State<PortfolioListScreen> {
                   if (_selectedPortfolio != null) {
                     _loadHoldings(_selectedPortfolio!.id!);
                     _loadSleeveTree(_selectedPortfolio!.id!);
+                    _loadChartData(_selectedPortfolio!.id!);
                   }
                 },
               ),
@@ -301,6 +328,7 @@ class _PortfolioListScreenState extends State<PortfolioListScreen> {
           Container(
             color: Theme.of(context).colorScheme.surface,
             padding: const EdgeInsets.all(16),
+            clipBehavior: Clip.none, // Allow chart tooltip to overflow
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -315,23 +343,34 @@ class _PortfolioListScreenState extends State<PortfolioListScreen> {
                   hideBalances: _hideBalances,
                 ),
                 const SizedBox(height: 24),
-                // Placeholder for chart
-                Container(
-                  height: 200,
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.surfaceContainerLow,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Center(
-                    child: Text(
-                      'Chart placeholder\n(NAPP-023)',
-                      textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: Theme.of(context).colorScheme.onSurfaceVariant,
-                          ),
+                // Portfolio chart (NAPP-023)
+                if (_isLoadingChart)
+                  const SizedBox(
+                    height: 200,
+                    child: Center(child: CircularProgressIndicator()),
+                  )
+                else if (_chartData != null && _chartData!.hasData)
+                  PortfolioChart(
+                    dataPoints: _chartData!.dataPoints,
+                    hideBalances: _hideBalances,
+                  )
+                else
+                  Container(
+                    height: 200,
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.surfaceContainerLow,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Center(
+                      child: Text(
+                        'No chart data available',
+                        textAlign: TextAlign.center,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              color: Theme.of(context).colorScheme.onSurfaceVariant,
+                            ),
+                      ),
                     ),
                   ),
-                ),
               ],
             ),
           ),
