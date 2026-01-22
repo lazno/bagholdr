@@ -68,11 +68,13 @@ class HoldingsEndpoint extends Endpoint {
       orderBy: (t) => t.orderDate,
     );
 
-    // Get sleeve assignments
+    // Get sleeve assignments (an asset can be in multiple sleeves)
     final allAssignments = await SleeveAsset.db.find(session);
-    final assetSleeveMap = <String, UuidValue>{};
+    final assetSleeveMap = <String, Set<String>>{};
     for (final assignment in allAssignments) {
-      assetSleeveMap[assignment.assetId.toString()] = assignment.sleeveId;
+      final assetIdStr = assignment.assetId.toString();
+      final sleeveIdStr = assignment.sleeveId.toString().toLowerCase();
+      assetSleeveMap.putIfAbsent(assetIdStr, () => <String>{}).add(sleeveIdStr);
     }
 
     // Get sleeves for names and hierarchy
@@ -83,14 +85,16 @@ class HoldingsEndpoint extends Endpoint {
     final sleeveMap = {for (var s in allSleeves) s.id!.toString(): s};
 
     // Build sleeve hierarchy for filtering
+    // Note: Normalize UUIDs to lowercase for consistent comparison
     final descendantSleeveIds = <String>{};
     if (sleeveId != null) {
+      final normalizedSleeveId = sleeveId.toString().toLowerCase();
       _collectDescendantSleeveIds(
-        sleeveId.toString(),
+        normalizedSleeveId,
         sleeveMap,
         descendantSleeveIds,
       );
-      descendantSleeveIds.add(sleeveId.toString());
+      descendantSleeveIds.add(normalizedSleeveId);
     }
 
     // Calculate total portfolio value first (needed for weight calculation)
@@ -201,19 +205,28 @@ class HoldingsEndpoint extends Endpoint {
       final asset = assetMap[assetIdStr];
       if (asset == null) continue;
 
-      // Get sleeve info
-      final holdingSleeveId = assetSleeveMap[assetIdStr];
-      final sleeve = holdingSleeveId != null
-          ? sleeveMap[holdingSleeveId.toString()]
-          : null;
+      // Get sleeve info (asset can be in multiple sleeves)
+      final holdingSleeveIds = assetSleeveMap[assetIdStr] ?? <String>{};
 
-      // Apply sleeve filter
+      // Apply sleeve filter - check if ANY of the asset's sleeves match
+      String? matchingSleeveId;
       if (sleeveId != null) {
-        if (holdingSleeveId == null ||
-            !descendantSleeveIds.contains(holdingSleeveId.toString())) {
-          continue;
+        // Find the first sleeve that matches the filter
+        for (final sid in holdingSleeveIds) {
+          if (descendantSleeveIds.contains(sid)) {
+            matchingSleeveId = sid;
+            break;
+          }
         }
+        if (matchingSleeveId == null) {
+          continue; // Asset not in selected sleeve hierarchy
+        }
+      } else {
+        // No filter - use first sleeve for display
+        matchingSleeveId = holdingSleeveIds.isNotEmpty ? holdingSleeveIds.first : null;
       }
+
+      final sleeve = matchingSleeveId != null ? sleeveMap[matchingSleeveId] : null;
 
       // Apply search filter
       if (search != null && search.isNotEmpty) {
@@ -275,7 +288,7 @@ class HoldingsEndpoint extends Endpoint {
         weight: weight,
         mwr: mwrResult,
         twr: twrResult,
-        sleeveId: holdingSleeveId?.toString(),
+        sleeveId: matchingSleeveId,
         sleeveName: sleeve?.name,
         assetId: assetIdStr,
         quantity: holding.quantity,
@@ -317,16 +330,18 @@ class HoldingsEndpoint extends Endpoint {
     );
   }
 
-  /// Recursively collect all descendant sleeve IDs
+  /// Recursively collect all descendant sleeve IDs (normalized to lowercase)
   void _collectDescendantSleeveIds(
     String parentSleeveId,
     Map<String, Sleeve> sleeveMap,
     Set<String> result,
   ) {
     for (final sleeve in sleeveMap.values) {
-      if (sleeve.parentSleeveId?.toString() == parentSleeveId) {
-        result.add(sleeve.id!.toString());
-        _collectDescendantSleeveIds(sleeve.id!.toString(), sleeveMap, result);
+      final sleeveParentId = sleeve.parentSleeveId?.toString().toLowerCase();
+      if (sleeveParentId == parentSleeveId) {
+        final sleeveIdLower = sleeve.id!.toString().toLowerCase();
+        result.add(sleeveIdLower);
+        _collectDescendantSleeveIds(sleeveIdLower, sleeveMap, result);
       }
     }
   }
