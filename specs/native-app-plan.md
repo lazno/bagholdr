@@ -875,6 +875,29 @@ comparison date (e.g., 1Y period selected but asset bought 6 months ago), the co
 
 ---
 
+### NAPP-101: Short Holding Period Indicator `[implement]`
+
+**Priority**: Low | **Status**: `[ ]`
+**Blocked by**: None
+
+When a sleeve or asset was acquired after the selected period's start date (e.g., user selects
+"1Y" but asset was bought 6 months ago), display a visual hint indicating the actual period.
+
+**Backend Changes**:
+- [ ] Add `effectiveStartDate` field to sleeve response (SleeveNode)
+- [ ] Add `effectiveStartDate` field to holdings response (HoldingResponse)
+- [ ] Regenerate Serverpod client
+
+**Frontend Changes**:
+- [ ] Show indicator (asterisk, icon, or tooltip) when effectiveStartDate differs from period start
+- [ ] Tooltip should explain: "Returns calculated from [date] (acquisition date)"
+
+**Acceptance Criteria**:
+- [ ] User can see when returns are for shorter period than selected
+- [ ] Tooltip explains the actual date range used
+
+---
+
 ### NAPP-012: Portfolio List Endpoint `[implement]`
 
 **Priority**: High | **Status**: `[x]`

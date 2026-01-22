@@ -47,7 +47,18 @@
       "Bash(/Users/norbertlazzeri/dev/priv/portfolio-tracker-spikes/typescript/backholdr/native/scripts/stop.sh:*)",
       "Bash(/Users/norbertlazzeri/dev/priv/portfolio-tracker-spikes/typescript/backholdr/native/scripts/start-with-hotreload.sh)",
       "Bash(./native/scripts/start-with-hotreload.sh:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(__NEW_LINE_738633629f413320__ echo \"\")",
+      "Bash(__NEW_LINE_14607c94ade4aab9__ echo \"\")",
+      "Bash(PORTFOLIO_ID=\"019bdcfd-1e5f-7f1f-9d59-452213735f3a\")",
+      "Bash(__NEW_LINE_767424065c272d2f__ echo \"=== Holdings - 1 Month Period ===\")",
+      "Bash(__NEW_LINE_198c438d80049026__ echo \"\")",
+      "Bash(__NEW_LINE_60e9d90d6cb82377__ echo \"=== Holdings - 1 Month Period ===\")",
+      "Bash(__NEW_LINE_740797c928341c97__ curl -s -X POST http://localhost:8080/holdings/getHoldings -H \"Content-Type: application/json\" -d \"{\"\"portfolioId\"\": \"\"$PORTFOLIO_ID\"\", \"\"period\"\": \"\"oneMonth\"\", \"\"limit\"\": 5}\")",
+      "Bash(__NEW_LINE_51345cd39a664671__ echo \"=== Holdings - 1 Month Period ===\")",
+      "Bash(__NEW_LINE_8b2859b8171cdaae__ echo \"\")",
+      "Bash(__NEW_LINE_4b2d89ac4fb8c97e__ echo \"\")",
+      "Bash(__NEW_LINE_8bac57551fe6f4d9__ echo \"\")"
     ]
   }
 }
