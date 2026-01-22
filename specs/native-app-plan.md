@@ -105,27 +105,27 @@ backholdr/
 
 ### NAPP-024: Port Price Oracle `[port]`
 
-**Priority**: Medium | **Status**: `[ ]`
+**Priority**: Medium | **Status**: `[x]`
 **Blocked by**: None (NAPP-023b research complete)
 
 **Tasks**:
-- [ ] Create price oracle service in Dart
-- [ ] Port Yahoo price fetching
-- [ ] Port rate limiting logic
-- [ ] Test: fetches correct prices
+- [x] Create price oracle service in Dart
+- [x] Port Yahoo price fetching
+- [x] Port rate limiting logic
+- [x] Test: fetches correct prices
 
 **Implementation note**: When updating an asset's `yahooSymbol`, auto-clear historical data for the old ticker (`DailyPrice`, `IntradayPrice`, `DividendEvent`, `TickerMetadata`). This prevents orphaned data accumulating in the database.
 
 **Acceptance Criteria**:
-- [ ] Can fetch prices for known symbols
-- [ ] Rate limiting works
+- [x] Can fetch prices for known symbols
+- [x] Rate limiting works
 
 ---
 
 ### NAPP-025: Real-time Prices (SSE) `[implement]`
 
-**Priority**: Medium | **Status**: `[blocked]`
-**Blocked by**: NAPP-024
+**Priority**: Medium | **Status**: `[ ]`
+**Blocked by**: None (NAPP-024 complete)
 
 **Tasks**:
 - [ ] Create SSE endpoint for price streaming

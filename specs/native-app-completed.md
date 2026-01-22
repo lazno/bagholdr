@@ -162,6 +162,10 @@ Portfolio value chart for Hero section with fl_chart; area chart with gradient f
 
 Documented Yahoo Finance API integration: Search endpoint for ISIN→ticker resolution, Chart endpoint for prices; rate limiter with 2s delay for ~1800 req/hr; cache.ts for TTL-based price/FX caching; historical.ts for daily/intraday sync; 20+ functions identified for porting.
 
+### NAPP-024: Port Price Oracle `[port]` - DONE
+
+Ported Yahoo Finance price oracle to Dart: `rate_limiter.dart` (queue-based singleton with 2s delay), `yahoo.dart` (symbol resolution, price/historical/intraday/FX fetching, GBp handling), `cache.dart` (TTL-based price/FX cache with Serverpod DB), `historical.dart` (daily/intraday sync, ticker metadata management). 17 unit tests + 6 integration tests against live Yahoo API.
+
 ### NAPP-100: Fix Performance Metrics Calculation `[implement]` - DONE
 
 Fixed "short holding" detection for MWR/TWR calculations when assets/sleeves are acquired after comparison date.
