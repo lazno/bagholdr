@@ -52,6 +52,16 @@ class _StrategySectionV2State extends State<StrategySectionV2>
   }
 
   @override
+  void didUpdateWidget(StrategySectionV2 oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!identical(widget.sleeveTree, oldWidget.sleeveTree)) {
+      // Reset selection when data changes (e.g., portfolio switch)
+      _animationController.reset();
+      setState(() => _selectedSleeveId = null);
+    }
+  }
+
+  @override
   void dispose() {
     _animationController.dispose();
     super.dispose();
@@ -240,7 +250,7 @@ class _AnimatedChartAreaState extends State<_AnimatedChartArea>
                 width: chartWidth,
                 child: GestureDetector(
                   behavior: HitTestBehavior.opaque,
-                  onTapUp: (details) => _handleChartTap(details, chartSize),
+                  onTapUp: (details) => _handleChartTap(details, chartSize, chartWidth),
                   child: Align(
                     alignment: Alignment.bottomCenter,
                     child: _SlidingChart(
@@ -301,8 +311,12 @@ class _AnimatedChartAreaState extends State<_AnimatedChartArea>
     return null;
   }
 
-  void _handleChartTap(TapUpDetails details, double chartSize) {
-    final center = Offset(chartSize / 2, chartSize / 2);
+  void _handleChartTap(TapUpDetails details, double chartSize, double chartWidth) {
+    // Center X must use chartWidth (the GestureDetector's width) because the
+    // chart is centered within the container by Align. When the chart is wider
+    // than the container, it overflows symmetrically so the visual center is
+    // always at chartWidth/2 in the GestureDetector's coordinate space.
+    final center = Offset(chartWidth / 2, chartSize / 2);
     final tapPos = details.localPosition;
     final distance = (tapPos - center).distance;
     final angle = _getAngleFromCenter(tapPos, center);
@@ -773,60 +787,64 @@ class _SleeveDetails extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     // Current vs Target
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Text(
-                              '${sleeve.currentPct.toStringAsFixed(0)}%',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w700,
-                                color: theme.colorScheme.onSurface,
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerRight,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Text(
+                                '${sleeve.currentPct.toStringAsFixed(0)}%',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w700,
+                                  color: theme.colorScheme.onSurface,
+                                ),
                               ),
-                            ),
-                            Text(
-                              'current',
+                              Text(
+                                'current',
+                                style: TextStyle(
+                                  fontSize: 9,
+                                  color: theme.colorScheme.onSurfaceVariant,
+                                ),
+                              ),
+                            ],
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 8),
+                            child: Text(
+                              '→',
                               style: TextStyle(
-                                fontSize: 9,
+                                fontSize: 14,
                                 color: theme.colorScheme.onSurfaceVariant,
                               ),
-                            ),
-                          ],
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8),
-                          child: Text(
-                            '→',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: theme.colorScheme.onSurfaceVariant,
                             ),
                           ),
-                        ),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Text(
-                              '${sleeve.targetPct.toStringAsFixed(0)}%',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w700,
-                                color: theme.colorScheme.onSurfaceVariant,
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Text(
+                                '${sleeve.targetPct.toStringAsFixed(0)}%',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w700,
+                                  color: theme.colorScheme.onSurfaceVariant,
+                                ),
                               ),
-                            ),
-                            Text(
-                              'target',
-                              style: TextStyle(
-                                fontSize: 9,
-                                color: theme.colorScheme.onSurfaceVariant,
+                              Text(
+                                'target',
+                                style: TextStyle(
+                                  fontSize: 9,
+                                  color: theme.colorScheme.onSurfaceVariant,
+                                ),
                               ),
-                            ),
-                          ],
-                        ),
-                      ],
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
                     const SizedBox(height: 6),
                     // Status badge

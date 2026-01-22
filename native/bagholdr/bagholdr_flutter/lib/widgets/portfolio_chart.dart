@@ -6,21 +6,14 @@ import '../utils/formatters.dart';
 import 'time_range_bar.dart';
 
 /// Maps UI TimePeriod to API ChartRange.
-///
-/// Note: API doesn't have YTD or 3M for chart, so we approximate:
-/// - 3M -> threeMonths
-/// - YTD -> sixMonths (close approximation for first half of year)
 ChartRange toChartRange(TimePeriod period) {
   switch (period) {
     case TimePeriod.oneMonth:
       return ChartRange.oneMonth;
-    case TimePeriod.threeMonths:
-      return ChartRange.threeMonths;
     case TimePeriod.sixMonths:
       return ChartRange.sixMonths;
     case TimePeriod.ytd:
-      // YTD not supported by API, use sixMonths as approximation
-      return ChartRange.sixMonths;
+      return ChartRange.ytd;
     case TimePeriod.oneYear:
       return ChartRange.oneYear;
     case TimePeriod.all:
@@ -76,6 +69,17 @@ class _PortfolioChartState extends State<PortfolioChart> {
   double? _touchYRatio;
 
   @override
+  void didUpdateWidget(PortfolioChart oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Reset touch state when data changes to avoid index out of bounds
+    if (oldWidget.dataPoints != widget.dataPoints) {
+      _touchedIndex = null;
+      _touchX = null;
+      _touchYRatio = null;
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     if (widget.dataPoints.isEmpty) {
       return const SizedBox(
@@ -121,6 +125,10 @@ class _PortfolioChartState extends State<PortfolioChart> {
     final financialColors = context.financialColors;
     final colorScheme = Theme.of(context).colorScheme;
 
+    // Compute x-values as days from start (proportional to time)
+    final xValues = _computeXValues(widget.dataPoints);
+    final daySpan = xValues.last;
+
     // Calculate min/max for Y axis
     final allValues = <double>[];
     for (final point in widget.dataPoints) {
@@ -142,7 +150,7 @@ class _PortfolioChartState extends State<PortfolioChart> {
     final paddedMaxY = maxY + range * 0.15; // Extra top padding for tooltip
 
     // Build x-axis labels
-    final xLabels = _buildXAxisLabels(widget.dataPoints);
+    final xLabels = _buildXAxisLabels(widget.dataPoints, daySpan);
 
     // Get touched data point for tooltip
     final touchedPoint = _touchedIndex != null
@@ -165,25 +173,28 @@ class _PortfolioChartState extends State<PortfolioChart> {
                     // Main chart
                     LineChart(
                       LineChartData(
+                        minX: 0,
+                        maxX: daySpan,
                         minY: paddedMinY,
                         maxY: paddedMaxY,
                         gridData: _buildGridData(colorScheme, paddedMinY, paddedMaxY),
                         titlesData: _buildTitlesData(
                           xLabels,
                           colorScheme,
-                          widget.dataPoints.length,
+                          daySpan,
                           paddedMinY,
                           paddedMaxY,
                         ),
                         borderData: FlBorderData(show: false),
                         lineBarsData: [
-                          _buildValueLine(widget.dataPoints, financialColors),
-                          _buildCostBasisLine(widget.dataPoints, financialColors),
+                          _buildValueLine(widget.dataPoints, xValues, financialColors),
+                          _buildCostBasisLine(widget.dataPoints, xValues, financialColors),
                         ],
                         lineTouchData: _buildTouchData(
                           financialColors,
                           colorScheme,
                           constraints.maxWidth,
+                          daySpan,
                           paddedMinY,
                           paddedMaxY,
                         ),
@@ -308,6 +319,7 @@ class _PortfolioChartState extends State<PortfolioChart> {
     FinancialColors financialColors,
     ColorScheme colorScheme,
     double chartWidth,
+    double daySpan,
     double paddedMinY,
     double paddedMaxY,
   ) {
@@ -339,11 +351,11 @@ class _PortfolioChartState extends State<PortfolioChart> {
           final spotIndex = spot.spotIndex;
 
           // Calculate X position relative to data area
-          final xRatio = spot.x / (widget.dataPoints.length - 1);
+          // spot.x is now days-from-start
+          final xRatio = daySpan > 0 ? spot.x / daySpan : 0.0;
           final touchX = xRatio * dataAreaWidth;
 
           // Calculate Y ratio (0 = top of chart, 1 = bottom)
-          // spot.y is the actual value, we need to convert to ratio
           final yRange = paddedMaxY - paddedMinY;
           final yRatio = 1 - (spot.y - paddedMinY) / yRange;
 
@@ -377,10 +389,12 @@ class _PortfolioChartState extends State<PortfolioChart> {
         }).toList();
       },
       // Disable built-in tooltip - we use custom overlay
+      // Must return same number of items as touchedSpots, use null to hide
       touchTooltipData: LineTouchTooltipData(
         getTooltipColor: (_) => Colors.transparent,
         tooltipPadding: EdgeInsets.zero,
-        getTooltipItems: (_) => [],
+        getTooltipItems: (touchedSpots) =>
+            touchedSpots.map((_) => null).toList(),
       ),
     );
   }
@@ -418,7 +432,7 @@ class _PortfolioChartState extends State<PortfolioChart> {
   FlTitlesData _buildTitlesData(
     List<_XLabel> xLabels,
     ColorScheme colorScheme,
-    int dataPointCount,
+    double daySpan,
     double minY,
     double maxY,
   ) {
@@ -454,9 +468,10 @@ class _PortfolioChartState extends State<PortfolioChart> {
           reservedSize: 24,
           interval: 1,
           getTitlesWidget: (value, meta) {
-            final index = value.toInt();
+            // x-axis values are now days-from-start
+            final day = value.round();
             for (final label in xLabels) {
-              if (label.index == index) {
+              if (label.dayValue == day) {
                 return Padding(
                   padding: const EdgeInsets.only(top: 6),
                   child: Text(
@@ -476,14 +491,25 @@ class _PortfolioChartState extends State<PortfolioChart> {
     );
   }
 
+  /// Compute days-from-start for each data point.
+  List<double> _computeXValues(List<ChartDataPoint> points) {
+    if (points.isEmpty) return [];
+    final firstDate = _parseDate(points.first.date);
+    return points.map((p) {
+      return _parseDate(p.date).difference(firstDate).inDays.toDouble();
+    }).toList();
+  }
+
   /// Build value line with gradient area fill.
   LineChartBarData _buildValueLine(
     List<ChartDataPoint> points,
+    List<double> xValues,
     FinancialColors colors,
   ) {
-    final spots = points.asMap().entries.map((e) {
-      return FlSpot(e.key.toDouble(), e.value.investedValue);
-    }).toList();
+    final spots = <FlSpot>[];
+    for (var i = 0; i < points.length; i++) {
+      spots.add(FlSpot(xValues[i], points[i].investedValue));
+    }
 
     return LineChartBarData(
       spots: spots,
@@ -510,11 +536,13 @@ class _PortfolioChartState extends State<PortfolioChart> {
   /// Build cost basis line (dashed grey).
   LineChartBarData _buildCostBasisLine(
     List<ChartDataPoint> points,
+    List<double> xValues,
     FinancialColors colors,
   ) {
-    final spots = points.asMap().entries.map((e) {
-      return FlSpot(e.key.toDouble(), e.value.costBasis);
-    }).toList();
+    final spots = <FlSpot>[];
+    for (var i = 0; i < points.length; i++) {
+      spots.add(FlSpot(xValues[i], points[i].costBasis));
+    }
 
     return LineChartBarData(
       spots: spots,
@@ -528,26 +556,43 @@ class _PortfolioChartState extends State<PortfolioChart> {
     );
   }
 
-  /// Build evenly spaced x-axis labels based on data points.
-  List<_XLabel> _buildXAxisLabels(List<ChartDataPoint> points) {
+  /// Build x-axis labels with consistent spacing.
+  ///
+  /// Since x-coordinates are days-from-start, labels are placed at
+  /// evenly-spaced day values for consistent visual and temporal spacing.
+  List<_XLabel> _buildXAxisLabels(List<ChartDataPoint> points, double daySpan) {
     if (points.isEmpty) return [];
 
-    final targetLabels = points.length > 30 ? 7 : 5;
-    final interval = (points.length - 1) / (targetLabels - 1);
+    final intDaySpan = daySpan.round();
+    if (intDaySpan == 0) return [];
 
-    final labels = <_XLabel>[];
-    for (var i = 0; i < targetLabels; i++) {
-      final index = (i * interval).round().clamp(0, points.length - 1);
-      final date = _parseDate(points[index].date);
+    final firstDate = _parseDate(points.first.date);
 
-      String text;
-      if (i == targetLabels - 1) {
-        text = 'Now';
-      } else {
-        text = _formatDateLabel(date);
+    // Determine label format based on span
+    final labelFormatter = intDaySpan < 90
+        ? _formatDateLabelShort
+        : intDaySpan < 365
+            ? _formatDateLabel
+            : _formatDateLabelWithYear;
+
+    // Pick a nice day interval that gives 5-8 labels
+    const niceIntervals = [2, 3, 5, 7, 14, 30, 60, 90, 180, 365];
+    var interval = niceIntervals.last;
+    for (final candidate in niceIntervals) {
+      final count = intDaySpan ~/ candidate;
+      if (count >= 5 && count <= 8) {
+        interval = candidate;
+        break;
       }
+    }
 
-      labels.add(_XLabel(index: index, text: text));
+    // Place labels at multiples of interval
+    final labels = <_XLabel>[];
+    var day = 0;
+    while (day < intDaySpan) {
+      final date = firstDate.add(Duration(days: day));
+      labels.add(_XLabel(dayValue: day, text: labelFormatter(date)));
+      day += interval;
     }
 
     return labels;
@@ -571,12 +616,31 @@ class _PortfolioChartState extends State<PortfolioChart> {
     ];
     return months[date.month - 1];
   }
+
+  /// Format date as day + abbreviated month (e.g., "15 Jan") for short ranges.
+  String _formatDateLabelShort(DateTime date) {
+    const months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+    ];
+    return '${date.day} ${months[date.month - 1]}';
+  }
+
+  /// Format date as month + year (e.g., "Jan '24") for multi-year ranges.
+  String _formatDateLabelWithYear(DateTime date) {
+    const months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+    ];
+    final yearShort = (date.year % 100).toString().padLeft(2, '0');
+    return "${months[date.month - 1]} '$yearShort";
+  }
 }
 
-/// X-axis label with index and text.
+/// X-axis label with day value (days from start) and display text.
 class _XLabel {
-  const _XLabel({required this.index, required this.text});
-  final int index;
+  const _XLabel({required this.dayValue, required this.text});
+  final int dayValue;
   final String text;
 }
 

@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 /// Time periods for filtering financial data.
 enum TimePeriod {
   oneMonth('1M'),
-  threeMonths('3M'),
   sixMonths('6M'),
   ytd('YTD'),
   oneYear('1Y'),

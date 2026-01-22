@@ -40,7 +40,7 @@ class ValuationEndpoint extends Endpoint {
     // Get all holdings with quantity > 0
     final allHoldings = await Holding.db.find(
       session,
-      where: (t) => t.quantity > 0,
+      where: (t) => t.quantity > 0.0,
     );
 
     // Get all non-archived assets
@@ -501,6 +501,8 @@ class ValuationEndpoint extends Endpoint {
         startDate = DateTime(now.year, now.month - 3, now.day);
       case ChartRange.sixMonths:
         startDate = DateTime(now.year, now.month - 6, now.day);
+      case ChartRange.ytd:
+        startDate = DateTime(now.year, 1, 1);
       case ChartRange.oneYear:
         startDate = DateTime(now.year - 1, now.month, now.day);
       case ChartRange.all:
@@ -1055,8 +1057,8 @@ class ValuationEndpoint extends Endpoint {
           ? calculatePortfolioValue(comparisonDate, true)
           : calculatePortfolioValue(comparisonDate, false);
 
-      if (DateTime.parse(comparisonDate).isAfter(firstOrderDate) ||
-          DateTime.parse(comparisonDate).isAtSameMomentAs(firstOrderDate)) {
+      // Compare dates only (ignore time) - use string comparison
+      if (comparisonDate.compareTo(firstOrderDateStr) >= 0) {
         if (startValue <= 0) continue;
 
         final mwrResult = calculateMWR(

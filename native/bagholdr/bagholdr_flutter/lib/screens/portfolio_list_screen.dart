@@ -47,6 +47,10 @@ class _PortfolioListScreenState extends State<PortfolioListScreen> {
   ChartDataResult? _chartData;
   bool _isLoadingChart = false;
 
+  // Valuation state
+  PortfolioValuation? _valuation;
+  HistoricalReturnsResult? _historicalReturns;
+
   @override
   void initState() {
     super.initState();
@@ -60,11 +64,13 @@ class _PortfolioListScreenState extends State<PortfolioListScreen> {
       setState(() {
         _selectedPortfolio = portfolios.first;
       });
-      // Load holdings, issues, sleeve tree, and chart for the first portfolio
+      // Load all data for the first portfolio
       _loadHoldings(portfolios.first.id!);
       _loadIssues(portfolios.first.id!);
       _loadSleeveTree(portfolios.first.id!);
       _loadChartData(portfolios.first.id!);
+      _loadValuation(portfolios.first.id!);
+      _loadHistoricalReturns(portfolios.first.id!);
     }
     return portfolios;
   }
@@ -82,7 +88,11 @@ class _PortfolioListScreenState extends State<PortfolioListScreen> {
   }
 
   Future<void> _loadSleeveTree(UuidValue portfolioId) async {
-    setState(() => _isLoadingSleeveTree = true);
+    // Only show loading on initial load
+    final isInitialLoad = _sleeveTree == null;
+    if (isInitialLoad) {
+      setState(() => _isLoadingSleeveTree = true);
+    }
 
     try {
       final period = toReturnPeriod(_selectedPeriod);
@@ -101,7 +111,11 @@ class _PortfolioListScreenState extends State<PortfolioListScreen> {
   }
 
   Future<void> _loadChartData(UuidValue portfolioId) async {
-    setState(() => _isLoadingChart = true);
+    // Only show loading spinner on initial load, not on period changes
+    final isInitialLoad = _chartData == null;
+    if (isInitialLoad) {
+      setState(() => _isLoadingChart = true);
+    }
 
     try {
       final chartRange = toChartRange(_selectedPeriod);
@@ -119,8 +133,43 @@ class _PortfolioListScreenState extends State<PortfolioListScreen> {
     }
   }
 
+  Future<void> _loadValuation(UuidValue portfolioId) async {
+    debugPrint('>>> _loadValuation called with portfolioId: $portfolioId');
+    try {
+      final response = await client.valuation.getPortfolioValuation(portfolioId);
+      debugPrint('>>> Valuation loaded: invested=${response.investedValueEur}, cash=${response.cashEur}, total=${response.totalValueEur}');
+      setState(() {
+        _valuation = response;
+      });
+    } catch (e, stack) {
+      debugPrint('>>> Error loading valuation: $e');
+      debugPrint('>>> Stack: $stack');
+    }
+  }
+
+  Future<void> _loadHistoricalReturns(UuidValue portfolioId) async {
+    debugPrint('>>> _loadHistoricalReturns called with portfolioId: $portfolioId');
+    try {
+      final response = await client.valuation.getHistoricalReturns(portfolioId);
+      debugPrint('>>> Historical returns loaded: ${response.returns.keys.toList()}');
+      for (final entry in response.returns.entries) {
+        debugPrint('>>>   ${entry.key}: mwr=${entry.value.compoundedReturn}, abs=${entry.value.absoluteReturn}');
+      }
+      setState(() {
+        _historicalReturns = response;
+      });
+    } catch (e, stack) {
+      debugPrint('>>> Error loading historical returns: $e');
+      debugPrint('>>> Stack: $stack');
+    }
+  }
+
   Future<void> _loadHoldings(UuidValue portfolioId) async {
-    setState(() => _isLoadingHoldings = true);
+    // Only show loading on initial load
+    final isInitialLoad = _holdings.isEmpty;
+    if (isInitialLoad) {
+      setState(() => _isLoadingHoldings = true);
+    }
 
     try {
       final period = toReturnPeriod(_selectedPeriod);
@@ -219,8 +268,11 @@ class _PortfolioListScreenState extends State<PortfolioListScreen> {
     return FutureBuilder<List<Portfolio>>(
       future: _portfoliosFuture,
       builder: (context, snapshot) {
+        final bgColor = Theme.of(context).colorScheme.surfaceContainerLow;
+
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Scaffold(
+            backgroundColor: bgColor,
             appBar: AppBar(title: const Text('Loading...')),
             body: const Center(child: CircularProgressIndicator()),
           );
@@ -228,6 +280,7 @@ class _PortfolioListScreenState extends State<PortfolioListScreen> {
 
         if (snapshot.hasError) {
           return Scaffold(
+            backgroundColor: bgColor,
             appBar: AppBar(title: const Text('Error')),
             body: _buildErrorState(snapshot.error!),
           );
@@ -237,6 +290,7 @@ class _PortfolioListScreenState extends State<PortfolioListScreen> {
 
         if (portfolios.isEmpty) {
           return Scaffold(
+            backgroundColor: bgColor,
             appBar: AppBar(title: const Text('Portfolios')),
             body: _buildEmptyState(),
           );
@@ -245,6 +299,7 @@ class _PortfolioListScreenState extends State<PortfolioListScreen> {
         final selected = _selectedPortfolio ?? portfolios.first;
 
         return Scaffold(
+          backgroundColor: bgColor,
           appBar: AppBar(
             // Mockup-style header with hamburger + selector
             leading: IconButton(
@@ -279,19 +334,18 @@ class _PortfolioListScreenState extends State<PortfolioListScreen> {
                   });
                 },
               ),
-              // Status indicator (placeholder)
-              Padding(
-                padding: const EdgeInsets.only(right: 16),
-                child: Center(
-                  child: Container(
-                    width: 8,
-                    height: 8,
-                    decoration: const BoxDecoration(
-                      color: Color(0xFF22C55E), // green-500
-                      shape: BoxShape.circle,
-                    ),
-                  ),
+              // Theme toggle
+              IconButton(
+                icon: Icon(
+                  themeMode.value == ThemeMode.dark
+                      ? Icons.light_mode_outlined
+                      : Icons.dark_mode_outlined,
                 ),
+                onPressed: () {
+                  themeMode.value = themeMode.value == ThemeMode.dark
+                      ? ThemeMode.light
+                      : ThemeMode.dark;
+                },
               ),
             ],
           ),
@@ -319,31 +373,60 @@ class _PortfolioListScreenState extends State<PortfolioListScreen> {
     );
   }
 
+  /// Maps TimePeriod to the return period key used in historical returns
+  String _getReturnPeriodKey(TimePeriod period) {
+    switch (period) {
+      case TimePeriod.oneMonth:
+        return 'oneMonth';
+      case TimePeriod.sixMonths:
+        return 'sixMonths';
+      case TimePeriod.ytd:
+        return 'ytd';
+      case TimePeriod.oneYear:
+        return 'oneYear';
+      case TimePeriod.all:
+        return 'all';
+    }
+  }
+
   Widget _buildDashboardPlaceholder(Portfolio portfolio) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    // Get period-specific return data
+    final periodKey = _getReturnPeriodKey(_selectedPeriod);
+    final periodReturn = _historicalReturns?.returns[periodKey];
+
+    // Values from valuation endpoint
+    final investedValue = _valuation?.investedValueEur ?? 0;
+    final cashBalance = _valuation?.cashEur ?? 0;
+    final totalValue = _valuation?.totalValueEur ?? 0;
+
+    // Values from historical returns (period-specific)
+    final mwr = periodReturn != null ? periodReturn.compoundedReturn / 100 : 0.0;
+    final twr = periodReturn?.twr != null ? periodReturn!.twr! / 100 : null;
+    final returnAbs = periodReturn?.absoluteReturn ?? 0;
+
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Hero section with value display
+          // Hero section - full width, prominent
           Container(
-            color: Theme.of(context).colorScheme.surface,
+            color: colorScheme.surface,
             padding: const EdgeInsets.all(16),
-            clipBehavior: Clip.none, // Allow chart tooltip to overflow
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // HeroValueDisplay with sample data
                 HeroValueDisplay(
-                  investedValue: 113482.0,
-                  mwr: 0.122, // +12.2% MWR
-                  twr: 0.105, // +10.5% TWR
-                  returnAbs: 12348.0,
-                  cashBalance: 6452.0,
-                  totalValue: 119934.0,
+                  investedValue: investedValue,
+                  mwr: mwr,
+                  twr: twr,
+                  returnAbs: returnAbs,
+                  cashBalance: cashBalance,
+                  totalValue: totalValue,
                   hideBalances: _hideBalances,
                 ),
                 const SizedBox(height: 24),
-                // Portfolio chart (NAPP-023)
                 if (_isLoadingChart)
                   const SizedBox(
                     height: 200,
@@ -358,7 +441,7 @@ class _PortfolioListScreenState extends State<PortfolioListScreen> {
                   Container(
                     height: 200,
                     decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.surfaceContainerLow,
+                      color: colorScheme.surfaceContainerLow,
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Center(
@@ -366,7 +449,7 @@ class _PortfolioListScreenState extends State<PortfolioListScreen> {
                         'No chart data available',
                         textAlign: TextAlign.center,
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: Theme.of(context).colorScheme.onSurfaceVariant,
+                              color: colorScheme.onSurfaceVariant,
                             ),
                       ),
                     ),
@@ -377,7 +460,7 @@ class _PortfolioListScreenState extends State<PortfolioListScreen> {
           const SizedBox(height: 8),
           // Strategy section
           Container(
-            color: Theme.of(context).colorScheme.surface,
+            color: colorScheme.surface,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -390,7 +473,6 @@ class _PortfolioListScreenState extends State<PortfolioListScreen> {
                         ),
                   ),
                 ),
-                // Issues bar (NAPP-013c)
                 IssuesBar(
                   issues: _issues,
                   onIssueTap: (issue) {
@@ -402,7 +484,6 @@ class _PortfolioListScreenState extends State<PortfolioListScreen> {
                     );
                   },
                 ),
-                // Strategy section
                 if (_isLoadingSleeveTree)
                   const Padding(
                     padding: EdgeInsets.all(32),
@@ -420,14 +501,14 @@ class _PortfolioListScreenState extends State<PortfolioListScreen> {
                     child: Container(
                       height: 150,
                       decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.surfaceContainerLow,
+                        color: colorScheme.surfaceContainerLow,
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Center(
                         child: Text(
                           'No sleeve data available',
                           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                color: colorScheme.onSurfaceVariant,
                               ),
                         ),
                       ),
@@ -437,25 +518,29 @@ class _PortfolioListScreenState extends State<PortfolioListScreen> {
             ),
           ),
           const SizedBox(height: 8),
-          // Assets section (NAPP-018)
-          AssetsSection(
-            holdings: _holdings,
-            totalCount: _totalCount,
-            filteredCount: _filteredCount,
-            selectedSleeveName: _getSelectedSleeveName(),
-            searchQuery: _searchQuery,
-            onSearchChanged: _onSearchChanged,
-            onLoadMore: _onLoadMore,
-            hasMore: _holdings.length < _filteredCount,
-            onAssetTap: (holding) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Tapped: ${holding.name}'),
-                  duration: const Duration(seconds: 1),
-                ),
-              );
-            },
-            isLoading: _isLoadingHoldings,
+          // Assets section
+          Container(
+            color: colorScheme.surface,
+            child: AssetsSection(
+              holdings: _holdings,
+              totalCount: _totalCount,
+              filteredCount: _filteredCount,
+              selectedSleeveName: _getSelectedSleeveName(),
+              searchQuery: _searchQuery,
+              onSearchChanged: _onSearchChanged,
+              onLoadMore: _onLoadMore,
+              hasMore: _holdings.length < _filteredCount,
+              onAssetTap: (holding) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Tapped: ${holding.name}'),
+                    duration: const Duration(seconds: 1),
+                  ),
+                );
+              },
+              isLoading: _isLoadingHoldings,
+              hideBalances: _hideBalances,
+            ),
           ),
         ],
       ),

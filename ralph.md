@@ -20,9 +20,11 @@ This file implements the [Ralph method](https://github.com/ghuntley/how-to-ralph
 
 Plans are task lists in `specs/` with status markers. Currently active:
 
-| Plan | Description |
-|------|-------------|
-| `specs/native-app-plan.md` | Flutter + Serverpod native app rebuild |
+| Plan | Completed Tasks | Description |
+|------|-----------------|-------------|
+| `specs/native-app-plan.md` | `specs/native-app-completed.md` | Flutter + Serverpod native app rebuild |
+
+**Note**: Completed tasks are archived to a separate file to keep the active plan within context limits. Research deliverables (summaries, porting guides) are also in the completed file.
 
 ### 3. Pick ONE Task
 
@@ -63,9 +65,12 @@ git add -A
 git commit -m "NAPP-XXX: Brief description"
 ```
 
-Then mark the task `[x]` in the plan and **STOP**.
+Then:
+1. Move the completed task from the plan to the completed tasks file (one-line summary)
+2. For `[research]` tasks: add deliverables (summaries, porting guides) to the completed file
+3. **STOP** - do not start the next task
 
-Do not start the next task. The next agent iteration will pick it up with fresh context.
+The next agent iteration will pick up the next task with fresh context.
 
 ---
 

@@ -10,9 +10,6 @@ ReturnPeriod toReturnPeriod(TimePeriod period) {
   switch (period) {
     case TimePeriod.oneMonth:
       return ReturnPeriod.oneMonth;
-    case TimePeriod.threeMonths:
-      // API doesn't have 3M, approximate with 6M for now
-      return ReturnPeriod.sixMonths;
     case TimePeriod.sixMonths:
       return ReturnPeriod.sixMonths;
     case TimePeriod.ytd:
@@ -57,6 +54,7 @@ class AssetsSection extends StatelessWidget {
     required this.hasMore,
     required this.onAssetTap,
     this.isLoading = false,
+    this.hideBalances = false,
   });
 
   /// List of holdings to display.
@@ -89,12 +87,12 @@ class AssetsSection extends StatelessWidget {
   /// Whether data is currently loading.
   final bool isLoading;
 
+  /// Whether to hide currency values for privacy.
+  final bool hideBalances;
+
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return Container(
-      color: colorScheme.surface,
+    return Padding(
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -120,6 +118,7 @@ class AssetsSection extends StatelessWidget {
             _AssetTable(
               holdings: holdings,
               onAssetTap: onAssetTap,
+              hideBalances: hideBalances,
             ),
             if (hasMore)
               Padding(
@@ -243,10 +242,12 @@ class _AssetTable extends StatelessWidget {
   const _AssetTable({
     required this.holdings,
     required this.onAssetTap,
+    required this.hideBalances,
   });
 
   final List<HoldingResponse> holdings;
   final ValueChanged<HoldingResponse> onAssetTap;
+  final bool hideBalances;
 
   // Fixed widths for Performance and Weight columns
   static const double _perfColWidth = 115.0;
@@ -276,6 +277,7 @@ class _AssetTable extends StatelessWidget {
                   onTap: () => onAssetTap(holding),
                   assetColWidth:
                       availableWidth - _perfColWidth - _weightColWidth,
+                  hideBalances: hideBalances,
                 ),
               ),
             ],
@@ -295,6 +297,7 @@ class _AssetTable extends StatelessWidget {
                     holding: holding,
                     onTap: () => onAssetTap(holding),
                     assetColWidth: _minAssetColWidth,
+                    hideBalances: hideBalances,
                   ),
                 ),
               ],
@@ -369,11 +372,13 @@ class _AssetRow extends StatelessWidget {
     required this.holding,
     required this.onTap,
     required this.assetColWidth,
+    required this.hideBalances,
   });
 
   final HoldingResponse holding;
   final VoidCallback onTap;
   final double assetColWidth;
+  final bool hideBalances;
 
   @override
   Widget build(BuildContext context) {
@@ -435,7 +440,9 @@ class _AssetRow extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        Formatters.formatCurrency(holding.value),
+                        hideBalances
+                            ? '•••••'
+                            : Formatters.formatCurrency(holding.value),
                         style: TextStyle(
                           fontSize: 11,
                           color: colorScheme.onSurfaceVariant,
@@ -454,11 +461,13 @@ class _AssetRow extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(
-                    Formatters.formatSignedCurrency(holding.pl),
+                    hideBalances
+                        ? '•••••'
+                        : Formatters.formatSignedCurrency(holding.pl),
                     style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
-                      color: plColor,
+                      color: hideBalances ? colorScheme.onSurfaceVariant : plColor,
                     ),
                   ),
                   const SizedBox(height: 2),

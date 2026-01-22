@@ -17,6 +17,7 @@ enum ChartRange implements _i1.SerializableModel {
   oneMonth,
   threeMonths,
   sixMonths,
+  ytd,
   oneYear,
   all;
 
@@ -28,6 +29,8 @@ enum ChartRange implements _i1.SerializableModel {
         return ChartRange.threeMonths;
       case 'sixMonths':
         return ChartRange.sixMonths;
+      case 'ytd':
+        return ChartRange.ytd;
       case 'oneYear':
         return ChartRange.oneYear;
       case 'all':
