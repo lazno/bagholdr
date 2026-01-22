@@ -838,6 +838,43 @@ Create database tables and migrate existing data from SQLite to PostgreSQL.
 
 Features are split into smaller tasks: research → port (if applicable) → implement.
 
+### NAPP-100: Fix Performance Metrics Calculation `[implement]`
+
+**Priority**: 🔴 Critical | **Status**: `[x]`
+**Blocked by**: None
+
+Performance metrics (MWR, TWR, returns) for sleeves and assets are not being calculated accurately.
+
+**Root Cause**: Missing "short holding" detection. When assets/sleeves are acquired AFTER the
+comparison date (e.g., 1Y period selected but asset bought 6 months ago), the code returned
+0/null instead of using the effective start date (first order date).
+
+**Fix Applied**: Added short holding detection to both endpoints:
+- `sleeves_endpoint.dart`: Detects if sleeve's first order is after comparison date, uses
+  effective start date for MWR/TWR calculations
+- `holdings_endpoint.dart`: Same logic for individual assets
+
+**Affected Areas**:
+- Sleeve-level MWR/TWR in sleeves endpoint (NAPP-020)
+- Asset-level MWR/TWR in holdings endpoint (NAPP-017)
+- Portfolio-level returns in valuation endpoint (NAPP-015)
+
+**Tasks**:
+- [x] Investigate current calculation discrepancies
+- [x] Compare Dart calculations against TypeScript reference implementation
+- [x] Fix sleeve performance metrics calculation
+- [x] Fix asset performance metrics calculation
+- [x] Add/update unit tests for edge cases
+- [x] Validate against known correct values from TypeScript backend
+
+**Acceptance Criteria**:
+- [x] Sleeve MWR/TWR matches TypeScript implementation
+- [x] Asset MWR/TWR matches TypeScript implementation
+- [x] All existing tests pass
+- [x] New regression tests added
+
+---
+
 ### NAPP-012: Portfolio List Endpoint `[implement]`
 
 **Priority**: High | **Status**: `[x]`

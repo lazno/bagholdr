@@ -395,9 +395,31 @@ class HoldingsEndpoint extends Endpoint {
     }
     final currentValue = currentPrice * holding.quantity;
 
-    // Get historical price at comparison date
-    final historicalPrice =
-        _getHistoricalPrice(asset, comparisonDate, priceByTickerDate, derivedFxRateMap, fxRateMap);
+    // Sort orders by date
+    final sortedOrders = List<Order>.from(orders)
+      ..sort((a, b) => a.orderDate.compareTo(b.orderDate));
+
+    // Find first buy order (to determine if this is a short holding)
+    final firstBuyOrder = sortedOrders.cast<Order?>().firstWhere(
+          (o) => o != null && o.quantity > 0,
+          orElse: () => null,
+        );
+
+    if (firstBuyOrder == null) {
+      // No buy orders, can't calculate return
+      return 0;
+    }
+
+    final firstOrderDateStr = _formatDate(firstBuyOrder.orderDate);
+
+    // Check if this is a "short holding" - asset acquired after comparison date
+    final isShortHolding = firstOrderDateStr.compareTo(comparisonDate) > 0;
+    final effectiveStartDate =
+        isShortHolding ? firstOrderDateStr : comparisonDate;
+
+    // Get historical price at effective start date
+    final historicalPrice = _getHistoricalPrice(
+        asset, effectiveStartDate, priceByTickerDate, derivedFxRateMap, fxRateMap);
 
     if (historicalPrice == null || historicalPrice <= 0) {
       // No historical price - use simple return from cost basis
@@ -407,19 +429,12 @@ class HoldingsEndpoint extends Endpoint {
       return 0;
     }
 
-    // Filter orders in period
-    final ordersInPeriod = orders
-        .where((o) =>
-            _formatDate(o.orderDate).compareTo(comparisonDate) > 0 &&
-            _formatDate(o.orderDate).compareTo(todayStr) <= 0)
-        .toList();
-
-    // Build position at comparison date
+    // Build position at effective start date
     double positionAtStart = 0;
     double costAtStart = 0;
 
-    for (final order in orders) {
-      if (_formatDate(order.orderDate).compareTo(comparisonDate) <= 0) {
+    for (final order in sortedOrders) {
+      if (_formatDate(order.orderDate).compareTo(effectiveStartDate) <= 0) {
         if (order.quantity > 0) {
           positionAtStart += order.quantity;
           costAtStart += order.totalEur;
@@ -445,15 +460,18 @@ class HoldingsEndpoint extends Endpoint {
       return 0;
     }
 
-    // Calculate period years
-    final startDate = DateTime.parse(comparisonDate);
+    // Calculate period years using effective start date
+    final startDate = DateTime.parse(effectiveStartDate);
     final endDate = DateTime.parse(todayStr);
     final periodMs = endDate.difference(startDate).inMilliseconds;
     final periodYears = periodMs / (365.25 * 24 * 60 * 60 * 1000);
 
-    // Build cash flows for XIRR
-    final cashFlows = ordersInPeriod
-        .where((o) => o.quantity != 0)
+    // Build cash flows for XIRR (only flows AFTER effective start date)
+    final cashFlows = sortedOrders
+        .where((o) =>
+            o.quantity != 0 &&
+            _formatDate(o.orderDate).compareTo(effectiveStartDate) > 0 &&
+            _formatDate(o.orderDate).compareTo(todayStr) <= 0)
         .map((o) => CashFlow(
               date: _formatDate(o.orderDate),
               amount: o.quantity > 0 ? o.totalEur : -o.totalEur.abs(),
@@ -461,7 +479,7 @@ class HoldingsEndpoint extends Endpoint {
         .toList();
 
     final mwrResult = calculateMWR(
-      startDate: comparisonDate,
+      startDate: effectiveStartDate,
       endDate: todayStr,
       startValue: startValue,
       endValue: currentValue,
@@ -493,9 +511,29 @@ class HoldingsEndpoint extends Endpoint {
       return null;
     }
 
-    // Get historical price at comparison date
-    final historicalPrice =
-        _getHistoricalPrice(asset, comparisonDate, priceByTickerDate, derivedFxRateMap, fxRateMap);
+    // Sort orders by date and find first buy order
+    final sortedOrders = List<Order>.from(orders)
+      ..sort((a, b) => a.orderDate.compareTo(b.orderDate));
+
+    final firstBuyOrder = sortedOrders.cast<Order?>().firstWhere(
+          (o) => o != null && o.quantity > 0,
+          orElse: () => null,
+        );
+
+    if (firstBuyOrder == null) {
+      return null;
+    }
+
+    final firstOrderDateStr = _formatDate(firstBuyOrder.orderDate);
+
+    // Check if this is a "short holding" - asset acquired after comparison date
+    final isShortHolding = firstOrderDateStr.compareTo(comparisonDate) > 0;
+    final effectiveStartDate =
+        isShortHolding ? firstOrderDateStr : comparisonDate;
+
+    // Get historical price at effective start date
+    final historicalPrice = _getHistoricalPrice(
+        asset, effectiveStartDate, priceByTickerDate, derivedFxRateMap, fxRateMap);
 
     if (historicalPrice == null || historicalPrice <= 0) {
       return null;

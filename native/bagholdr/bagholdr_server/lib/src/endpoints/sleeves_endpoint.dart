@@ -398,6 +398,14 @@ class SleevesEndpoint extends Endpoint {
       return (mwr: 0, twr: null);
     }
 
+    // Find the first order date for this sleeve (for short holding detection)
+    final firstSleeveOrderDate = _formatDate(sleeveOrders.first.orderDate);
+
+    // Check if this is a "short holding" - sleeve acquired after comparison date
+    final isShortHolding = firstSleeveOrderDate.compareTo(comparisonDate) > 0;
+    final effectiveStartDate =
+        isShortHolding ? firstSleeveOrderDate : comparisonDate;
+
     // Build position snapshots for historical value calculation
     final positionsByDate = <String, Map<String, ({double qty, double cost})>>{};
     var currentPositions = <String, ({double qty, double cost})>{};
@@ -438,7 +446,7 @@ class SleevesEndpoint extends Endpoint {
       positionsByDate[lastDate] = Map.from(currentPositions);
     }
 
-    // Get positions at comparison date
+    // Get positions at a given date
     Map<String, ({double qty, double cost})> getPositionsForDate(String date) {
       String bestDate = '';
       Map<String, ({double qty, double cost})>? bestSnapshot;
@@ -453,8 +461,8 @@ class SleevesEndpoint extends Endpoint {
       return bestSnapshot ?? {};
     }
 
-    // Calculate start value at comparison date
-    final startPositions = getPositionsForDate(comparisonDate);
+    // Calculate start value at effective start date
+    final startPositions = getPositionsForDate(effectiveStartDate);
     double startValue = 0;
 
     for (final entry in startPositions.entries) {
@@ -470,7 +478,7 @@ class SleevesEndpoint extends Endpoint {
 
       final historicalPrice = _getHistoricalPrice(
         asset!,
-        comparisonDate,
+        effectiveStartDate,
         priceByTickerDate,
         derivedFxRateMap,
         fxRateMap,
@@ -488,17 +496,17 @@ class SleevesEndpoint extends Endpoint {
       return (mwr: 0, twr: null);
     }
 
-    // Calculate period
-    final startDate = DateTime.parse(comparisonDate);
+    // Calculate period using effective start date
+    final startDate = DateTime.parse(effectiveStartDate);
     final endDate = DateTime.parse(todayStr);
     final periodMs = endDate.difference(startDate).inMilliseconds;
     final periodYears = periodMs / (365.25 * 24 * 60 * 60 * 1000);
 
-    // Build cash flows for MWR
+    // Build cash flows for MWR (only flows AFTER effective start date)
     final cashFlows = sleeveOrders
         .where((o) =>
             o.quantity != 0 &&
-            _formatDate(o.orderDate).compareTo(comparisonDate) > 0 &&
+            _formatDate(o.orderDate).compareTo(effectiveStartDate) > 0 &&
             _formatDate(o.orderDate).compareTo(todayStr) <= 0)
         .map((o) => CashFlow(
               date: _formatDate(o.orderDate),
@@ -508,7 +516,7 @@ class SleevesEndpoint extends Endpoint {
 
     // Calculate MWR
     final mwrResult = calculateMWR(
-      startDate: comparisonDate,
+      startDate: effectiveStartDate,
       endDate: todayStr,
       startValue: startValue,
       endValue: currentSleeveValue,
@@ -519,7 +527,7 @@ class SleevesEndpoint extends Endpoint {
         ? mwrResult.annualizedReturn
         : mwrResult.compoundedReturn;
 
-    // Calculate TWR
+    // Calculate TWR using effective start date
     double getSleeveValueAtDate(String date) {
       final positions = getPositionsForDate(date);
       double value = 0;
@@ -563,7 +571,7 @@ class SleevesEndpoint extends Endpoint {
     }
 
     final twrResult = calculateTWR(
-      startDate: comparisonDate,
+      startDate: effectiveStartDate,
       endDate: todayStr,
       cashFlows: cashFlows,
       getPortfolioValueAtDate: getSleeveValueAtDate,
