@@ -88,7 +88,7 @@ backholdr/
 
 ### NAPP-019: Asset Detail `[implement]`
 
-**Priority**: Medium | **Status**: `[ ]`
+**Priority**: Low | **Status**: `[ ]`
 **Blocked by**: None (NAPP-018 complete)
 
 **Tasks**:
@@ -126,7 +126,7 @@ backholdr/
 
 ### NAPP-026: Research Directa Parser `[research]`
 
-**Priority**: Medium | **Status**: `[ ]`
+**Priority**: Medium | **Status**: `[x]`
 **Blocked by**: None
 
 Understand existing import logic. **No code changes.**
@@ -153,8 +153,8 @@ Understand existing import logic. **No code changes.**
 
 ### NAPP-027: Port Directa Parser `[port]`
 
-**Priority**: Medium | **Status**: `[blocked]`
-**Blocked by**: NAPP-026
+**Priority**: Medium | **Status**: `[ ]`
+**Blocked by**: None (NAPP-026 complete)
 
 **Tasks**:
 - [ ] Create directa_parser.dart
@@ -201,6 +201,8 @@ Understand existing import logic. **No code changes.**
 **Acceptance Criteria**:
 - [ ] Settings persist across app restarts
 - [ ] Theme changes apply immediately
+
+---
 
 ---
 

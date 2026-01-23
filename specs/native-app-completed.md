@@ -268,3 +268,101 @@ Newton-Raphson algorithm ported to Dart. Solves for rate `r` where `Σ CFᵢ × 
 1. **GBp (British pence)**: Prices from Yahoo are in pence, but FX rates are for GBP. Divide by 100 when currency is 'GBp'.
 2. **Historical granularity**: Using range='10y' ensures daily granularity.
 3. **Intraday data retention**: Prices older than 5 days are automatically purged during sync.
+
+---
+
+### NAPP-026: Research Directa Parser `[research]` - DONE
+
+Documented Directa CSV format, field mapping, holdings derivation logic.
+
+#### Directa CSV Format
+
+- **Header**: First 10 lines are metadata. Line 1 contains account name (`ACCOUNT : C6766 Lazzeri Norbert`). Line 10 is the column header row.
+- **Data**: Starts at line 11. Each row has 12 comma-separated fields. Quoted fields are supported.
+- **Date format**: `DD-MM-YYYY` (Italian format), converted to ISO `YYYY-MM-DD` during parsing.
+- **Numbers**: Period as decimal separator (not European comma format).
+
+#### CSV Columns (12 fields)
+
+| # | Field | Maps to |
+|---|-------|---------|
+| 0 | Transaction date (DD-MM-YYYY) | `transactionDate` (converted to ISO) |
+| 1 | Value date | Ignored |
+| 2 | Transaction type | `transactionType` (Buy/Sell/Commissions kept, rest skipped) |
+| 3 | Ticker | `ticker` |
+| 4 | ISIN | `isin` (required for import) |
+| 5 | Protocol | Ignored |
+| 6 | Description | `name` (asset name) |
+| 7 | Quantity | `quantity` (positive=buy, negative=sell, 0=commission) |
+| 8 | Amount EUR | `amountEur` (stored as absolute value) |
+| 9 | Currency amount | `currencyAmount` (stored as absolute value) |
+| 10 | Currency | `currency` (defaults to EUR if empty) |
+| 11 | Order reference | `orderReference` |
+
+#### Transaction Types
+
+Only 3 types are imported: `Buy`, `Sell`, `Commissions` (mapped to `Commission`). All other types (taxes, bond coupons, wire transfers, etc.) are skipped and counted in `skippedRows`.
+
+#### Holdings Derivation (Average Cost Method)
+
+Orders are grouped by ISIN and processed chronologically:
+
+1. **Buy** (quantity > 0): Add quantity and cost to running totals
+2. **Sell** (quantity < 0): Reduce cost basis proportionally — `costReduction = avgCostPerShare × soldQty`. Average cost per share does NOT change on sells.
+3. **Commission** (quantity = 0): Add to cost basis without changing quantity
+
+Only positions with remaining quantity > 0 are included in final holdings.
+
+**Example**: Buy 100 @ €10 (cost=€1000, avg=€10) → Buy 50 @ €14 (cost=€1700, qty=150, avg=€11.33) → Sell 75 (reduce cost by 75×€11.33=€850 → remaining cost=€850, qty=75, avg still €11.33)
+
+#### Functions to Port
+
+**From `directa-parser.ts`**:
+- `parseDirectaCSV(content: String) → DirectaParseResult` - Main entry point
+- `convertItalianDate(dateStr) → String?` - DD-MM-YYYY to YYYY-MM-DD
+- `extractAccountName(headerLine) → String?` - Parse account from header
+- `parseCSVLine(line) → List<String>` - Handle quoted CSV fields
+- `parseNumber(value) → double` - String to number
+- `isImportableTransaction(type) → bool` - Filter Buy/Sell/Commissions
+- `mapTransactionType(type) → String` - Commissions → Commission
+
+**From `derive-holdings.ts`**:
+- `deriveHoldings(orders: List<Order>) → List<DerivedHolding>` - Average cost calculation
+- `toNewHoldings(derived) → List<NewHolding>` - Convert to DB format (uses nanoid → use UUID v7 in Dart)
+
+#### Types to Create
+
+```dart
+class DirectaRow {
+  String transactionDate; // ISO
+  String transactionType;
+  String ticker;
+  String isin;
+  String name;
+  int quantity;
+  double amountEur;
+  double currencyAmount;
+  String currency;
+  String orderReference;
+}
+
+class DirectaParseResult {
+  String accountName;
+  List<ParsedOrder> orders;
+  int skippedRows;
+  List<ParseError> errors;
+}
+
+class DerivedHolding {
+  String assetIsin;
+  double quantity;
+  double totalCostEur;
+  double totalCostNative;
+}
+```
+
+---
+
+### NAPP-102: Add Total Return % Metric `[implement]` - DONE
+
+Added `totalReturn` field to holdings, sleeves, and period returns. Formula: `(currentValue + sellProceeds) / (buyCosts + fees) - 1`. Sub-period variant uses startValue + orders in period.
