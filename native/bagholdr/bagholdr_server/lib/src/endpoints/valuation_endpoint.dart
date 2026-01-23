@@ -510,10 +510,6 @@ class ValuationEndpoint extends Endpoint {
     }
     final startDateStr = _formatDate(startDate);
 
-    // Get FX rates for currency conversion
-    final fxRates = await FxCache.db.find(session);
-    final fxRateMap = {for (var f in fxRates) f.pair: f.rate};
-
     // Build list of yahoo symbols we need prices for
     final yahooSymbols = allAssets
         .where((a) => a.yahooSymbol != null)
@@ -537,6 +533,36 @@ class ValuationEndpoint extends Endpoint {
       priceByTickerDate.putIfAbsent(p.ticker, () => {});
       priceByTickerDate[p.ticker]![p.date] = (close: p.adjClose, currency: p.currency);
     }
+
+    // Get historical FX rates for non-EUR currencies
+    final nonEurCurrencies = <String>{};
+    for (final dateMap in priceByTickerDate.values) {
+      for (final data in dateMap.values) {
+        if (data.currency != 'EUR') nonEurCurrencies.add(data.currency);
+      }
+    }
+
+    final fxByDate = <String, Map<String, double>>{}; // currency -> date -> rate
+    if (nonEurCurrencies.isNotEmpty) {
+      final fxTickers = nonEurCurrencies.map((c) => '${c}EUR=X').toSet();
+      final fxPrices = await DailyPrice.db.find(
+        session,
+        where: (t) =>
+            t.ticker.inSet(fxTickers) &
+            (t.date >= startDateStr) &
+            (t.date <= endDateStr),
+      );
+      for (final p in fxPrices) {
+        // Ticker format: USDEUR=X -> currency is USD
+        final currency = p.ticker.replaceAll('EUR=X', '');
+        fxByDate.putIfAbsent(currency, () => {});
+        fxByDate[currency]![p.date] = p.adjClose;
+      }
+    }
+
+    // Fallback: current FX rates from FxCache
+    final fxRates = await FxCache.db.find(session);
+    final fxRateMap = {for (var f in fxRates) f.pair: f.rate};
 
     // Process orders to build position snapshots
     final sortedOrders = List<Order>.from(filteredOrders)
@@ -616,15 +642,37 @@ class ValuationEndpoint extends Endpoint {
     // Get current prices from priceCache for today
     final cachedPrices = await PriceCache.db.find(session);
     final currentPriceMap = {for (var p in cachedPrices) p.ticker: p.priceEur};
-    final derivedFxRateMap = <String, double>{};
-    for (final p in cachedPrices) {
-      if (p.priceNative != 0) {
-        derivedFxRateMap[p.ticker] = p.priceEur / p.priceNative;
-      }
+
+    // Build sorted FX dates for nearest-prior lookup
+    final sortedFxDates = <String, List<String>>{};
+    for (final entry in fxByDate.entries) {
+      sortedFxDates[entry.key] = entry.value.keys.toList()..sort();
     }
 
-    double getFxRateToEur(String currency) {
+    double getFxRateForDate(String currency, String date) {
       if (currency == 'EUR') return 1;
+
+      // Look up historical FX rate for this date
+      final currencyDates = fxByDate[currency];
+      if (currencyDates != null) {
+        // Try exact date
+        final exact = currencyDates[date];
+        if (exact != null) return exact;
+
+        // Find nearest prior date
+        final dates = sortedFxDates[currency] ?? [];
+        String nearest = '';
+        for (final d in dates) {
+          if (d.compareTo(date) <= 0 && d.compareTo(nearest) > 0) {
+            nearest = d;
+          }
+        }
+        if (nearest.isNotEmpty) {
+          return currencyDates[nearest]!;
+        }
+      }
+
+      // Fallback to current FX rate from FxCache
       return fxRateMap['${currency}EUR'] ?? 1;
     }
 
@@ -714,7 +762,7 @@ class ValuationEndpoint extends Endpoint {
           } else {
             final priceData = getPriceForDate(assetId, date);
             if (priceData != null) {
-              final fxRate = getFxRateToEur(priceData.currency);
+              final fxRate = getFxRateForDate(priceData.currency, date);
               investedValue += priceData.price * position.quantity * fxRate;
             } else {
               investedValue += position.costBasisEur;
@@ -723,8 +771,7 @@ class ValuationEndpoint extends Endpoint {
         } else {
           final priceData = getPriceForDate(assetId, date);
           if (priceData != null) {
-            final derivedFxRate = derivedFxRateMap[asset!.yahooSymbol!];
-            final fxRate = derivedFxRate ?? getFxRateToEur(priceData.currency);
+            final fxRate = getFxRateForDate(priceData.currency, date);
             investedValue += priceData.price * position.quantity * fxRate;
           } else {
             investedValue += position.costBasisEur;
@@ -845,6 +892,31 @@ class ValuationEndpoint extends Endpoint {
       priceByTickerDate[p.ticker]![p.date] = (close: p.adjClose, currency: p.currency);
     }
 
+    // Get historical FX rates for non-EUR currencies
+    final nonEurCurrencies = <String>{};
+    for (final dateMap in priceByTickerDate.values) {
+      for (final data in dateMap.values) {
+        if (data.currency != 'EUR') nonEurCurrencies.add(data.currency);
+      }
+    }
+
+    final fxByDate = <String, Map<String, double>>{}; // currency -> date -> rate
+    if (nonEurCurrencies.isNotEmpty) {
+      final fxTickers = nonEurCurrencies.map((c) => '${c}EUR=X').toSet();
+      final fxPrices = await DailyPrice.db.find(
+        session,
+        where: (t) =>
+            t.ticker.inSet(fxTickers) &
+            (t.date >= lookbackDateStr) &
+            (t.date <= todayStr),
+      );
+      for (final p in fxPrices) {
+        final currency = p.ticker.replaceAll('EUR=X', '');
+        fxByDate.putIfAbsent(currency, () => {});
+        fxByDate[currency]![p.date] = p.adjClose;
+      }
+    }
+
     // Process orders to build position snapshots
     final positionsByDate = <String, Map<String, ({double quantity, double costBasisEur, double avgCostEur})>>{};
     var currentPositions = <String, ({double quantity, double costBasisEur, double avgCostEur})>{};
@@ -899,15 +971,33 @@ class ValuationEndpoint extends Endpoint {
     // Get current prices
     final cachedPrices = await PriceCache.db.find(session);
     final currentPriceMap = {for (var p in cachedPrices) p.ticker: p.priceEur};
-    final derivedFxRateMap = <String, double>{};
-    for (final p in cachedPrices) {
-      if (p.priceNative != 0) {
-        derivedFxRateMap[p.ticker] = p.priceEur / p.priceNative;
-      }
+
+    // Build sorted FX dates for nearest-prior lookup
+    final sortedFxDates = <String, List<String>>{};
+    for (final entry in fxByDate.entries) {
+      sortedFxDates[entry.key] = entry.value.keys.toList()..sort();
     }
 
-    double getFxRateToEur(String currency) {
+    double getFxRateForDate(String currency, String date) {
       if (currency == 'EUR') return 1;
+
+      final currencyDates = fxByDate[currency];
+      if (currencyDates != null) {
+        final exact = currencyDates[date];
+        if (exact != null) return exact;
+
+        final dates = sortedFxDates[currency] ?? [];
+        String nearest = '';
+        for (final d in dates) {
+          if (d.compareTo(date) <= 0 && d.compareTo(nearest) > 0) {
+            nearest = d;
+          }
+        }
+        if (nearest.isNotEmpty) {
+          return currencyDates[nearest]!;
+        }
+      }
+
       return fxRateMap['${currency}EUR'] ?? 1;
     }
 
@@ -998,8 +1088,7 @@ class ValuationEndpoint extends Endpoint {
         } else {
           final priceData = getPriceForDate(assetId, date);
           if (priceData != null) {
-            final derivedFxRate = derivedFxRateMap[asset!.yahooSymbol!];
-            final fxRate = derivedFxRate ?? getFxRateToEur(priceData.currency);
+            final fxRate = getFxRateForDate(priceData.currency, date);
             totalValue += priceData.price * position.quantity * fxRate;
           } else {
             totalValue += position.costBasisEur;
@@ -1136,8 +1225,7 @@ class ValuationEndpoint extends Endpoint {
           final historicalPriceData = getPriceForDate(assetId, effectiveStartDate);
           final historicalPrice = historicalPriceData != null
               ? historicalPriceData.price *
-                  (derivedFxRateMap[asset.yahooSymbol!] ??
-                      getFxRateToEur(historicalPriceData.currency))
+                  getFxRateForDate(historicalPriceData.currency, effectiveStartDate)
               : null;
 
           double? compoundedReturnAsset;

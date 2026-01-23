@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../main.dart';
 import '../widgets/assets_section.dart';
+import '../widgets/connection_indicator.dart';
 import '../widgets/hero_value_display.dart';
 import '../widgets/issues_bar.dart';
 import '../widgets/portfolio_chart.dart';
@@ -55,6 +56,46 @@ class _PortfolioListScreenState extends State<PortfolioListScreen> {
   void initState() {
     super.initState();
     _portfoliosFuture = _loadPortfolios();
+    // Connect to real-time price stream.
+    priceStreamProvider.connect();
+    priceStreamProvider.addListener(_onPriceStreamUpdate);
+  }
+
+  @override
+  void dispose() {
+    priceStreamProvider.removeListener(_onPriceStreamUpdate);
+    super.dispose();
+  }
+
+  void _onPriceStreamUpdate() {
+    if (!mounted) return;
+    // Update displayed holdings with new prices.
+    for (int i = 0; i < _holdings.length; i++) {
+      final holding = _holdings[i];
+      final update = priceStreamProvider.getPrice(holding.isin);
+      if (update != null) {
+        final newValue = update.priceEur * holding.quantity;
+        if ((newValue - holding.value).abs() > 0.001) {
+          _holdings[i] = HoldingResponse(
+            symbol: holding.symbol,
+            name: holding.name,
+            isin: holding.isin,
+            value: newValue,
+            costBasis: holding.costBasis,
+            pl: newValue - holding.costBasis,
+            weight: holding.weight,
+            mwr: holding.mwr,
+            twr: holding.twr,
+            sleeveId: holding.sleeveId,
+            sleeveName: holding.sleeveName,
+            assetId: holding.assetId,
+            quantity: holding.quantity,
+          );
+        }
+      }
+    }
+    // Rebuild for price changes and recently-updated animation.
+    setState(() {});
   }
 
   Future<List<Portfolio>> _loadPortfolios() async {
@@ -321,6 +362,11 @@ class _PortfolioListScreenState extends State<PortfolioListScreen> {
             ),
             titleSpacing: 0,
             actions: [
+              // Connection status indicator
+              ConnectionIndicator(
+                status: priceStreamProvider.connectionStatus,
+                lastUpdateAt: priceStreamProvider.lastUpdateAt,
+              ),
               // Hide balances toggle
               IconButton(
                 icon: Icon(
@@ -540,6 +586,8 @@ class _PortfolioListScreenState extends State<PortfolioListScreen> {
               },
               isLoading: _isLoadingHoldings,
               hideBalances: _hideBalances,
+              isRecentlyUpdated: (isin) =>
+                  priceStreamProvider.isRecentlyUpdated(isin),
             ),
           ),
         ],

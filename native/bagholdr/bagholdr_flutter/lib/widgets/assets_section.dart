@@ -55,6 +55,7 @@ class AssetsSection extends StatelessWidget {
     required this.onAssetTap,
     this.isLoading = false,
     this.hideBalances = false,
+    this.isRecentlyUpdated,
   });
 
   /// List of holdings to display.
@@ -90,6 +91,9 @@ class AssetsSection extends StatelessWidget {
   /// Whether to hide currency values for privacy.
   final bool hideBalances;
 
+  /// Callback to check if an ISIN was recently updated via price stream.
+  final bool Function(String isin)? isRecentlyUpdated;
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -119,6 +123,7 @@ class AssetsSection extends StatelessWidget {
               holdings: holdings,
               onAssetTap: onAssetTap,
               hideBalances: hideBalances,
+              isRecentlyUpdated: isRecentlyUpdated,
             ),
             if (hasMore)
               Padding(
@@ -243,11 +248,13 @@ class _AssetTable extends StatelessWidget {
     required this.holdings,
     required this.onAssetTap,
     required this.hideBalances,
+    this.isRecentlyUpdated,
   });
 
   final List<HoldingResponse> holdings;
   final ValueChanged<HoldingResponse> onAssetTap;
   final bool hideBalances;
+  final bool Function(String isin)? isRecentlyUpdated;
 
   // Fixed widths for Performance and Weight columns
   static const double _perfColWidth = 115.0;
@@ -278,6 +285,8 @@ class _AssetTable extends StatelessWidget {
                   assetColWidth:
                       availableWidth - _perfColWidth - _weightColWidth,
                   hideBalances: hideBalances,
+                  isHighlighted:
+                      isRecentlyUpdated?.call(holding.isin) ?? false,
                 ),
               ),
             ],
@@ -298,6 +307,8 @@ class _AssetTable extends StatelessWidget {
                     onTap: () => onAssetTap(holding),
                     assetColWidth: _minAssetColWidth,
                     hideBalances: hideBalances,
+                    isHighlighted:
+                        isRecentlyUpdated?.call(holding.isin) ?? false,
                   ),
                 ),
               ],
@@ -373,12 +384,16 @@ class _AssetRow extends StatelessWidget {
     required this.onTap,
     required this.assetColWidth,
     required this.hideBalances,
+    this.isHighlighted = false,
   });
 
   final HoldingResponse holding;
   final VoidCallback onTap;
   final double assetColWidth;
   final bool hideBalances;
+
+  /// Whether this row should show a highlight animation (recently updated).
+  final bool isHighlighted;
 
   @override
   Widget build(BuildContext context) {
@@ -391,9 +406,13 @@ class _AssetRow extends StatelessWidget {
 
     return InkWell(
       onTap: onTap,
-      child: Container(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
         padding: const EdgeInsets.symmetric(vertical: 11),
         decoration: BoxDecoration(
+          color: isHighlighted
+              ? colorScheme.primaryContainer.withValues(alpha: 0.15)
+              : null,
           border: Border(
             bottom: BorderSide(
               color: colorScheme.outlineVariant.withValues(alpha: 0.5),

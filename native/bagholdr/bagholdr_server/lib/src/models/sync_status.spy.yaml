@@ -1,0 +1,16 @@
+### SyncStatus - Current state of the price sync job
+### Not persisted to database (no table directive)
+class: SyncStatus
+
+fields:
+  ### Whether a sync is currently in progress
+  isSyncing: bool
+
+  ### When the last sync completed (null if never)
+  lastSyncAt: DateTime?
+
+  ### Number of assets successfully synced in last run
+  lastSuccessCount: int
+
+  ### Number of errors in last run
+  lastErrorCount: int

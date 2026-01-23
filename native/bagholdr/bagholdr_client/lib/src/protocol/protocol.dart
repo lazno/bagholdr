@@ -42,20 +42,22 @@ import 'portfolio.dart' as _i29;
 import 'portfolio_rule.dart' as _i30;
 import 'portfolio_valuation.dart' as _i31;
 import 'price_cache.dart' as _i32;
-import 'return_period.dart' as _i33;
-import 'sleeve.dart' as _i34;
-import 'sleeve_allocation.dart' as _i35;
-import 'sleeve_asset.dart' as _i36;
-import 'sleeve_node.dart' as _i37;
-import 'sleeve_tree_response.dart' as _i38;
-import 'stale_price_asset.dart' as _i39;
-import 'ticker_metadata.dart' as _i40;
-import 'yahoo_symbol.dart' as _i41;
-import 'package:bagholdr_client/src/protocol/portfolio.dart' as _i42;
+import 'price_update.dart' as _i33;
+import 'return_period.dart' as _i34;
+import 'sleeve.dart' as _i35;
+import 'sleeve_allocation.dart' as _i36;
+import 'sleeve_asset.dart' as _i37;
+import 'sleeve_node.dart' as _i38;
+import 'sleeve_tree_response.dart' as _i39;
+import 'stale_price_asset.dart' as _i40;
+import 'sync_status.dart' as _i41;
+import 'ticker_metadata.dart' as _i42;
+import 'yahoo_symbol.dart' as _i43;
+import 'package:bagholdr_client/src/protocol/portfolio.dart' as _i44;
 import 'package:serverpod_auth_idp_client/serverpod_auth_idp_client.dart'
-    as _i43;
+    as _i45;
 import 'package:serverpod_auth_core_client/serverpod_auth_core_client.dart'
-    as _i44;
+    as _i46;
 export 'allocation_status.dart';
 export 'asset.dart';
 export 'asset_period_return.dart';
@@ -87,6 +89,7 @@ export 'portfolio.dart';
 export 'portfolio_rule.dart';
 export 'portfolio_valuation.dart';
 export 'price_cache.dart';
+export 'price_update.dart';
 export 'return_period.dart';
 export 'sleeve.dart';
 export 'sleeve_allocation.dart';
@@ -94,6 +97,7 @@ export 'sleeve_asset.dart';
 export 'sleeve_node.dart';
 export 'sleeve_tree_response.dart';
 export 'stale_price_asset.dart';
+export 'sync_status.dart';
 export 'ticker_metadata.dart';
 export 'yahoo_symbol.dart';
 export 'client.dart';
@@ -225,32 +229,38 @@ class Protocol extends _i1.SerializationManager {
     if (t == _i32.PriceCache) {
       return _i32.PriceCache.fromJson(data) as T;
     }
-    if (t == _i33.ReturnPeriod) {
-      return _i33.ReturnPeriod.fromJson(data) as T;
+    if (t == _i33.PriceUpdate) {
+      return _i33.PriceUpdate.fromJson(data) as T;
     }
-    if (t == _i34.Sleeve) {
-      return _i34.Sleeve.fromJson(data) as T;
+    if (t == _i34.ReturnPeriod) {
+      return _i34.ReturnPeriod.fromJson(data) as T;
     }
-    if (t == _i35.SleeveAllocation) {
-      return _i35.SleeveAllocation.fromJson(data) as T;
+    if (t == _i35.Sleeve) {
+      return _i35.Sleeve.fromJson(data) as T;
     }
-    if (t == _i36.SleeveAsset) {
-      return _i36.SleeveAsset.fromJson(data) as T;
+    if (t == _i36.SleeveAllocation) {
+      return _i36.SleeveAllocation.fromJson(data) as T;
     }
-    if (t == _i37.SleeveNode) {
-      return _i37.SleeveNode.fromJson(data) as T;
+    if (t == _i37.SleeveAsset) {
+      return _i37.SleeveAsset.fromJson(data) as T;
     }
-    if (t == _i38.SleeveTreeResponse) {
-      return _i38.SleeveTreeResponse.fromJson(data) as T;
+    if (t == _i38.SleeveNode) {
+      return _i38.SleeveNode.fromJson(data) as T;
     }
-    if (t == _i39.StalePriceAsset) {
-      return _i39.StalePriceAsset.fromJson(data) as T;
+    if (t == _i39.SleeveTreeResponse) {
+      return _i39.SleeveTreeResponse.fromJson(data) as T;
     }
-    if (t == _i40.TickerMetadata) {
-      return _i40.TickerMetadata.fromJson(data) as T;
+    if (t == _i40.StalePriceAsset) {
+      return _i40.StalePriceAsset.fromJson(data) as T;
     }
-    if (t == _i41.YahooSymbol) {
-      return _i41.YahooSymbol.fromJson(data) as T;
+    if (t == _i41.SyncStatus) {
+      return _i41.SyncStatus.fromJson(data) as T;
+    }
+    if (t == _i42.TickerMetadata) {
+      return _i42.TickerMetadata.fromJson(data) as T;
+    }
+    if (t == _i43.YahooSymbol) {
+      return _i43.YahooSymbol.fromJson(data) as T;
     }
     if (t == _i1.getType<_i2.AllocationStatus?>()) {
       return (data != null ? _i2.AllocationStatus.fromJson(data) : null) as T;
@@ -350,33 +360,39 @@ class Protocol extends _i1.SerializationManager {
     if (t == _i1.getType<_i32.PriceCache?>()) {
       return (data != null ? _i32.PriceCache.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i33.ReturnPeriod?>()) {
-      return (data != null ? _i33.ReturnPeriod.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i33.PriceUpdate?>()) {
+      return (data != null ? _i33.PriceUpdate.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i34.Sleeve?>()) {
-      return (data != null ? _i34.Sleeve.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i34.ReturnPeriod?>()) {
+      return (data != null ? _i34.ReturnPeriod.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i35.SleeveAllocation?>()) {
-      return (data != null ? _i35.SleeveAllocation.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i35.Sleeve?>()) {
+      return (data != null ? _i35.Sleeve.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i36.SleeveAsset?>()) {
-      return (data != null ? _i36.SleeveAsset.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i36.SleeveAllocation?>()) {
+      return (data != null ? _i36.SleeveAllocation.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i37.SleeveNode?>()) {
-      return (data != null ? _i37.SleeveNode.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i37.SleeveAsset?>()) {
+      return (data != null ? _i37.SleeveAsset.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i38.SleeveTreeResponse?>()) {
-      return (data != null ? _i38.SleeveTreeResponse.fromJson(data) : null)
+    if (t == _i1.getType<_i38.SleeveNode?>()) {
+      return (data != null ? _i38.SleeveNode.fromJson(data) : null) as T;
+    }
+    if (t == _i1.getType<_i39.SleeveTreeResponse?>()) {
+      return (data != null ? _i39.SleeveTreeResponse.fromJson(data) : null)
           as T;
     }
-    if (t == _i1.getType<_i39.StalePriceAsset?>()) {
-      return (data != null ? _i39.StalePriceAsset.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i40.StalePriceAsset?>()) {
+      return (data != null ? _i40.StalePriceAsset.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i40.TickerMetadata?>()) {
-      return (data != null ? _i40.TickerMetadata.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i41.SyncStatus?>()) {
+      return (data != null ? _i41.SyncStatus.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i41.YahooSymbol?>()) {
-      return (data != null ? _i41.YahooSymbol.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i42.TickerMetadata?>()) {
+      return (data != null ? _i42.TickerMetadata.fromJson(data) : null) as T;
+    }
+    if (t == _i1.getType<_i43.YahooSymbol?>()) {
+      return (data != null ? _i43.YahooSymbol.fromJson(data) : null) as T;
     }
     if (t == List<_i9.ChartDataPoint>) {
       return (data as List)
@@ -421,9 +437,9 @@ class Protocol extends _i1.SerializationManager {
       return (data as List).map((e) => deserialize<_i22.Issue>(e)).toList()
           as T;
     }
-    if (t == List<_i35.SleeveAllocation>) {
+    if (t == List<_i36.SleeveAllocation>) {
       return (data as List)
-              .map((e) => deserialize<_i35.SleeveAllocation>(e))
+              .map((e) => deserialize<_i36.SleeveAllocation>(e))
               .toList()
           as T;
     }
@@ -439,9 +455,9 @@ class Protocol extends _i1.SerializationManager {
               .toList()
           as T;
     }
-    if (t == List<_i39.StalePriceAsset>) {
+    if (t == List<_i40.StalePriceAsset>) {
       return (data as List)
-              .map((e) => deserialize<_i39.StalePriceAsset>(e))
+              .map((e) => deserialize<_i40.StalePriceAsset>(e))
               .toList()
           as T;
     }
@@ -451,27 +467,27 @@ class Protocol extends _i1.SerializationManager {
               .toList()
           as T;
     }
-    if (t == List<_i37.SleeveNode>) {
-      return (data as List).map((e) => deserialize<_i37.SleeveNode>(e)).toList()
+    if (t == List<_i38.SleeveNode>) {
+      return (data as List).map((e) => deserialize<_i38.SleeveNode>(e)).toList()
           as T;
     }
-    if (t == _i1.getType<List<_i37.SleeveNode>?>()) {
+    if (t == _i1.getType<List<_i38.SleeveNode>?>()) {
       return (data != null
               ? (data as List)
-                    .map((e) => deserialize<_i37.SleeveNode>(e))
+                    .map((e) => deserialize<_i38.SleeveNode>(e))
                     .toList()
               : null)
           as T;
     }
-    if (t == List<_i42.Portfolio>) {
-      return (data as List).map((e) => deserialize<_i42.Portfolio>(e)).toList()
+    if (t == List<_i44.Portfolio>) {
+      return (data as List).map((e) => deserialize<_i44.Portfolio>(e)).toList()
           as T;
     }
     try {
-      return _i43.Protocol().deserialize<T>(data, t);
+      return _i45.Protocol().deserialize<T>(data, t);
     } on _i1.DeserializationTypeNotFoundException catch (_) {}
     try {
-      return _i44.Protocol().deserialize<T>(data, t);
+      return _i46.Protocol().deserialize<T>(data, t);
     } on _i1.DeserializationTypeNotFoundException catch (_) {}
     return super.deserialize<T>(data, t);
   }
@@ -509,15 +525,17 @@ class Protocol extends _i1.SerializationManager {
       _i30.PortfolioRule => 'PortfolioRule',
       _i31.PortfolioValuation => 'PortfolioValuation',
       _i32.PriceCache => 'PriceCache',
-      _i33.ReturnPeriod => 'ReturnPeriod',
-      _i34.Sleeve => 'Sleeve',
-      _i35.SleeveAllocation => 'SleeveAllocation',
-      _i36.SleeveAsset => 'SleeveAsset',
-      _i37.SleeveNode => 'SleeveNode',
-      _i38.SleeveTreeResponse => 'SleeveTreeResponse',
-      _i39.StalePriceAsset => 'StalePriceAsset',
-      _i40.TickerMetadata => 'TickerMetadata',
-      _i41.YahooSymbol => 'YahooSymbol',
+      _i33.PriceUpdate => 'PriceUpdate',
+      _i34.ReturnPeriod => 'ReturnPeriod',
+      _i35.Sleeve => 'Sleeve',
+      _i36.SleeveAllocation => 'SleeveAllocation',
+      _i37.SleeveAsset => 'SleeveAsset',
+      _i38.SleeveNode => 'SleeveNode',
+      _i39.SleeveTreeResponse => 'SleeveTreeResponse',
+      _i40.StalePriceAsset => 'StalePriceAsset',
+      _i41.SyncStatus => 'SyncStatus',
+      _i42.TickerMetadata => 'TickerMetadata',
+      _i43.YahooSymbol => 'YahooSymbol',
       _ => null,
     };
   }
@@ -594,30 +612,34 @@ class Protocol extends _i1.SerializationManager {
         return 'PortfolioValuation';
       case _i32.PriceCache():
         return 'PriceCache';
-      case _i33.ReturnPeriod():
+      case _i33.PriceUpdate():
+        return 'PriceUpdate';
+      case _i34.ReturnPeriod():
         return 'ReturnPeriod';
-      case _i34.Sleeve():
+      case _i35.Sleeve():
         return 'Sleeve';
-      case _i35.SleeveAllocation():
+      case _i36.SleeveAllocation():
         return 'SleeveAllocation';
-      case _i36.SleeveAsset():
+      case _i37.SleeveAsset():
         return 'SleeveAsset';
-      case _i37.SleeveNode():
+      case _i38.SleeveNode():
         return 'SleeveNode';
-      case _i38.SleeveTreeResponse():
+      case _i39.SleeveTreeResponse():
         return 'SleeveTreeResponse';
-      case _i39.StalePriceAsset():
+      case _i40.StalePriceAsset():
         return 'StalePriceAsset';
-      case _i40.TickerMetadata():
+      case _i41.SyncStatus():
+        return 'SyncStatus';
+      case _i42.TickerMetadata():
         return 'TickerMetadata';
-      case _i41.YahooSymbol():
+      case _i43.YahooSymbol():
         return 'YahooSymbol';
     }
-    className = _i43.Protocol().getClassNameForObject(data);
+    className = _i45.Protocol().getClassNameForObject(data);
     if (className != null) {
       return 'serverpod_auth_idp.$className';
     }
-    className = _i44.Protocol().getClassNameForObject(data);
+    className = _i46.Protocol().getClassNameForObject(data);
     if (className != null) {
       return 'serverpod_auth_core.$className';
     }
@@ -723,40 +745,46 @@ class Protocol extends _i1.SerializationManager {
     if (dataClassName == 'PriceCache') {
       return deserialize<_i32.PriceCache>(data['data']);
     }
+    if (dataClassName == 'PriceUpdate') {
+      return deserialize<_i33.PriceUpdate>(data['data']);
+    }
     if (dataClassName == 'ReturnPeriod') {
-      return deserialize<_i33.ReturnPeriod>(data['data']);
+      return deserialize<_i34.ReturnPeriod>(data['data']);
     }
     if (dataClassName == 'Sleeve') {
-      return deserialize<_i34.Sleeve>(data['data']);
+      return deserialize<_i35.Sleeve>(data['data']);
     }
     if (dataClassName == 'SleeveAllocation') {
-      return deserialize<_i35.SleeveAllocation>(data['data']);
+      return deserialize<_i36.SleeveAllocation>(data['data']);
     }
     if (dataClassName == 'SleeveAsset') {
-      return deserialize<_i36.SleeveAsset>(data['data']);
+      return deserialize<_i37.SleeveAsset>(data['data']);
     }
     if (dataClassName == 'SleeveNode') {
-      return deserialize<_i37.SleeveNode>(data['data']);
+      return deserialize<_i38.SleeveNode>(data['data']);
     }
     if (dataClassName == 'SleeveTreeResponse') {
-      return deserialize<_i38.SleeveTreeResponse>(data['data']);
+      return deserialize<_i39.SleeveTreeResponse>(data['data']);
     }
     if (dataClassName == 'StalePriceAsset') {
-      return deserialize<_i39.StalePriceAsset>(data['data']);
+      return deserialize<_i40.StalePriceAsset>(data['data']);
+    }
+    if (dataClassName == 'SyncStatus') {
+      return deserialize<_i41.SyncStatus>(data['data']);
     }
     if (dataClassName == 'TickerMetadata') {
-      return deserialize<_i40.TickerMetadata>(data['data']);
+      return deserialize<_i42.TickerMetadata>(data['data']);
     }
     if (dataClassName == 'YahooSymbol') {
-      return deserialize<_i41.YahooSymbol>(data['data']);
+      return deserialize<_i43.YahooSymbol>(data['data']);
     }
     if (dataClassName.startsWith('serverpod_auth_idp.')) {
       data['className'] = dataClassName.substring(19);
-      return _i43.Protocol().deserializeByClassName(data);
+      return _i45.Protocol().deserializeByClassName(data);
     }
     if (dataClassName.startsWith('serverpod_auth_core.')) {
       data['className'] = dataClassName.substring(20);
-      return _i44.Protocol().deserializeByClassName(data);
+      return _i46.Protocol().deserializeByClassName(data);
     }
     return super.deserializeByClassName(data);
   }
@@ -771,10 +799,10 @@ class Protocol extends _i1.SerializationManager {
       return null;
     }
     try {
-      return _i43.Protocol().mapRecordToJson(record);
+      return _i45.Protocol().mapRecordToJson(record);
     } catch (_) {}
     try {
-      return _i44.Protocol().mapRecordToJson(record);
+      return _i46.Protocol().mapRecordToJson(record);
     } catch (_) {}
     throw Exception('Unsupported record type ${record.runtimeType}');
   }

@@ -1,0 +1,19 @@
+### PriceUpdate - Real-time price update event pushed to clients
+### Not persisted to database (no table directive)
+class: PriceUpdate
+
+fields:
+  ### Asset ISIN
+  isin: String
+
+  ### Yahoo Finance ticker symbol
+  ticker: String
+
+  ### Price in EUR
+  priceEur: double
+
+  ### Native currency code
+  currency: String
+
+  ### When this price was fetched
+  fetchedAt: DateTime

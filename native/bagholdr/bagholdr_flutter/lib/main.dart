@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:serverpod_flutter/serverpod_flutter.dart';
 import 'package:serverpod_auth_idp_flutter/serverpod_auth_idp_flutter.dart';
 
+import 'services/price_stream_provider.dart';
 import 'theme/theme.dart';
 import 'screens/portfolio_list_screen.dart';
 
@@ -16,6 +17,9 @@ late final Client client;
 
 /// Global theme mode notifier for app-wide theme switching.
 final themeMode = ValueNotifier<ThemeMode>(ThemeMode.system);
+
+/// Global price stream provider for real-time price updates.
+final priceStreamProvider = PriceStreamProvider();
 
 /// Returns the server URL based on platform:
 /// - Web: localhost (same machine)

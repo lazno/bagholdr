@@ -124,7 +124,7 @@ backholdr/
 
 ### NAPP-025: Real-time Prices (SSE) `[implement]`
 
-**Priority**: Medium | **Status**: `[ ]`
+**Priority**: Medium | **Status**: `[~]`
 **Blocked by**: None (NAPP-024 complete)
 
 **Tasks**:

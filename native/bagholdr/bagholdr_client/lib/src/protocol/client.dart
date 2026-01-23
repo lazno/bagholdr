@@ -21,13 +21,15 @@ import 'package:bagholdr_client/src/protocol/holdings_list_response.dart'
 import 'package:bagholdr_client/src/protocol/return_period.dart' as _i6;
 import 'package:bagholdr_client/src/protocol/issues_response.dart' as _i7;
 import 'package:bagholdr_client/src/protocol/portfolio.dart' as _i8;
-import 'package:bagholdr_client/src/protocol/sleeve_tree_response.dart' as _i9;
-import 'package:bagholdr_client/src/protocol/portfolio_valuation.dart' as _i10;
-import 'package:bagholdr_client/src/protocol/chart_data_result.dart' as _i11;
-import 'package:bagholdr_client/src/protocol/chart_range.dart' as _i12;
+import 'package:bagholdr_client/src/protocol/price_update.dart' as _i9;
+import 'package:bagholdr_client/src/protocol/sync_status.dart' as _i10;
+import 'package:bagholdr_client/src/protocol/sleeve_tree_response.dart' as _i11;
+import 'package:bagholdr_client/src/protocol/portfolio_valuation.dart' as _i12;
+import 'package:bagholdr_client/src/protocol/chart_data_result.dart' as _i13;
+import 'package:bagholdr_client/src/protocol/chart_range.dart' as _i14;
 import 'package:bagholdr_client/src/protocol/historical_returns_result.dart'
-    as _i13;
-import 'protocol.dart' as _i14;
+    as _i15;
+import 'protocol.dart' as _i16;
 
 /// By extending [EmailIdpBaseEndpoint], the email identity provider endpoints
 /// are made available on the server and enable the corresponding sign-in widget
@@ -323,6 +325,45 @@ class EndpointPortfolio extends _i2.EndpointRef {
       );
 }
 
+/// Endpoint for real-time price streaming and sync control.
+/// {@category Endpoint}
+class EndpointPriceStream extends _i2.EndpointRef {
+  EndpointPriceStream(_i2.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'priceStream';
+
+  /// Stream of real-time price updates.
+  /// Client subscribes to receive price updates as they happen.
+  /// The stream stays open until the client disconnects.
+  _i3.Stream<_i9.PriceUpdate> streamPriceUpdates() =>
+      caller.callStreamingServerEndpoint<
+        _i3.Stream<_i9.PriceUpdate>,
+        _i9.PriceUpdate
+      >(
+        'priceStream',
+        'streamPriceUpdates',
+        {},
+        {},
+      );
+
+  /// Get the current sync status.
+  _i3.Future<_i10.SyncStatus> getSyncStatus() =>
+      caller.callServerEndpoint<_i10.SyncStatus>(
+        'priceStream',
+        'getSyncStatus',
+        {},
+      );
+
+  /// Trigger a manual price sync. Returns immediately, sync runs in background.
+  _i3.Future<_i10.SyncStatus> triggerSync() =>
+      caller.callServerEndpoint<_i10.SyncStatus>(
+        'priceStream',
+        'triggerSync',
+        {},
+      );
+}
+
 /// Endpoint for sleeve hierarchy and allocation data.
 ///
 /// Returns sleeve tree with allocation percentages, drift status,
@@ -338,10 +379,10 @@ class EndpointSleeves extends _i2.EndpointRef {
   ///
   /// [portfolioId] - Portfolio to fetch sleeves for
   /// [period] - Time period for return calculations
-  _i3.Future<_i9.SleeveTreeResponse> getSleeveTree({
+  _i3.Future<_i11.SleeveTreeResponse> getSleeveTree({
     required _i2.UuidValue portfolioId,
     required _i6.ReturnPeriod period,
-  }) => caller.callServerEndpoint<_i9.SleeveTreeResponse>(
+  }) => caller.callServerEndpoint<_i11.SleeveTreeResponse>(
     'sleeves',
     'getSleeveTree',
     {
@@ -371,9 +412,9 @@ class EndpointValuation extends _i2.EndpointRef {
   String get name => 'valuation';
 
   /// Get full portfolio valuation with allocation breakdown
-  _i3.Future<_i10.PortfolioValuation> getPortfolioValuation(
+  _i3.Future<_i12.PortfolioValuation> getPortfolioValuation(
     _i2.UuidValue portfolioId,
-  ) => caller.callServerEndpoint<_i10.PortfolioValuation>(
+  ) => caller.callServerEndpoint<_i12.PortfolioValuation>(
     'valuation',
     'getPortfolioValuation',
     {'portfolioId': portfolioId},
@@ -381,10 +422,10 @@ class EndpointValuation extends _i2.EndpointRef {
 
   /// Get historical chart data for portfolio value visualization.
   /// Returns daily data points with portfolio value and cost basis over time.
-  _i3.Future<_i11.ChartDataResult> getChartData(
+  _i3.Future<_i13.ChartDataResult> getChartData(
     _i2.UuidValue portfolioId,
-    _i12.ChartRange range,
-  ) => caller.callServerEndpoint<_i11.ChartDataResult>(
+    _i14.ChartRange range,
+  ) => caller.callServerEndpoint<_i13.ChartDataResult>(
     'valuation',
     'getChartData',
     {
@@ -395,9 +436,9 @@ class EndpointValuation extends _i2.EndpointRef {
 
   /// Get historical returns for different time periods.
   /// Calculates portfolio value at historical dates and compares to current value.
-  _i3.Future<_i13.HistoricalReturnsResult> getHistoricalReturns(
+  _i3.Future<_i15.HistoricalReturnsResult> getHistoricalReturns(
     _i2.UuidValue portfolioId,
-  ) => caller.callServerEndpoint<_i13.HistoricalReturnsResult>(
+  ) => caller.callServerEndpoint<_i15.HistoricalReturnsResult>(
     'valuation',
     'getHistoricalReturns',
     {'portfolioId': portfolioId},
@@ -435,7 +476,7 @@ class Client extends _i2.ServerpodClientShared {
     bool? disconnectStreamsOnLostInternetConnection,
   }) : super(
          host,
-         _i14.Protocol(),
+         _i16.Protocol(),
          securityContext: securityContext,
          streamingConnectionTimeout: streamingConnectionTimeout,
          connectionTimeout: connectionTimeout,
@@ -449,6 +490,7 @@ class Client extends _i2.ServerpodClientShared {
     holdings = EndpointHoldings(this);
     issues = EndpointIssues(this);
     portfolio = EndpointPortfolio(this);
+    priceStream = EndpointPriceStream(this);
     sleeves = EndpointSleeves(this);
     valuation = EndpointValuation(this);
     modules = Modules(this);
@@ -464,6 +506,8 @@ class Client extends _i2.ServerpodClientShared {
 
   late final EndpointPortfolio portfolio;
 
+  late final EndpointPriceStream priceStream;
+
   late final EndpointSleeves sleeves;
 
   late final EndpointValuation valuation;
@@ -477,6 +521,7 @@ class Client extends _i2.ServerpodClientShared {
     'holdings': holdings,
     'issues': issues,
     'portfolio': portfolio,
+    'priceStream': priceStream,
     'sleeves': sleeves,
     'valuation': valuation,
   };
