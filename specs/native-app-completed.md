@@ -174,6 +174,10 @@ Fixed "short holding" detection for MWR/TWR calculations when assets/sleeves are
 
 Fixed pie chart tap detection (center X offset when chart shrinks), details panel overflow for 100%→100% allocation (FittedBox), and chart state reset on portfolio switch (didUpdateWidget).
 
+### NAPP-025: Real-time Prices (Serverpod Streaming) `[implement]` - DONE
+
+Real-time price updates via Serverpod method streaming (WebSocket). PriceSyncService runs every 5 min: syncs current prices, historical candles, intraday data, and FX pair history for non-EUR currencies. PriceStreamEndpoint broadcasts updates to connected clients. Flutter PriceStreamProvider with auto-reconnect (10s delay), ConnectionIndicator widget, asset row highlight animation. Valuation endpoint uses date-specific historical FX rates for accurate TWR/chart calculations.
+
 ---
 
 ## Research Deliverables

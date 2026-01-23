@@ -122,25 +122,6 @@ backholdr/
 
 ---
 
-### NAPP-025: Real-time Prices (Serverpod Streaming) `[implement]`
-
-**Priority**: Medium | **Status**: `[x]`
-**Blocked by**: None (NAPP-024 complete)
-
-**Tasks**:
-- [x] Create streaming endpoint for price updates (WebSocket via Serverpod method streaming)
-- [x] PriceSyncService: background sync every 5min with broadcast StreamController
-- [x] Broadcast price updates to connected clients
-- [x] Flutter: PriceStreamProvider with auto-reconnect (10s delay)
-- [x] Update displayed values when prices change
-- [x] ConnectionIndicator widget (live/connecting/offline)
-- [x] Historical FX rate sync for accurate TWR/chart calculations
-- [x] Tests: server (PriceSyncService) + Flutter (PriceStreamProvider)
-
-**Acceptance Criteria**:
-- [x] Prices update in real-time
-- [x] Reconnection works
-
 ---
 
 ### NAPP-026: Research Directa Parser `[research]`
