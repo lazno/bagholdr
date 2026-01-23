@@ -770,12 +770,26 @@ class _SleeveDetails extends StatelessWidget {
                         ],
                       ],
                     ),
-                    Text(
-                      'TWR ${Formatters.formatPercent((sleeve.twr ?? sleeve.mwr) / 100, showSign: true)}',
-                      style: TextStyle(
-                        fontSize: 9,
-                        color: theme.colorScheme.onSurfaceVariant,
-                      ),
+                    Row(
+                      children: [
+                        Text(
+                          'TWR ${Formatters.formatPercent((sleeve.twr ?? sleeve.mwr) / 100, showSign: true)}',
+                          style: TextStyle(
+                            fontSize: 9,
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                        if (sleeve.totalReturn != null) ...[
+                          const SizedBox(width: 6),
+                          Text(
+                            'TR ${Formatters.formatPercent(sleeve.totalReturn! / 100, showSign: true)}',
+                            style: TextStyle(
+                              fontSize: 9,
+                              color: theme.colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
                   ],
                 ),

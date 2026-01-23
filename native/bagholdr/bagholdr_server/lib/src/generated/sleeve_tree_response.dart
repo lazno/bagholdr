@@ -22,6 +22,7 @@ abstract class SleeveTreeResponse
     required this.totalValue,
     required this.totalMwr,
     this.totalTwr,
+    this.totalReturn,
     required this.totalAssetCount,
   });
 
@@ -30,6 +31,7 @@ abstract class SleeveTreeResponse
     required double totalValue,
     required double totalMwr,
     double? totalTwr,
+    double? totalReturn,
     required int totalAssetCount,
   }) = _SleeveTreeResponseImpl;
 
@@ -41,6 +43,7 @@ abstract class SleeveTreeResponse
       totalValue: (jsonSerialization['totalValue'] as num).toDouble(),
       totalMwr: (jsonSerialization['totalMwr'] as num).toDouble(),
       totalTwr: (jsonSerialization['totalTwr'] as num?)?.toDouble(),
+      totalReturn: (jsonSerialization['totalReturn'] as num?)?.toDouble(),
       totalAssetCount: jsonSerialization['totalAssetCount'] as int,
     );
   }
@@ -57,6 +60,9 @@ abstract class SleeveTreeResponse
   /// Portfolio TWR return for period (grey, null if calculation failed)
   double? totalTwr;
 
+  /// Portfolio total return for period ((endValue + sells) / (startValue + buys + fees) - 1)
+  double? totalReturn;
+
   /// Total assets across all sleeves
   int totalAssetCount;
 
@@ -68,6 +74,7 @@ abstract class SleeveTreeResponse
     double? totalValue,
     double? totalMwr,
     double? totalTwr,
+    double? totalReturn,
     int? totalAssetCount,
   });
   @override
@@ -78,6 +85,7 @@ abstract class SleeveTreeResponse
       'totalValue': totalValue,
       'totalMwr': totalMwr,
       if (totalTwr != null) 'totalTwr': totalTwr,
+      if (totalReturn != null) 'totalReturn': totalReturn,
       'totalAssetCount': totalAssetCount,
     };
   }
@@ -90,6 +98,7 @@ abstract class SleeveTreeResponse
       'totalValue': totalValue,
       'totalMwr': totalMwr,
       if (totalTwr != null) 'totalTwr': totalTwr,
+      if (totalReturn != null) 'totalReturn': totalReturn,
       'totalAssetCount': totalAssetCount,
     };
   }
@@ -108,12 +117,14 @@ class _SleeveTreeResponseImpl extends SleeveTreeResponse {
     required double totalValue,
     required double totalMwr,
     double? totalTwr,
+    double? totalReturn,
     required int totalAssetCount,
   }) : super._(
          sleeves: sleeves,
          totalValue: totalValue,
          totalMwr: totalMwr,
          totalTwr: totalTwr,
+         totalReturn: totalReturn,
          totalAssetCount: totalAssetCount,
        );
 
@@ -126,6 +137,7 @@ class _SleeveTreeResponseImpl extends SleeveTreeResponse {
     double? totalValue,
     double? totalMwr,
     Object? totalTwr = _Undefined,
+    Object? totalReturn = _Undefined,
     int? totalAssetCount,
   }) {
     return SleeveTreeResponse(
@@ -133,6 +145,7 @@ class _SleeveTreeResponseImpl extends SleeveTreeResponse {
       totalValue: totalValue ?? this.totalValue,
       totalMwr: totalMwr ?? this.totalMwr,
       totalTwr: totalTwr is double? ? totalTwr : this.totalTwr,
+      totalReturn: totalReturn is double? ? totalReturn : this.totalReturn,
       totalAssetCount: totalAssetCount ?? this.totalAssetCount,
     );
   }

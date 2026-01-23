@@ -14,5 +14,8 @@ fields:
   ### Portfolio TWR return for period (grey, null if calculation failed)
   totalTwr: double?
 
+  ### Portfolio total return for period ((endValue + sells) / (startValue + buys + fees) - 1)
+  totalReturn: double?
+
   ### Total assets across all sleeves
   totalAssetCount: int

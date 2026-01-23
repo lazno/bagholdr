@@ -24,6 +24,7 @@ abstract class HoldingResponse implements _i1.SerializableModel {
     required this.weight,
     required this.mwr,
     this.twr,
+    this.totalReturn,
     this.sleeveId,
     this.sleeveName,
     required this.assetId,
@@ -40,6 +41,7 @@ abstract class HoldingResponse implements _i1.SerializableModel {
     required double weight,
     required double mwr,
     double? twr,
+    double? totalReturn,
     String? sleeveId,
     String? sleeveName,
     required String assetId,
@@ -57,6 +59,7 @@ abstract class HoldingResponse implements _i1.SerializableModel {
       weight: (jsonSerialization['weight'] as num).toDouble(),
       mwr: (jsonSerialization['mwr'] as num).toDouble(),
       twr: (jsonSerialization['twr'] as num?)?.toDouble(),
+      totalReturn: (jsonSerialization['totalReturn'] as num?)?.toDouble(),
       sleeveId: jsonSerialization['sleeveId'] as String?,
       sleeveName: jsonSerialization['sleeveName'] as String?,
       assetId: jsonSerialization['assetId'] as String,
@@ -91,6 +94,9 @@ abstract class HoldingResponse implements _i1.SerializableModel {
   /// TWR return % for period (grey, null if calculation failed)
   double? twr;
 
+  /// Total return % for period ((endValue + sells) / (startValue + buys + fees) - 1)
+  double? totalReturn;
+
   /// Sleeve ID (UUID string)
   String? sleeveId;
 
@@ -116,6 +122,7 @@ abstract class HoldingResponse implements _i1.SerializableModel {
     double? weight,
     double? mwr,
     double? twr,
+    double? totalReturn,
     String? sleeveId,
     String? sleeveName,
     String? assetId,
@@ -134,6 +141,7 @@ abstract class HoldingResponse implements _i1.SerializableModel {
       'weight': weight,
       'mwr': mwr,
       if (twr != null) 'twr': twr,
+      if (totalReturn != null) 'totalReturn': totalReturn,
       if (sleeveId != null) 'sleeveId': sleeveId,
       if (sleeveName != null) 'sleeveName': sleeveName,
       'assetId': assetId,
@@ -160,6 +168,7 @@ class _HoldingResponseImpl extends HoldingResponse {
     required double weight,
     required double mwr,
     double? twr,
+    double? totalReturn,
     String? sleeveId,
     String? sleeveName,
     required String assetId,
@@ -174,6 +183,7 @@ class _HoldingResponseImpl extends HoldingResponse {
          weight: weight,
          mwr: mwr,
          twr: twr,
+         totalReturn: totalReturn,
          sleeveId: sleeveId,
          sleeveName: sleeveName,
          assetId: assetId,
@@ -194,6 +204,7 @@ class _HoldingResponseImpl extends HoldingResponse {
     double? weight,
     double? mwr,
     Object? twr = _Undefined,
+    Object? totalReturn = _Undefined,
     Object? sleeveId = _Undefined,
     Object? sleeveName = _Undefined,
     String? assetId,
@@ -209,6 +220,7 @@ class _HoldingResponseImpl extends HoldingResponse {
       weight: weight ?? this.weight,
       mwr: mwr ?? this.mwr,
       twr: twr is double? ? twr : this.twr,
+      totalReturn: totalReturn is double? ? totalReturn : this.totalReturn,
       sleeveId: sleeveId is String? ? sleeveId : this.sleeveId,
       sleeveName: sleeveName is String? ? sleeveName : this.sleeveName,
       assetId: assetId ?? this.assetId,

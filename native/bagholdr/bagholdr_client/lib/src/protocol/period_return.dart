@@ -23,6 +23,7 @@ abstract class PeriodReturn implements _i1.SerializableModel {
     required this.compoundedReturn,
     required this.annualizedReturn,
     this.twr,
+    this.totalReturn,
     required this.periodYears,
     required this.comparisonDate,
     required this.netCashFlow,
@@ -37,6 +38,7 @@ abstract class PeriodReturn implements _i1.SerializableModel {
     required double compoundedReturn,
     required double annualizedReturn,
     double? twr,
+    double? totalReturn,
     required double periodYears,
     required String comparisonDate,
     required double netCashFlow,
@@ -56,6 +58,7 @@ abstract class PeriodReturn implements _i1.SerializableModel {
       annualizedReturn: (jsonSerialization['annualizedReturn'] as num)
           .toDouble(),
       twr: (jsonSerialization['twr'] as num?)?.toDouble(),
+      totalReturn: (jsonSerialization['totalReturn'] as num?)?.toDouble(),
       periodYears: (jsonSerialization['periodYears'] as num).toDouble(),
       comparisonDate: jsonSerialization['comparisonDate'] as String,
       netCashFlow: (jsonSerialization['netCashFlow'] as num).toDouble(),
@@ -84,6 +87,9 @@ abstract class PeriodReturn implements _i1.SerializableModel {
   /// Time-weighted return (portfolio performance, ignoring cash flow timing)
   double? twr;
 
+  /// Total return ((endValue + sells) / (startValue + buys + fees) - 1)
+  double? totalReturn;
+
   /// Length of period in years
   double periodYears;
 
@@ -107,6 +113,7 @@ abstract class PeriodReturn implements _i1.SerializableModel {
     double? compoundedReturn,
     double? annualizedReturn,
     double? twr,
+    double? totalReturn,
     double? periodYears,
     String? comparisonDate,
     double? netCashFlow,
@@ -123,6 +130,7 @@ abstract class PeriodReturn implements _i1.SerializableModel {
       'compoundedReturn': compoundedReturn,
       'annualizedReturn': annualizedReturn,
       if (twr != null) 'twr': twr,
+      if (totalReturn != null) 'totalReturn': totalReturn,
       'periodYears': periodYears,
       'comparisonDate': comparisonDate,
       'netCashFlow': netCashFlow,
@@ -147,6 +155,7 @@ class _PeriodReturnImpl extends PeriodReturn {
     required double compoundedReturn,
     required double annualizedReturn,
     double? twr,
+    double? totalReturn,
     required double periodYears,
     required String comparisonDate,
     required double netCashFlow,
@@ -159,6 +168,7 @@ class _PeriodReturnImpl extends PeriodReturn {
          compoundedReturn: compoundedReturn,
          annualizedReturn: annualizedReturn,
          twr: twr,
+         totalReturn: totalReturn,
          periodYears: periodYears,
          comparisonDate: comparisonDate,
          netCashFlow: netCashFlow,
@@ -177,6 +187,7 @@ class _PeriodReturnImpl extends PeriodReturn {
     double? compoundedReturn,
     double? annualizedReturn,
     Object? twr = _Undefined,
+    Object? totalReturn = _Undefined,
     double? periodYears,
     String? comparisonDate,
     double? netCashFlow,
@@ -190,6 +201,7 @@ class _PeriodReturnImpl extends PeriodReturn {
       compoundedReturn: compoundedReturn ?? this.compoundedReturn,
       annualizedReturn: annualizedReturn ?? this.annualizedReturn,
       twr: twr is double? ? twr : this.twr,
+      totalReturn: totalReturn is double? ? totalReturn : this.totalReturn,
       periodYears: periodYears ?? this.periodYears,
       comparisonDate: comparisonDate ?? this.comparisonDate,
       netCashFlow: netCashFlow ?? this.netCashFlow,

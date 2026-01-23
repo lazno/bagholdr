@@ -183,7 +183,7 @@ class SleevesEndpoint extends Endpoint {
     final priceByTickerDate = <String, Map<String, double>>{};
     for (final p in pricesResult) {
       priceByTickerDate.putIfAbsent(p.ticker, () => {});
-      priceByTickerDate[p.ticker]![p.date] = p.adjClose;
+      priceByTickerDate[p.ticker]![p.date] = p.close;
     }
 
     // Get FX rates
@@ -264,8 +264,11 @@ class SleevesEndpoint extends Endpoint {
           driftPp: (driftPp * 100).round() / 100,
           driftStatus: driftStatus,
           value: (totalValue * 100).round() / 100,
-          mwr: (mwrTwr.mwr * 100).round() / 100,
-          twr: mwrTwr.twr != null ? (mwrTwr.twr! * 100).round() / 100 : null,
+          mwr: (mwrTwr.mwr * 10000).round() / 100,
+          twr: mwrTwr.twr != null ? (mwrTwr.twr! * 10000).round() / 100 : null,
+          totalReturn: mwrTwr.totalReturn != null
+              ? (mwrTwr.totalReturn! * 10000).round() / 100
+              : null,
           assetCount: directAssetCount,
           childSleeveCount: childSleeveCount,
           children: childNodes.isNotEmpty ? childNodes : null,
@@ -303,9 +306,12 @@ class SleevesEndpoint extends Endpoint {
     return SleeveTreeResponse(
       sleeves: rootNodes,
       totalValue: (totalInvestedValue * 100).round() / 100,
-      totalMwr: (portfolioMwrTwr.mwr * 100).round() / 100,
+      totalMwr: (portfolioMwrTwr.mwr * 10000).round() / 100,
       totalTwr: portfolioMwrTwr.twr != null
-          ? (portfolioMwrTwr.twr! * 100).round() / 100
+          ? (portfolioMwrTwr.twr! * 10000).round() / 100
+          : null,
+      totalReturn: portfolioMwrTwr.totalReturn != null
+          ? (portfolioMwrTwr.totalReturn! * 10000).round() / 100
           : null,
       totalAssetCount: totalAssetCount,
     );
@@ -359,8 +365,8 @@ class SleevesEndpoint extends Endpoint {
     return assetIds;
   }
 
-  /// Calculate MWR and TWR for a set of assets (sleeve or portfolio)
-  ({double mwr, double? twr}) _calculateSleeveMwrTwr({
+  /// Calculate MWR, TWR, and Total Return for a set of assets (sleeve or portfolio)
+  ({double mwr, double? twr, double? totalReturn}) _calculateSleeveMwrTwr({
     required Set<String> sleeveAssetIds,
     required Map<String, Asset> assetMap,
     required Map<String, double> holdingValues,
@@ -375,7 +381,7 @@ class SleevesEndpoint extends Endpoint {
     required Map<String, double> fxRateMap,
   }) {
     if (sleeveAssetIds.isEmpty) {
-      return (mwr: 0, twr: null);
+      return (mwr: 0, twr: null, totalReturn: null);
     }
 
     // Calculate current sleeve value
@@ -385,7 +391,7 @@ class SleevesEndpoint extends Endpoint {
     }
 
     if (currentSleeveValue <= 0) {
-      return (mwr: 0, twr: null);
+      return (mwr: 0, twr: null, totalReturn: null);
     }
 
     // Get orders for sleeve assets
@@ -395,7 +401,7 @@ class SleevesEndpoint extends Endpoint {
       ..sort((a, b) => a.orderDate.compareTo(b.orderDate));
 
     if (sleeveOrders.isEmpty) {
-      return (mwr: 0, twr: null);
+      return (mwr: 0, twr: null, totalReturn: null);
     }
 
     // Find the first order date for this sleeve (for short holding detection)
@@ -493,7 +499,25 @@ class SleevesEndpoint extends Endpoint {
 
     if (startValue <= 0) {
       // No starting value - can't calculate meaningful return
-      return (mwr: 0, twr: null);
+      // But total return can still work for ALL period (startValue=0, all orders included)
+      if (period == ReturnPeriod.all) {
+        final orderTuples = sleeveOrders
+            .map((o) => (
+                  quantity: o.quantity,
+                  totalEur: o.totalEur,
+                  date: _formatDate(o.orderDate),
+                ))
+            .toList();
+        final totalReturnResult = calculateTotalReturn(
+          startValue: 0,
+          endValue: currentSleeveValue,
+          orders: orderTuples,
+          periodStartDate: '1900-01-01',
+          periodEndDate: todayStr,
+        );
+        return (mwr: 0, twr: null, totalReturn: totalReturnResult);
+      }
+      return (mwr: 0, twr: null, totalReturn: null);
     }
 
     // Calculate period using effective start date
@@ -577,7 +601,32 @@ class SleevesEndpoint extends Endpoint {
       getPortfolioValueAtDate: getSleeveValueAtDate,
     );
 
-    return (mwr: mwr, twr: twrResult.isValid ? twrResult.twr : null);
+    // Calculate Total Return
+    final isAllPeriod = period == ReturnPeriod.all;
+    final totalReturnStartValue = isAllPeriod ? 0.0 : startValue;
+    final totalReturnPeriodStart = isAllPeriod ? '1900-01-01' : effectiveStartDate;
+
+    final orderTuples = sleeveOrders
+        .map((o) => (
+              quantity: o.quantity,
+              totalEur: o.totalEur,
+              date: _formatDate(o.orderDate),
+            ))
+        .toList();
+
+    final totalReturnResult = calculateTotalReturn(
+      startValue: totalReturnStartValue,
+      endValue: currentSleeveValue,
+      orders: orderTuples,
+      periodStartDate: totalReturnPeriodStart,
+      periodEndDate: todayStr,
+    );
+
+    return (
+      mwr: mwr,
+      twr: twrResult.isValid ? twrResult.twr : null,
+      totalReturn: totalReturnResult,
+    );
   }
 
   /// Get historical price for an asset at a given date

@@ -497,15 +497,24 @@ class _AssetRow extends StatelessWidget {
                       color: mwrColor,
                     ),
                   ),
-                  if (holding.twr != null) ...[
+                  if (holding.twr != null || holding.totalReturn != null) ...[
                     const SizedBox(height: 1),
-                    Text(
-                      'TWR ${Formatters.formatPercent(holding.twr! / 100, showSign: true)}',
-                      style: TextStyle(
-                        fontSize: 10,
-                        color: colorScheme.onSurfaceVariant,
+                    if (holding.twr != null)
+                      Text(
+                        'TWR ${Formatters.formatPercent(holding.twr! / 100, showSign: true)}',
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: colorScheme.onSurfaceVariant,
+                        ),
                       ),
-                    ),
+                    if (holding.totalReturn != null)
+                      Text(
+                        'TR ${Formatters.formatPercent(holding.totalReturn! / 100, showSign: true)}',
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                      ),
                   ],
                 ],
               ),

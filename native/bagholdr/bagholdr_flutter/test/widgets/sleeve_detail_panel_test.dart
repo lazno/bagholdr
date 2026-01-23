@@ -130,7 +130,7 @@ void main() {
       expect(find.text('2 sleeves · 18 assets'), findsOneWidget);
       expect(find.text('€85,000.00'), findsOneWidget);
       expect(find.text('+8.20%'), findsOneWidget);
-      expect(find.text('TWR 6.10%'), findsOneWidget);
+      expect(find.text('TWR +6.10%'), findsOneWidget);
     });
 
     testWidgets('shows allocation metrics for specific sleeve', (tester) async {

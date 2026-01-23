@@ -531,7 +531,7 @@ class ValuationEndpoint extends Endpoint {
     final priceByTickerDate = <String, Map<String, ({double close, String currency})>>{};
     for (final p in pricesResult) {
       priceByTickerDate.putIfAbsent(p.ticker, () => {});
-      priceByTickerDate[p.ticker]![p.date] = (close: p.adjClose, currency: p.currency);
+      priceByTickerDate[p.ticker]![p.date] = (close: p.close, currency: p.currency);
     }
 
     // Get historical FX rates for non-EUR currencies
@@ -556,7 +556,7 @@ class ValuationEndpoint extends Endpoint {
         // Ticker format: USDEUR=X -> currency is USD
         final currency = p.ticker.replaceAll('EUR=X', '');
         fxByDate.putIfAbsent(currency, () => {});
-        fxByDate[currency]![p.date] = p.adjClose;
+        fxByDate[currency]![p.date] = p.close;
       }
     }
 
@@ -889,7 +889,7 @@ class ValuationEndpoint extends Endpoint {
     final priceByTickerDate = <String, Map<String, ({double close, String currency})>>{};
     for (final p in pricesResult) {
       priceByTickerDate.putIfAbsent(p.ticker, () => {});
-      priceByTickerDate[p.ticker]![p.date] = (close: p.adjClose, currency: p.currency);
+      priceByTickerDate[p.ticker]![p.date] = (close: p.close, currency: p.currency);
     }
 
     // Get historical FX rates for non-EUR currencies
@@ -913,7 +913,7 @@ class ValuationEndpoint extends Endpoint {
       for (final p in fxPrices) {
         final currency = p.ticker.replaceAll('EUR=X', '');
         fxByDate.putIfAbsent(currency, () => {});
-        fxByDate[currency]![p.date] = p.adjClose;
+        fxByDate[currency]![p.date] = p.close;
       }
     }
 
@@ -1188,6 +1188,30 @@ class ValuationEndpoint extends Endpoint {
             ? (twrResult.twr! * 10000).round() / 100
             : null;
 
+        // Calculate Total Return for this period
+        final totalReturnStartValue = isAllPeriod ? 0.0 : startValue;
+        final totalReturnPeriodStart = isAllPeriod ? '1900-01-01' : comparisonDate;
+
+        final orderTuples = sortedOrders
+            .map((o) => (
+                  quantity: o.quantity,
+                  totalEur: o.totalEur,
+                  date: _formatDate(o.orderDate),
+                ))
+            .toList();
+
+        final totalReturnResult = calculateTotalReturn(
+          startValue: totalReturnStartValue,
+          endValue: currentValue,
+          orders: orderTuples,
+          periodStartDate: totalReturnPeriodStart,
+          periodEndDate: todayStr,
+        );
+
+        final totalReturnPercent = totalReturnResult != null
+            ? (totalReturnResult * 10000).round() / 100
+            : null;
+
         returns[period.name] = PeriodReturn(
           period: period,
           currentValue: currentValue,
@@ -1196,6 +1220,7 @@ class ValuationEndpoint extends Endpoint {
           compoundedReturn: (displayReturnPercent * 10000).round() / 100,
           annualizedReturn: (mwrResult.annualizedReturn * 10000).round() / 100,
           twr: twrPercent,
+          totalReturn: totalReturnPercent,
           periodYears: (mwrResult.periodYears * 100).round() / 100,
           comparisonDate: comparisonDate,
           netCashFlow: (mwrResult.netCashFlow * 100).round() / 100,

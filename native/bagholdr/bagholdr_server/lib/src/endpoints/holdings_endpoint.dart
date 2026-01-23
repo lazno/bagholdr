@@ -180,10 +180,13 @@ class HoldingsEndpoint extends Endpoint {
         : <DailyPrice>[];
 
     // Build price lookup: ticker -> date -> price
+    // Use close (not adjClose) because adjClose is retroactively adjusted for
+    // dividends/distributions, creating a mismatch with PriceCache (which stores
+    // regularMarketPrice, an unadjusted value) and order totalEur (actual cost).
     final priceByTickerDate = <String, Map<String, double>>{};
     for (final p in pricesResult) {
       priceByTickerDate.putIfAbsent(p.ticker, () => {});
-      priceByTickerDate[p.ticker]![p.date] = p.adjClose;
+      priceByTickerDate[p.ticker]![p.date] = p.close;
     }
 
     // Get FX rates and derive FX rates from prices
@@ -278,6 +281,20 @@ class HoldingsEndpoint extends Endpoint {
         fxRateMap: fxRateMap,
       );
 
+      // Calculate Total Return for this asset
+      final totalReturnResult = _calculateAssetTotalReturn(
+        asset: asset,
+        orders: assetOrders,
+        holding: holding,
+        period: period,
+        comparisonDate: comparisonDate,
+        todayStr: todayStr,
+        priceMap: priceMap,
+        priceByTickerDate: priceByTickerDate,
+        derivedFxRateMap: derivedFxRateMap,
+        fxRateMap: fxRateMap,
+      );
+
       holdingsData.add(_HoldingData(
         symbol: asset.yahooSymbol ?? asset.ticker,
         name: asset.name,
@@ -288,6 +305,7 @@ class HoldingsEndpoint extends Endpoint {
         weight: weight,
         mwr: mwrResult,
         twr: twrResult,
+        totalReturn: totalReturnResult,
         sleeveId: matchingSleeveId,
         sleeveName: sleeve?.name,
         assetId: assetIdStr,
@@ -313,8 +331,11 @@ class HoldingsEndpoint extends Endpoint {
               costBasis: (h.costBasis * 100).round() / 100,
               pl: (h.pl * 100).round() / 100,
               weight: (h.weight * 100).round() / 100,
-              mwr: (h.mwr * 100).round() / 100,
-              twr: h.twr != null ? (h.twr! * 100).round() / 100 : null,
+              mwr: (h.mwr * 10000).round() / 100,
+              twr: h.twr != null ? (h.twr! * 10000).round() / 100 : null,
+              totalReturn: h.totalReturn != null
+                  ? (h.totalReturn! * 10000).round() / 100
+                  : null,
               sleeveId: h.sleeveId,
               sleeveName: h.sleeveName,
               assetId: h.assetId,
@@ -543,6 +564,100 @@ class HoldingsEndpoint extends Endpoint {
     return (currentPrice - historicalPrice) / historicalPrice;
   }
 
+  /// Calculate Total Return for a single asset
+  double? _calculateAssetTotalReturn({
+    required Asset asset,
+    required List<Order> orders,
+    required Holding holding,
+    required ReturnPeriod period,
+    required String comparisonDate,
+    required String todayStr,
+    required Map<String, double> priceMap,
+    required Map<String, Map<String, double>> priceByTickerDate,
+    required Map<String, double> derivedFxRateMap,
+    required Map<String, double> fxRateMap,
+  }) {
+    // Get current value
+    final lookupKey = asset.yahooSymbol ?? asset.ticker;
+    final currentPrice = priceMap[lookupKey];
+    if (currentPrice == null || holding.quantity <= 0) {
+      return null;
+    }
+    final currentValue = currentPrice * holding.quantity;
+
+    // Sort orders by date
+    final sortedOrders = List<Order>.from(orders)
+      ..sort((a, b) => a.orderDate.compareTo(b.orderDate));
+
+    // Find first buy order
+    final firstBuyOrder = sortedOrders.cast<Order?>().firstWhere(
+          (o) => o != null && o.quantity > 0,
+          orElse: () => null,
+        );
+
+    if (firstBuyOrder == null) {
+      return null;
+    }
+
+    final firstOrderDateStr = _formatDate(firstBuyOrder.orderDate);
+    final isAllPeriod = period == ReturnPeriod.all;
+
+    // For ALL period: startValue=0, include all orders from the beginning
+    // For sub-periods: calculate position at start and use historical price
+    double startValue;
+    String periodStartDate;
+
+    if (isAllPeriod) {
+      startValue = 0;
+      periodStartDate = '1900-01-01';
+    } else {
+      final isShortHolding = firstOrderDateStr.compareTo(comparisonDate) > 0;
+      final effectiveStartDate =
+          isShortHolding ? firstOrderDateStr : comparisonDate;
+      periodStartDate = effectiveStartDate;
+
+      // Build position at effective start date
+      double positionAtStart = 0;
+      for (final order in sortedOrders) {
+        if (_formatDate(order.orderDate).compareTo(effectiveStartDate) <= 0) {
+          if (order.quantity > 0) {
+            positionAtStart += order.quantity;
+          } else if (order.quantity < 0) {
+            positionAtStart =
+                (positionAtStart - order.quantity.abs()).clamp(0, double.infinity);
+          }
+        }
+      }
+
+      // Get historical price at start
+      final historicalPrice = _getHistoricalPrice(
+          asset, effectiveStartDate, priceByTickerDate, derivedFxRateMap, fxRateMap);
+
+      if (historicalPrice != null && positionAtStart > 0) {
+        startValue = positionAtStart * historicalPrice;
+      } else {
+        startValue = 0;
+      }
+    }
+
+    // Build order tuples for calculateTotalReturn
+    final orderTuples = sortedOrders
+        .map((o) => (
+              quantity: o.quantity,
+              totalEur: o.totalEur,
+              date: _formatDate(o.orderDate),
+            ))
+        .toList();
+
+    return calculateTotalReturn(
+      startValue: startValue,
+      endValue: currentValue,
+      orders: orderTuples,
+      periodStartDate: periodStartDate,
+      periodEndDate: todayStr,
+    );
+  }
+
   /// Get historical price for an asset at a given date
   double? _getHistoricalPrice(
     Asset asset,
@@ -608,6 +723,7 @@ class _HoldingData {
   final double weight;
   final double mwr;
   final double? twr;
+  final double? totalReturn;
   final String? sleeveId;
   final String? sleeveName;
   final String assetId;
@@ -623,6 +739,7 @@ class _HoldingData {
     required this.weight,
     required this.mwr,
     required this.twr,
+    required this.totalReturn,
     required this.sleeveId,
     required this.sleeveName,
     required this.assetId,

@@ -461,4 +461,378 @@ void main() {
       expect(result.error, contains('dropped to zero'));
     });
   });
+
+  group('real data: XBAG.DE bond ETF (close vs adjClose)', () {
+    // Real data from database:
+    // Asset: XBAG.DE (Xtrackers ESG Global Aggregate Bond UCITS ETF)
+    // Orders: All on 2025-09-18
+    //   Buy 263 at 8974.35 EUR + commission 9.50
+    //   Buy 234 at 7986.42 EUR + commission 9.50
+    // Total: 497 units, cost 16979.77 EUR
+    //
+    // Key insight: This ETF distributes income, so Yahoo's adjClose is
+    // retroactively adjusted DOWN for past distributions. But PriceCache
+    // stores regularMarketPrice (unadjusted). Using adjClose for historical
+    // comparison against current unadjusted price gives wrong results.
+    //
+    // At order date 2025-09-18:
+    //   close = 34.112  (actual traded price)
+    //   adjClose = 33.861  (adjusted for distributions since then)
+    //
+    // Latest (2026-01-22):
+    //   close = 33.871
+    //   adjClose = 33.871  (no adjustment needed for latest date)
+    //
+    // PriceCache priceEur = 33.871
+
+    const double closeAtOrderDate = 34.112;
+    const double adjCloseAtOrderDate = 33.861;
+    const double currentPrice = 33.871;
+    const int quantity = 497;
+    const double totalCost = 16979.77;
+
+    test('TWR using close gives correct negative return', () {
+      // TWR = (currentPrice - historicalClose) / historicalClose
+      final twr = (currentPrice - closeAtOrderDate) / closeAtOrderDate;
+
+      // Expected: price dropped from 34.112 to 33.871 = -0.71%
+      expect(twr, closeTo(-0.0071, 0.001));
+      expect(twr, isNegative);
+    });
+
+    test('TWR using adjClose gives wrong positive return', () {
+      // This demonstrates the bug: adjClose ≈ current price due to
+      // distribution adjustments, so TWR appears near zero or positive
+      final twrWrong = (currentPrice - adjCloseAtOrderDate) / adjCloseAtOrderDate;
+
+      // Wrong: shows +0.03% when actual return is -0.71%
+      expect(twrWrong, closeTo(0.0003, 0.001));
+      expect(twrWrong, isNonNegative); // Incorrectly non-negative!
+    });
+
+    test('MWR using close gives correct negative return', () {
+      final startValue = quantity * closeAtOrderDate; // 16953.66
+      final endValue = quantity * currentPrice; // 16833.89
+
+      final mwrResult = calculateMWR(
+        startDate: '2025-09-18',
+        endDate: '2026-01-22',
+        startValue: startValue,
+        endValue: endValue,
+        cashFlows: [], // All orders on same day = no intermediate flows
+      );
+
+      // Period is < 1 year, so compounded return is the simple return
+      expect(mwrResult.compoundedReturn, closeTo(-0.0071, 0.001));
+      expect(mwrResult.compoundedReturn, isNegative);
+    });
+
+    test('MWR using adjClose gives wrong near-zero return', () {
+      final startValue = quantity * adjCloseAtOrderDate; // 16829.12
+      final endValue = quantity * currentPrice; // 16833.89
+
+      final mwrResult = calculateMWR(
+        startDate: '2025-09-18',
+        endDate: '2026-01-22',
+        startValue: startValue,
+        endValue: endValue,
+        cashFlows: [],
+      );
+
+      // Wrong: shows ~+0.03% when actual return is -0.71%
+      expect(mwrResult.compoundedReturn, closeTo(0.0003, 0.001));
+      expect(mwrResult.compoundedReturn, isNonNegative); // Incorrectly non-negative!
+    });
+
+    test('cost-basis return matches close-based TWR direction', () {
+      final currentValue = quantity * currentPrice; // 16833.89
+      final costReturn = (currentValue - totalCost) / totalCost;
+
+      // Cost-basis return should also be negative (price dropped + commissions)
+      expect(costReturn, isNegative);
+      expect(costReturn, closeTo(-0.0086, 0.001)); // -0.86% (includes commissions)
+
+      // The close-based TWR (-0.71%) should have the same sign as cost return
+      final twr = (currentPrice - closeAtOrderDate) / closeAtOrderDate;
+      expect(twr.isNegative, equals(costReturn.isNegative));
+    });
+  });
+
+  group('calculateTotalReturn', () {
+    test('IREN ALL period: ~93% total return', () {
+      // Real IREN data:
+      // Buys: 436.41 + 268.02 + 842.54 = 1546.97
+      // Fees: 7.65 + 7.65 + 7.68 + 7.68 + 7.63 = 38.29
+      // Sells: 323.26 + 291.11 = 614.37
+      // Current value: 55 * 44.473 = 2446.015
+      //
+      // totalReturn = (2446 + 614.37) / (0 + 1546.97 + 38.29) - 1 = 93%
+
+      final orders = [
+        (quantity: 28.0, totalEur: 436.41, date: '2025-07-23'),
+        (quantity: 0.0, totalEur: 7.65, date: '2025-07-23'), // fee
+        (quantity: 17.0, totalEur: 268.02, date: '2025-07-24'),
+        (quantity: 0.0, totalEur: 7.65, date: '2025-07-24'), // fee
+        (quantity: -8.0, totalEur: 323.26, date: '2025-10-02'),
+        (quantity: 0.0, totalEur: 7.68, date: '2025-10-02'), // fee
+        (quantity: -6.0, totalEur: 291.11, date: '2025-10-06'),
+        (quantity: 0.0, totalEur: 7.68, date: '2025-10-06'), // fee
+        (quantity: 24.0, totalEur: 842.54, date: '2025-12-23'),
+        (quantity: 0.0, totalEur: 7.63, date: '2025-12-23'), // fee
+      ];
+
+      final result = calculateTotalReturn(
+        startValue: 0, // ALL period
+        endValue: 2446.015,
+        orders: orders,
+        periodStartDate: '1900-01-01',
+        periodEndDate: '2026-01-23',
+      );
+
+      expect(result, isNotNull);
+      // (2446.015 + 614.37) / (0 + 1546.97 + 38.29) - 1
+      // = 3060.385 / 1585.26 - 1 = 0.930
+      expect(result!, closeTo(0.93, 0.01));
+    });
+
+    test('sub-period with starting position only: simple price return', () {
+      // Start with position worth 1000, no orders during period, ends at 1200
+      final result = calculateTotalReturn(
+        startValue: 1000,
+        endValue: 1200,
+        orders: [],
+        periodStartDate: '2025-01-01',
+        periodEndDate: '2025-06-01',
+      );
+
+      expect(result, isNotNull);
+      // (1200 + 0) / (1000 + 0 + 0) - 1 = 0.20
+      expect(result!, closeTo(0.20, 0.001));
+    });
+
+    test('sub-period with starting position + buys: blended return', () {
+      // Start with position worth 1000, buy 500 more during period, ends at 1800
+      final orders = [
+        (quantity: 10.0, totalEur: 500.0, date: '2025-03-01'),
+      ];
+
+      final result = calculateTotalReturn(
+        startValue: 1000,
+        endValue: 1800,
+        orders: orders,
+        periodStartDate: '2025-01-01',
+        periodEndDate: '2025-06-01',
+      );
+
+      expect(result, isNotNull);
+      // (1800 + 0) / (1000 + 500 + 0) - 1 = 0.20
+      expect(result!, closeTo(0.20, 0.001));
+    });
+
+    test('returns null when no cost basis (denominator = 0)', () {
+      final result = calculateTotalReturn(
+        startValue: 0,
+        endValue: 1000,
+        orders: [],
+        periodStartDate: '2025-01-01',
+        periodEndDate: '2025-06-01',
+      );
+
+      expect(result, isNull);
+    });
+
+    test('negative return case', () {
+      // Bought at 1000, now worth 800 = -20% return
+      final orders = [
+        (quantity: 10.0, totalEur: 1000.0, date: '2025-02-01'),
+      ];
+
+      final result = calculateTotalReturn(
+        startValue: 0,
+        endValue: 800,
+        orders: orders,
+        periodStartDate: '2025-01-01',
+        periodEndDate: '2025-06-01',
+      );
+
+      expect(result, isNotNull);
+      // (800 + 0) / (0 + 1000 + 0) - 1 = -0.20
+      expect(result!, closeTo(-0.20, 0.001));
+    });
+
+    test('orders outside period are excluded', () {
+      final orders = [
+        (quantity: 10.0, totalEur: 500.0, date: '2024-12-01'), // before period
+        (quantity: 5.0, totalEur: 300.0, date: '2025-03-01'), // in period
+        (quantity: 5.0, totalEur: 400.0, date: '2025-07-01'), // after period
+      ];
+
+      final result = calculateTotalReturn(
+        startValue: 1000,
+        endValue: 1500,
+        orders: orders,
+        periodStartDate: '2025-01-01',
+        periodEndDate: '2025-06-01',
+      );
+
+      expect(result, isNotNull);
+      // Only the 300 buy is in period
+      // (1500 + 0) / (1000 + 300 + 0) - 1 = 0.1538
+      expect(result!, closeTo(0.1538, 0.001));
+    });
+
+    test('fees counted as costs in denominator', () {
+      final orders = [
+        (quantity: 10.0, totalEur: 1000.0, date: '2025-02-01'),
+        (quantity: 0.0, totalEur: 10.0, date: '2025-02-01'), // fee
+      ];
+
+      final result = calculateTotalReturn(
+        startValue: 0,
+        endValue: 1100,
+        orders: orders,
+        periodStartDate: '2025-01-01',
+        periodEndDate: '2025-06-01',
+      );
+
+      expect(result, isNotNull);
+      // (1100 + 0) / (0 + 1000 + 10) - 1 = 0.0891
+      expect(result!, closeTo(0.0891, 0.001));
+    });
+
+    test('sells added to numerator', () {
+      // Buy 1000, sell some for 300, remaining worth 900
+      final orders = [
+        (quantity: 10.0, totalEur: 1000.0, date: '2025-02-01'),
+        (quantity: -3.0, totalEur: 300.0, date: '2025-04-01'),
+      ];
+
+      final result = calculateTotalReturn(
+        startValue: 0,
+        endValue: 900,
+        orders: orders,
+        periodStartDate: '2025-01-01',
+        periodEndDate: '2025-06-01',
+      );
+
+      expect(result, isNotNull);
+      // (900 + 300) / (0 + 1000 + 0) - 1 = 0.20
+      expect(result!, closeTo(0.20, 0.001));
+    });
+  });
+
+  group('real data: IREN crypto mining stock (multi-trade MWR)', () {
+    // Real data from database for IREN (AU0000185993)
+    // Orders:
+    //   2025-07-23: Buy 28, totalEur=436.41, fee=7.65
+    //   2025-07-24: Buy 17, totalEur=268.02, fee=7.65
+    //   2025-10-02: Sell 8, totalEur=323.26, fee=7.68
+    //   2025-10-06: Sell 6, totalEur=291.11, fee=7.68
+    //   2025-12-23: Buy 24, totalEur=842.54, fee=7.63
+    // Current position: 55 shares
+    //
+    // Daily prices (USD, close == adjClose for this stock):
+    //   2025-07-23: 18.99
+    //   2025-07-24: 18.14
+    //   2025-10-02: 47.02
+    //   2025-10-06: 57.75
+    //   2025-12-23: 42.07
+    //   2026-01-22 (latest): 52.26
+    //
+    // PriceCache: priceNative=52.26 USD, priceEur=44.473
+
+    const closeAtFirstBuy = 18.99; // USD close on 2025-07-23
+    const currentPriceNative = 52.26; // USD from price_cache
+    const currentPriceEur = 44.473; // EUR from price_cache
+    const derivedFxRate = currentPriceEur / currentPriceNative; // ~0.851
+    const historicalPriceEur = closeAtFirstBuy * derivedFxRate; // ~16.16
+    const positionAtStart = 28.0; // shares bought on first order date
+    const currentQuantity = 55.0;
+
+    test('TWR is ~175% (pure price return)', () {
+      // TWR = (currentPrice - startPrice) / startPrice
+      final twr = (currentPriceEur - historicalPriceEur) / historicalPriceEur;
+
+      // Stock went from $18.99 to $52.26 = 175% return
+      // FX cancels out since both use same derivedFxRate
+      expect(twr, closeTo(1.752, 0.01));
+
+      // Verify FX cancels: TWR in USD = same result
+      final twrUsd =
+          (currentPriceNative - closeAtFirstBuy) / closeAtFirstBuy;
+      expect(twrUsd, closeTo(twr, 0.001));
+    });
+
+    test('MWR is ~330% (profit relative to starting value)', () {
+      final startValue = positionAtStart * historicalPriceEur; // 28 * 16.16
+      final endValue = currentQuantity * currentPriceEur; // 55 * 44.473
+
+      // Cash flows AFTER start date (fee orders excluded, qty==0)
+      final cashFlows = [
+        CashFlow(date: '2025-07-24', amount: 268.02), // Buy 17
+        CashFlow(date: '2025-10-02', amount: -323.26), // Sell 8
+        CashFlow(date: '2025-10-06', amount: -291.11), // Sell 6
+        CashFlow(date: '2025-12-23', amount: 842.54), // Buy 24
+      ];
+
+      final mwrResult = calculateMWR(
+        startDate: '2025-07-23',
+        endDate: '2026-01-23',
+        startValue: startValue,
+        endValue: endValue,
+        cashFlows: cashFlows,
+      );
+
+      // Period < 1 year, so we use compoundedReturn
+      expect(mwrResult.periodYears, lessThan(1.0));
+
+      // Profit = endValue - startValue - netCashFlow
+      //        = 2446 - 452 - 496 = 1497
+      // MWR ≈ profit / startValue = 1497 / 452 = 331%
+      expect(mwrResult.compoundedReturn, closeTo(3.31, 0.1));
+    });
+
+    test('MWR > TWR because capital added during uptrend', () {
+      final twr = (currentPriceEur - historicalPriceEur) / historicalPriceEur;
+
+      final startValue = positionAtStart * historicalPriceEur;
+      final endValue = currentQuantity * currentPriceEur;
+
+      final mwrResult = calculateMWR(
+        startDate: '2025-07-23',
+        endDate: '2026-01-23',
+        startValue: startValue,
+        endValue: endValue,
+        cashFlows: [
+          CashFlow(date: '2025-07-24', amount: 268.02),
+          CashFlow(date: '2025-10-02', amount: -323.26),
+          CashFlow(date: '2025-10-06', amount: -291.11),
+          CashFlow(date: '2025-12-23', amount: 842.54),
+        ],
+      );
+
+      // MWR > TWR because user added capital before major price increases
+      // (bought early cheap, added more before growth, sold at peaks)
+      expect(mwrResult.compoundedReturn, greaterThan(twr));
+    });
+
+    test('cost-basis return is much lower (~80%)', () {
+      // Average cost method from the code:
+      // Buy 28: qty=28, cost=436.41+7.65=444.06
+      // Buy 17: qty=45, cost=444.06+268.02+7.65=719.73
+      // Sell 8: avgCost=719.73/45=15.994, cost=719.73-127.95=591.78, qty=37
+      // +fees: cost=591.78+7.68+7.68=607.14
+      // Sell 6: avgCost=607.14/37=16.409, cost=607.14-98.45=508.69, qty=31
+      // Buy 24: qty=55, cost=508.69+842.54+7.63=1358.86
+      const costBasis = 1358.86;
+      final currentValue = currentQuantity * currentPriceEur; // ~2446
+
+      final costReturn = (currentValue - costBasis) / costBasis;
+
+      // Cost-basis return is ~80%, much lower than TWR (175%) or MWR (330%)
+      // because it includes all invested capital in the denominator
+      expect(costReturn, closeTo(0.80, 0.02));
+      expect(costReturn, lessThan(1.752)); // Less than TWR
+    });
+  });
 }

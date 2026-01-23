@@ -29,6 +29,7 @@ abstract class SleeveNode
     required this.value,
     required this.mwr,
     this.twr,
+    this.totalReturn,
     required this.assetCount,
     required this.childSleeveCount,
     this.children,
@@ -46,6 +47,7 @@ abstract class SleeveNode
     required double value,
     required double mwr,
     double? twr,
+    double? totalReturn,
     required int assetCount,
     required int childSleeveCount,
     List<_i2.SleeveNode>? children,
@@ -64,6 +66,7 @@ abstract class SleeveNode
       value: (jsonSerialization['value'] as num).toDouble(),
       mwr: (jsonSerialization['mwr'] as num).toDouble(),
       twr: (jsonSerialization['twr'] as num?)?.toDouble(),
+      totalReturn: (jsonSerialization['totalReturn'] as num?)?.toDouble(),
       assetCount: jsonSerialization['assetCount'] as int,
       childSleeveCount: jsonSerialization['childSleeveCount'] as int,
       children: jsonSerialization['children'] == null
@@ -107,6 +110,9 @@ abstract class SleeveNode
   /// TWR return for period (grey, null if calculation failed)
   double? twr;
 
+  /// Total return for period ((endValue + sells) / (startValue + buys + fees) - 1)
+  double? totalReturn;
+
   /// Number of direct assets in this sleeve
   int assetCount;
 
@@ -131,6 +137,7 @@ abstract class SleeveNode
     double? value,
     double? mwr,
     double? twr,
+    double? totalReturn,
     int? assetCount,
     int? childSleeveCount,
     List<_i2.SleeveNode>? children,
@@ -150,6 +157,7 @@ abstract class SleeveNode
       'value': value,
       'mwr': mwr,
       if (twr != null) 'twr': twr,
+      if (totalReturn != null) 'totalReturn': totalReturn,
       'assetCount': assetCount,
       'childSleeveCount': childSleeveCount,
       if (children != null)
@@ -172,6 +180,7 @@ abstract class SleeveNode
       'value': value,
       'mwr': mwr,
       if (twr != null) 'twr': twr,
+      if (totalReturn != null) 'totalReturn': totalReturn,
       'assetCount': assetCount,
       'childSleeveCount': childSleeveCount,
       if (children != null)
@@ -200,6 +209,7 @@ class _SleeveNodeImpl extends SleeveNode {
     required double value,
     required double mwr,
     double? twr,
+    double? totalReturn,
     required int assetCount,
     required int childSleeveCount,
     List<_i2.SleeveNode>? children,
@@ -215,6 +225,7 @@ class _SleeveNodeImpl extends SleeveNode {
          value: value,
          mwr: mwr,
          twr: twr,
+         totalReturn: totalReturn,
          assetCount: assetCount,
          childSleeveCount: childSleeveCount,
          children: children,
@@ -236,6 +247,7 @@ class _SleeveNodeImpl extends SleeveNode {
     double? value,
     double? mwr,
     Object? twr = _Undefined,
+    Object? totalReturn = _Undefined,
     int? assetCount,
     int? childSleeveCount,
     Object? children = _Undefined,
@@ -252,6 +264,7 @@ class _SleeveNodeImpl extends SleeveNode {
       value: value ?? this.value,
       mwr: mwr ?? this.mwr,
       twr: twr is double? ? twr : this.twr,
+      totalReturn: totalReturn is double? ? totalReturn : this.totalReturn,
       assetCount: assetCount ?? this.assetCount,
       childSleeveCount: childSleeveCount ?? this.childSleeveCount,
       children: children is List<_i2.SleeveNode>?

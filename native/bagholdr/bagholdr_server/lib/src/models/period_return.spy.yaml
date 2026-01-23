@@ -23,6 +23,9 @@ fields:
   ### Time-weighted return (portfolio performance, ignoring cash flow timing)
   twr: double?
 
+  ### Total return ((endValue + sells) / (startValue + buys + fees) - 1)
+  totalReturn: double?
+
   ### Length of period in years
   periodYears: double
 

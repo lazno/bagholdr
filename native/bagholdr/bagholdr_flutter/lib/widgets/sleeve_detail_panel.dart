@@ -48,6 +48,7 @@ class SleeveDetailPanel extends StatelessWidget {
     final double value;
     final double mwr;
     final double? twr;
+    final double? totalReturn;
     final String colorHex;
 
     if (isAllView || sleeve == null) {
@@ -57,6 +58,7 @@ class SleeveDetailPanel extends StatelessWidget {
       value = sleeveTree.totalValue;
       mwr = sleeveTree.totalMwr;
       twr = sleeveTree.totalTwr;
+      totalReturn = sleeveTree.totalReturn;
       colorHex = 'gradient'; // Special value for gradient
     } else {
       name = sleeve.name;
@@ -64,6 +66,7 @@ class SleeveDetailPanel extends StatelessWidget {
       value = sleeve.value;
       mwr = sleeve.mwr;
       twr = sleeve.twr;
+      totalReturn = sleeve.totalReturn;
       colorHex = sleeve.color;
     }
 
@@ -86,6 +89,7 @@ class SleeveDetailPanel extends StatelessWidget {
             value: value,
             mwr: mwr,
             twr: twr,
+            totalReturn: totalReturn,
             colorHex: colorHex,
             hideBalances: hideBalances,
           ),
@@ -144,6 +148,7 @@ class _DetailTopRow extends StatelessWidget {
     required this.value,
     required this.mwr,
     required this.twr,
+    required this.totalReturn,
     required this.colorHex,
     required this.hideBalances,
   });
@@ -153,6 +158,7 @@ class _DetailTopRow extends StatelessWidget {
   final double value;
   final double mwr;
   final double? twr;
+  final double? totalReturn;
   final String colorHex;
   final bool hideBalances;
 
@@ -237,15 +243,24 @@ class _DetailTopRow extends StatelessWidget {
                 color: returnColor,
               ),
             ),
-            if (twr != null) ...[
+            if (twr != null || totalReturn != null) ...[
               const SizedBox(height: 2),
-              Text(
-                'TWR ${Formatters.formatPercent(twr! / 100, showSign: false)}',
-                style: TextStyle(
-                  fontSize: 11,
-                  color: theme.colorScheme.onSurfaceVariant,
+              if (twr != null)
+                Text(
+                  'TWR ${Formatters.formatPercent(twr! / 100, showSign: true)}',
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
                 ),
-              ),
+              if (totalReturn != null)
+                Text(
+                  'TR ${Formatters.formatPercent(totalReturn! / 100, showSign: true)}',
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
             ],
           ],
         ),

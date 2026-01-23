@@ -86,6 +86,7 @@ class _PortfolioListScreenState extends State<PortfolioListScreen> {
             weight: holding.weight,
             mwr: holding.mwr,
             twr: holding.twr,
+            totalReturn: holding.totalReturn,
             sleeveId: holding.sleeveId,
             sleeveName: holding.sleeveName,
             assetId: holding.assetId,
@@ -450,6 +451,7 @@ class _PortfolioListScreenState extends State<PortfolioListScreen> {
     // Values from historical returns (period-specific)
     final mwr = periodReturn != null ? periodReturn.compoundedReturn / 100 : 0.0;
     final twr = periodReturn?.twr != null ? periodReturn!.twr! / 100 : null;
+    final totalReturn = periodReturn?.totalReturn != null ? periodReturn!.totalReturn! / 100 : null;
     final returnAbs = periodReturn?.absoluteReturn ?? 0;
 
     return SingleChildScrollView(
@@ -467,6 +469,7 @@ class _PortfolioListScreenState extends State<PortfolioListScreen> {
                   investedValue: investedValue,
                   mwr: mwr,
                   twr: twr,
+                  totalReturn: totalReturn,
                   returnAbs: returnAbs,
                   cashBalance: cashBalance,
                   totalValue: totalValue,

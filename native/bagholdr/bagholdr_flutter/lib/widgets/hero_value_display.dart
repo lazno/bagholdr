@@ -29,6 +29,7 @@ class HeroValueDisplay extends StatelessWidget {
     required this.investedValue,
     required this.mwr,
     this.twr,
+    this.totalReturn,
     required this.returnAbs,
     required this.cashBalance,
     required this.totalValue,
@@ -46,6 +47,11 @@ class HeroValueDisplay extends StatelessWidget {
   /// Shows portfolio performance independent of cash flow timing.
   /// Nullable - may fail to calculate in some edge cases.
   final double? twr;
+
+  /// Total Return for the selected period.
+  /// (endValue + sells) / (startValue + buys + fees) - 1.
+  /// Nullable - null when no cost basis.
+  final double? totalReturn;
 
   /// Absolute return in EUR (investedValue - costBasis).
   final double returnAbs;
@@ -79,6 +85,7 @@ class HeroValueDisplay extends StatelessWidget {
             investedValue: investedValue,
             mwr: mwr,
             twr: twr,
+            totalReturn: totalReturn,
             returnAbs: returnAbs,
             returnColor: returnColor,
             hideBalances: hideBalances,
@@ -105,6 +112,7 @@ class _MainColumn extends StatelessWidget {
     required this.investedValue,
     required this.mwr,
     this.twr,
+    this.totalReturn,
     required this.returnAbs,
     required this.returnColor,
     required this.hideBalances,
@@ -114,6 +122,7 @@ class _MainColumn extends StatelessWidget {
   final double investedValue;
   final double mwr;
   final double? twr;
+  final double? totalReturn;
   final double returnAbs;
   final Color returnColor;
   final bool hideBalances;
@@ -171,15 +180,30 @@ class _MainColumn extends StatelessWidget {
               ),
           ],
         ),
-        // TWR row
-        if (twr != null) ...[
+        // TWR + TR row
+        if (twr != null || totalReturn != null) ...[
           const SizedBox(height: 2),
-          Text(
-            'TWR ${Formatters.formatPercent(twr!, showSign: true)}',
-            style: TextStyle(
-              fontSize: 11,
-              color: neutralColor,
-            ),
+          Row(
+            children: [
+              if (twr != null)
+                Text(
+                  'TWR ${Formatters.formatPercent(twr!, showSign: true)}',
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: neutralColor,
+                  ),
+                ),
+              if (twr != null && totalReturn != null)
+                const SizedBox(width: 8),
+              if (totalReturn != null)
+                Text(
+                  'TR ${Formatters.formatPercent(totalReturn!, showSign: true)}',
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: neutralColor,
+                  ),
+                ),
+            ],
           ),
         ],
       ],

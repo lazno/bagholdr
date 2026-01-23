@@ -191,6 +191,50 @@ double xirr(List<XirrTransaction> transactions, {double guess = 0.1}) {
   throw StateError('XIRR calculation failed to converge');
 }
 
+/// Calculate Total Return for a period.
+///
+/// Total Return answers: "How much did I get back vs how much did I put in?"
+///
+/// Formula: (endValue + sellProceeds) / (startValue + buyCosts + feeCosts) - 1
+///
+/// For ALL period: startValue=0, all orders included.
+/// For sub-periods: startValue = position at start × historical price.
+///
+/// Returns null if denominator <= 0 (no cost basis).
+double? calculateTotalReturn({
+  required double startValue,
+  required double endValue,
+  required List<({double quantity, double totalEur, String date})> orders,
+  required String periodStartDate,
+  required String periodEndDate,
+}) {
+  double buyCosts = 0;
+  double sellProceeds = 0;
+  double feeCosts = 0;
+
+  for (final order in orders) {
+    // Include orders where date > periodStartDate && date <= periodEndDate
+    if (order.date.compareTo(periodStartDate) <= 0) continue;
+    if (order.date.compareTo(periodEndDate) > 0) continue;
+
+    if (order.quantity > 0) {
+      // Buy
+      buyCosts += order.totalEur;
+    } else if (order.quantity < 0) {
+      // Sell
+      sellProceeds += order.totalEur.abs();
+    } else {
+      // Fee/commission (quantity == 0)
+      feeCosts += order.totalEur;
+    }
+  }
+
+  final denominator = startValue + buyCosts + feeCosts;
+  if (denominator <= 0) return null;
+
+  return (endValue + sellProceeds) / denominator - 1;
+}
+
 /// External cash flow (contribution or withdrawal) for return calculations.
 ///
 /// In the context of portfolio tracking:
