@@ -10,6 +10,7 @@ jwtRefresh:
   - refreshAccessToken:
 holdings:
   - getHoldings:
+  - getAssetDetail:
 import:
   - importDirectaCsv:
 issues:

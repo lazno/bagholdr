@@ -43,8 +43,29 @@ class ImportEndpoint extends Endpoint {
 
     var assetsCreated = 0;
     var ordersImported = 0;
+    var ordersReplaced = 0;
 
-    // Process each parsed order
+    // Collect all order references from this import run
+    final orderRefsInImport = parseResult.orders
+        .where((o) => o.orderReference.isNotEmpty)
+        .map((o) => o.orderReference)
+        .toSet();
+
+    // Delete existing orders with these references (allows corrections and
+    // handles multiple partial fills with the same reference)
+    for (final ref in orderRefsInImport) {
+      final deleted = await Order.db.deleteWhere(
+        session,
+        where: (t) => t.orderReference.equals(ref),
+      );
+      ordersReplaced += deleted.length;
+    }
+
+    if (ordersReplaced > 0) {
+      warnings.add('Replaced $ordersReplaced existing orders');
+    }
+
+    // Process each parsed order (no deduplication within a single import run)
     for (final parsedOrder in parseResult.orders) {
       // Find or create asset
       var asset = assetByIsin[parsedOrder.isin];
@@ -75,20 +96,6 @@ class ImportEndpoint extends Endpoint {
       final priceNative = parsedOrder.quantity != 0
           ? totalNative / parsedOrder.quantity.abs()
           : 0.0;
-
-      // Check for duplicate order by reference
-      if (parsedOrder.orderReference.isNotEmpty) {
-        final existingOrder = await Order.db.findFirstRow(
-          session,
-          where: (t) => t.orderReference.equals(parsedOrder.orderReference),
-        );
-        if (existingOrder != null) {
-          warnings.add(
-            'Skipped duplicate order: ${parsedOrder.orderReference}',
-          );
-          continue;
-        }
-      }
 
       // Create order
       final order = Order(

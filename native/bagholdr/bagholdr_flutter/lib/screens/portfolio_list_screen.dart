@@ -9,6 +9,7 @@ import '../widgets/portfolio_chart.dart';
 import '../widgets/portfolio_selector.dart';
 import '../widgets/strategy_section_v2.dart';
 import '../widgets/time_range_bar.dart';
+import 'asset_detail_screen.dart';
 
 /// Test screen demonstrating the PortfolioSelector component.
 ///
@@ -586,10 +587,13 @@ class _PortfolioListScreenState extends State<PortfolioListScreen> {
               onLoadMore: _onLoadMore,
               hasMore: _holdings.length < _filteredCount,
               onAssetTap: (holding) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Tapped: ${holding.name}'),
-                    duration: const Duration(seconds: 1),
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => AssetDetailScreen(
+                      assetId: holding.assetId,
+                      portfolioId: _selectedPortfolio!.id!.toString(),
+                      initialPeriod: _selectedPeriod,
+                    ),
                   ),
                 );
               },

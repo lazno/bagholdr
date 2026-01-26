@@ -1,0 +1,752 @@
+import 'package:bagholdr_client/bagholdr_client.dart';
+import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+
+import '../main.dart';
+import '../theme/colors.dart';
+import '../utils/formatters.dart';
+import '../widgets/assets_section.dart';
+import '../widgets/time_range_bar.dart';
+
+/// Full-screen asset detail view.
+///
+/// Shows complete asset information, position stats, returns for the selected
+/// period, and order history. Includes placeholder edit controls for future
+/// editing functionality.
+class AssetDetailScreen extends StatefulWidget {
+  const AssetDetailScreen({
+    super.key,
+    required this.assetId,
+    required this.portfolioId,
+    required this.initialPeriod,
+  });
+
+  /// UUID of the asset to display.
+  final String assetId;
+
+  /// Portfolio context for weight calculation.
+  final String portfolioId;
+
+  /// Initial time period (inherited from dashboard).
+  final TimePeriod initialPeriod;
+
+  @override
+  State<AssetDetailScreen> createState() => _AssetDetailScreenState();
+}
+
+class _AssetDetailScreenState extends State<AssetDetailScreen> {
+  late TimePeriod _selectedPeriod;
+  AssetDetailResponse? _assetDetail;
+  bool _isInitialLoading = true;
+  String? _error;
+
+  // Live price update state
+  double? _liveValue;
+  double? _livePL;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedPeriod = widget.initialPeriod;
+    _loadAssetDetail(isInitial: true);
+    priceStreamProvider.addListener(_onPriceStreamUpdate);
+  }
+
+  @override
+  void dispose() {
+    priceStreamProvider.removeListener(_onPriceStreamUpdate);
+    super.dispose();
+  }
+
+  void _onPriceStreamUpdate() {
+    if (!mounted || _assetDetail == null) return;
+
+    final update = priceStreamProvider.getPrice(_assetDetail!.isin);
+    if (update != null) {
+      final newValue = update.priceEur * _assetDetail!.quantity;
+      final newPL = newValue - _assetDetail!.costBasis;
+
+      // Only update if there's a meaningful change
+      if (_liveValue == null || (newValue - _liveValue!).abs() > 0.001) {
+        setState(() {
+          _liveValue = newValue;
+          _livePL = newPL;
+        });
+      }
+    }
+  }
+
+  Future<void> _loadAssetDetail({bool isInitial = false}) async {
+    // Only show full loading state on initial load
+    // For subsequent loads (period changes), keep showing existing data
+    if (isInitial) {
+      setState(() {
+        _isInitialLoading = true;
+        _error = null;
+      });
+    }
+
+    try {
+      final response = await client.holdings.getAssetDetail(
+        assetId: UuidValue.fromString(widget.assetId),
+        portfolioId: UuidValue.fromString(widget.portfolioId),
+        period: toReturnPeriod(_selectedPeriod),
+      );
+
+      setState(() {
+        _assetDetail = response;
+        _isInitialLoading = false;
+        // Reset live values - will be updated by price stream
+        _liveValue = null;
+        _livePL = null;
+      });
+    } catch (e) {
+      setState(() {
+        _error = e.toString();
+        _isInitialLoading = false;
+      });
+    }
+  }
+
+  void _onPeriodChanged(TimePeriod period) {
+    if (period == _selectedPeriod) return;
+    setState(() => _selectedPeriod = period);
+    _loadAssetDetail();
+  }
+
+  void _showActionMenu() {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: Icon(Icons.refresh, color: colorScheme.onSurface),
+              title: const Text('Refresh prices'),
+              onTap: () {
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Not implemented yet')),
+                );
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.delete_outline, color: colorScheme.onSurface),
+              title: const Text('Clear price history'),
+              onTap: () {
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Not implemented yet')),
+                );
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.archive_outlined, color: colorScheme.onSurface),
+              title: const Text('Archive asset'),
+              onTap: () {
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Not implemented yet')),
+                );
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Scaffold(
+      backgroundColor: colorScheme.surfaceContainerLow,
+      appBar: AppBar(
+        title: Text(_assetDetail?.name ?? 'Asset Detail'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.more_vert),
+            onPressed: _showActionMenu,
+          ),
+        ],
+      ),
+      body: _buildBody(),
+    );
+  }
+
+  Widget _buildBody() {
+    // Only show full-screen loading on initial load
+    if (_isInitialLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (_error != null && _assetDetail == null) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.error_outline,
+                size: 48,
+                color: Theme.of(context).colorScheme.error,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Failed to load asset',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                _error!,
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+              const SizedBox(height: 16),
+              FilledButton(
+                onPressed: _loadAssetDetail,
+                child: const Text('Retry'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    final detail = _assetDetail!;
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Asset header with ISIN and type
+          Container(
+            color: colorScheme.surface,
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+            child: _AssetHeader(detail: detail),
+          ),
+
+          // Time period selector
+          Container(
+            color: colorScheme.surface,
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+            child: TimeRangeBar(
+              selected: _selectedPeriod,
+              onChanged: _onPeriodChanged,
+              embedded: true,
+            ),
+          ),
+
+          const SizedBox(height: 8),
+
+          // Position summary
+          Container(
+            color: colorScheme.surface,
+            padding: const EdgeInsets.all(16),
+            child: _PositionSummary(
+              detail: detail,
+              liveValue: _liveValue,
+              livePL: _livePL,
+            ),
+          ),
+
+          const SizedBox(height: 8),
+
+          // Editable fields section
+          Container(
+            color: colorScheme.surface,
+            padding: const EdgeInsets.all(16),
+            child: _EditableFieldsSection(detail: detail),
+          ),
+
+          const SizedBox(height: 8),
+
+          // Order history
+          Container(
+            color: colorScheme.surface,
+            padding: const EdgeInsets.all(16),
+            child: _OrderHistorySection(orders: detail.orders),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Header showing ISIN and asset type badge.
+class _AssetHeader extends StatelessWidget {
+  const _AssetHeader({required this.detail});
+
+  final AssetDetailResponse detail;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Row(
+      children: [
+        Expanded(
+          child: Text(
+            detail.isin,
+            style: TextStyle(
+              fontSize: 13,
+              color: colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          decoration: BoxDecoration(
+            color: colorScheme.secondaryContainer,
+            borderRadius: BorderRadius.circular(4),
+          ),
+          child: Text(
+            detail.assetType.toUpperCase(),
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w500,
+              color: colorScheme.onSecondaryContainer,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Position summary with value, period return, and key stats.
+class _PositionSummary extends StatelessWidget {
+  const _PositionSummary({
+    required this.detail,
+    this.liveValue,
+    this.livePL,
+  });
+
+  final AssetDetailResponse detail;
+  final double? liveValue;
+  final double? livePL;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final financialColors = context.financialColors;
+
+    // Use live values if available, otherwise fall back to server values
+    final displayValue = liveValue ?? detail.value;
+    final displayPL = livePL ?? detail.periodReturnAbs;
+    final displayPLPct = detail.costBasis > 0
+        ? (displayPL / detail.costBasis)
+        : (detail.periodReturnPct != null ? detail.periodReturnPct! / 100 : null);
+
+    final isPositive = displayPL >= 0;
+    final returnColor = isPositive ? financialColors.positive : financialColors.negative;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Value and period return row
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    Formatters.formatCurrency(displayValue),
+                    style: TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.w600,
+                      color: colorScheme.onSurface,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '${detail.quantity.toStringAsFixed(detail.quantity == detail.quantity.roundToDouble() ? 0 : 2)} shares',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  Formatters.formatSignedCurrency(displayPL),
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w600,
+                    color: returnColor,
+                  ),
+                ),
+                if (displayPLPct != null)
+                  Text(
+                    '(${Formatters.formatPercent(displayPLPct, showSign: true)})',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: returnColor,
+                    ),
+                  ),
+              ],
+            ),
+          ],
+        ),
+
+        const SizedBox(height: 20),
+
+        // Stats grid
+        _StatRow(label: 'Cost basis', value: Formatters.formatCurrency(detail.costBasis)),
+        _StatRow(label: 'Weight', value: Formatters.formatWeight(detail.weight)),
+        _StatRow(
+          label: 'TWR',
+          value: detail.twr != null
+              ? Formatters.formatPercent(detail.twr! / 100, showSign: true)
+              : '—',
+          valueColor: detail.twr != null
+              ? (detail.twr! >= 0 ? financialColors.positive : financialColors.negative)
+              : null,
+        ),
+        _StatRow(
+          label: 'MWR',
+          value: Formatters.formatPercent(detail.mwr / 100, showSign: true),
+          valueColor: detail.mwr >= 0 ? financialColors.positive : financialColors.negative,
+        ),
+      ],
+    );
+  }
+}
+
+/// Single stat row with label and value.
+class _StatRow extends StatelessWidget {
+  const _StatRow({
+    required this.label,
+    required this.value,
+    this.valueColor,
+  });
+
+  final String label;
+  final String value;
+  final Color? valueColor;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 14,
+              color: colorScheme.onSurfaceVariant,
+            ),
+          ),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              color: valueColor ?? colorScheme.onSurface,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Editable fields with edit icons (non-functional placeholders).
+class _EditableFieldsSection extends StatelessWidget {
+  const _EditableFieldsSection({required this.detail});
+
+  final AssetDetailResponse detail;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _EditableField(
+          label: 'Yahoo Symbol',
+          value: detail.yahooSymbol ?? '—',
+          onEdit: () {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Not implemented yet')),
+            );
+          },
+        ),
+        Divider(height: 1, color: colorScheme.outlineVariant),
+        _EditableField(
+          label: 'Asset Type',
+          value: _formatAssetType(detail.assetType),
+          onEdit: () {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Not implemented yet')),
+            );
+          },
+        ),
+        Divider(height: 1, color: colorScheme.outlineVariant),
+        _EditableField(
+          label: 'Sleeve',
+          value: detail.sleeveName ?? 'Unassigned',
+          onEdit: () {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Not implemented yet')),
+            );
+          },
+        ),
+      ],
+    );
+  }
+
+  String _formatAssetType(String type) {
+    switch (type.toLowerCase()) {
+      case 'etf':
+        return 'ETF';
+      case 'stock':
+        return 'Stock';
+      case 'bond':
+        return 'Bond';
+      case 'fund':
+        return 'Fund';
+      case 'commodity':
+        return 'Commodity';
+      default:
+        return type;
+    }
+  }
+}
+
+/// Single editable field row.
+class _EditableField extends StatelessWidget {
+  const _EditableField({
+    required this.label,
+    required this.value,
+    required this.onEdit,
+  });
+
+  final String label;
+  final String value;
+  final VoidCallback onEdit;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return InkWell(
+      onTap: onEdit,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    label,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    value,
+                    style: TextStyle(
+                      fontSize: 15,
+                      color: colorScheme.onSurface,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              Icons.edit_outlined,
+              size: 20,
+              color: colorScheme.onSurfaceVariant,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Order history section with list of orders.
+class _OrderHistorySection extends StatelessWidget {
+  const _OrderHistorySection({required this.orders});
+
+  final List<OrderSummary> orders;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Orders',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: colorScheme.onSurface,
+          ),
+        ),
+        const SizedBox(height: 12),
+        if (orders.isEmpty)
+          Text(
+            'No orders found',
+            style: TextStyle(
+              fontSize: 14,
+              color: colorScheme.onSurfaceVariant,
+            ),
+          )
+        else
+          ...orders.map((order) => _OrderRow(order: order)),
+      ],
+    );
+  }
+}
+
+/// Single order row in the history list.
+class _OrderRow extends StatelessWidget {
+  const _OrderRow({required this.order});
+
+  final OrderSummary order;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final financialColors = context.financialColors;
+    final dateFormat = DateFormat('MMM d, yyyy');
+
+    Color typeColor;
+    String typeLabel;
+    String quantityText;
+
+    switch (order.orderType) {
+      case 'buy':
+        typeColor = financialColors.positive;
+        typeLabel = 'BUY';
+        quantityText = '+${order.quantity.abs().toStringAsFixed(order.quantity == order.quantity.roundToDouble() ? 0 : 2)}';
+        break;
+      case 'sell':
+        typeColor = financialColors.negative;
+        typeLabel = 'SELL';
+        quantityText = '-${order.quantity.abs().toStringAsFixed(order.quantity == order.quantity.roundToDouble() ? 0 : 2)}';
+        break;
+      case 'fee':
+        typeColor = colorScheme.onSurfaceVariant;
+        typeLabel = 'FEE';
+        quantityText = '';
+        break;
+      default:
+        typeColor = colorScheme.onSurfaceVariant;
+        typeLabel = order.orderType.toUpperCase();
+        quantityText = order.quantity.toString();
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      decoration: BoxDecoration(
+        border: Border(
+          bottom: BorderSide(
+            color: colorScheme.outlineVariant.withValues(alpha: 0.5),
+            width: 1,
+          ),
+        ),
+      ),
+      child: Row(
+        children: [
+          // Date and type
+          Expanded(
+            flex: 2,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  dateFormat.format(order.orderDate),
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: colorScheme.onSurface,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  typeLabel,
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: typeColor,
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // Quantity and price
+          Expanded(
+            flex: 2,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                if (quantityText.isNotEmpty)
+                  Text(
+                    quantityText,
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      color: colorScheme.onSurface,
+                    ),
+                  ),
+                if (order.orderType != 'fee' && order.priceNative > 0)
+                  Text(
+                    '@ ${_formatPrice(order.priceNative, order.currency)}',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+              ],
+            ),
+          ),
+
+          // Total
+          Expanded(
+            flex: 2,
+            child: Text(
+              Formatters.formatCurrency(order.totalEur.abs()),
+              textAlign: TextAlign.right,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+                color: colorScheme.onSurface,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _formatPrice(double price, String currency) {
+    final symbol = currency == 'EUR' ? '\u20ac' : (currency == 'USD' ? '\$' : currency);
+    return '$symbol${price.toStringAsFixed(2)}';
+  }
+}

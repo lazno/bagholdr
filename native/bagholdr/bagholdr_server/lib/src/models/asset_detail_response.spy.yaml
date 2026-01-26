@@ -1,0 +1,31 @@
+### AssetDetailResponse - Full asset details with order history
+### Used by the asset detail screen
+class: AssetDetailResponse
+fields:
+  ### Asset identification
+  assetId: String
+  isin: String
+  ticker: String
+  name: String
+  yahooSymbol: String?
+  assetType: String
+  currency: String
+
+  ### Position info
+  quantity: double
+  value: double
+  costBasis: double
+  weight: double
+
+  ### Returns (period-specific)
+  periodReturnAbs: double
+  periodReturnPct: double?
+  mwr: double
+  twr: double?
+
+  ### Sleeve assignment
+  sleeveId: String?
+  sleeveName: String?
+
+  ### Order history (most recent first)
+  orders: List<OrderSummary>

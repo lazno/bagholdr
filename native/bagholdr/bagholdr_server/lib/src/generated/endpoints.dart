@@ -333,6 +333,37 @@ class Endpoints extends _i1.EndpointDispatch {
                     limit: params['limit'],
                   ),
         ),
+        'getAssetDetail': _i1.MethodConnector(
+          name: 'getAssetDetail',
+          params: {
+            'assetId': _i1.ParameterDescription(
+              name: 'assetId',
+              type: _i1.getType<_i1.UuidValue>(),
+              nullable: false,
+            ),
+            'portfolioId': _i1.ParameterDescription(
+              name: 'portfolioId',
+              type: _i1.getType<_i1.UuidValue>(),
+              nullable: false,
+            ),
+            'period': _i1.ParameterDescription(
+              name: 'period',
+              type: _i1.getType<_i11.ReturnPeriod>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['holdings'] as _i4.HoldingsEndpoint)
+                  .getAssetDetail(
+                    session,
+                    assetId: params['assetId'],
+                    portfolioId: params['portfolioId'],
+                    period: params['period'],
+                  ),
+        ),
       },
     );
     connectors['import'] = _i1.EndpointConnector(

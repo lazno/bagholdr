@@ -710,6 +710,327 @@ class HoldingsEndpoint extends Endpoint {
         '${date.month.toString().padLeft(2, '0')}-'
         '${date.day.toString().padLeft(2, '0')}';
   }
+
+  /// Calculate period-specific absolute return for an asset
+  ///
+  /// Returns: currentValue - startValue - netBuys + netSells
+  double _calculatePeriodReturnAbs({
+    required Asset asset,
+    required List<Order> orders,
+    required Holding holding,
+    required double currentValue,
+    required String comparisonDate,
+    required String todayStr,
+    required Map<String, Map<String, double>> priceByTickerDate,
+    required Map<String, double> derivedFxRateMap,
+    required Map<String, double> fxRateMap,
+  }) {
+    // Sort orders by date
+    final sortedOrders = List<Order>.from(orders)
+      ..sort((a, b) => a.orderDate.compareTo(b.orderDate));
+
+    // Find first buy order to determine if this is a short holding
+    final firstBuyOrder = sortedOrders.cast<Order?>().firstWhere(
+          (o) => o != null && o.quantity > 0,
+          orElse: () => null,
+        );
+
+    if (firstBuyOrder == null) {
+      return 0;
+    }
+
+    final firstOrderDateStr = _formatDate(firstBuyOrder.orderDate);
+    final isShortHolding = firstOrderDateStr.compareTo(comparisonDate) > 0;
+    final effectiveStartDate = isShortHolding ? firstOrderDateStr : comparisonDate;
+
+    // Build position at effective start date
+    double positionAtStart = 0;
+    for (final order in sortedOrders) {
+      if (_formatDate(order.orderDate).compareTo(effectiveStartDate) <= 0) {
+        if (order.quantity > 0) {
+          positionAtStart += order.quantity;
+        } else if (order.quantity < 0) {
+          positionAtStart = (positionAtStart - order.quantity.abs()).clamp(0, double.infinity);
+        }
+      }
+    }
+
+    // Get historical price at start
+    final historicalPrice = _getHistoricalPrice(
+      asset,
+      effectiveStartDate,
+      priceByTickerDate,
+      derivedFxRateMap,
+      fxRateMap,
+    );
+
+    double startValue = 0;
+    if (historicalPrice != null && positionAtStart > 0) {
+      startValue = positionAtStart * historicalPrice;
+    }
+
+    // Calculate net cash flows during period (buys are negative, sells are positive)
+    double netCashFlows = 0;
+    for (final order in sortedOrders) {
+      final orderDateStr = _formatDate(order.orderDate);
+      if (orderDateStr.compareTo(effectiveStartDate) > 0 &&
+          orderDateStr.compareTo(todayStr) <= 0) {
+        if (order.quantity > 0) {
+          // Buy: money out (negative for return calculation)
+          netCashFlows -= order.totalEur;
+        } else if (order.quantity < 0) {
+          // Sell: money in (positive for return calculation)
+          netCashFlows += order.totalEur.abs();
+        }
+        // Fees (quantity=0) don't affect absolute return calculation directly
+      }
+    }
+
+    // Period return = current value - start value + net cash flows from sales - cash spent on buys
+    // Which simplifies to: current value - start value + netCashFlows
+    return currentValue - startValue + netCashFlows;
+  }
+
+  /// Get detailed information for a single asset
+  ///
+  /// [assetId] - UUID of the asset to fetch
+  /// [portfolioId] - Portfolio context (for sleeve assignment and weight)
+  /// [period] - Time period for return calculations
+  Future<AssetDetailResponse> getAssetDetail(
+    Session session, {
+    required UuidValue assetId,
+    required UuidValue portfolioId,
+    required ReturnPeriod period,
+  }) async {
+    final now = DateTime.now();
+    final todayStr = _formatDate(now);
+
+    // Fetch the asset
+    final asset = await Asset.db.findById(session, assetId);
+    if (asset == null) {
+      throw Exception('Asset not found: $assetId');
+    }
+
+    // Fetch holding for this asset
+    final holdings = await Holding.db.find(
+      session,
+      where: (t) => t.assetId.equals(assetId),
+    );
+    final holding = holdings.isNotEmpty ? holdings.first : null;
+
+    if (holding == null || holding.quantity <= 0) {
+      throw Exception('No holding found for asset: $assetId');
+    }
+
+    // Fetch all orders for this asset (most recent first)
+    final orders = await Order.db.find(
+      session,
+      where: (t) => t.assetId.equals(assetId),
+      orderBy: (t) => t.orderDate,
+      orderDescending: true,
+    );
+
+    // Get cached price
+    final cachedPrices = await PriceCache.db.find(session);
+    final priceMap = {for (var p in cachedPrices) p.ticker: p.priceEur};
+    final lookupKey = asset.yahooSymbol ?? asset.ticker;
+    final currentPrice = priceMap[lookupKey];
+
+    // Calculate current value
+    final valueEur = currentPrice != null
+        ? currentPrice * holding.quantity
+        : holding.totalCostEur;
+
+    // Calculate cost basis using average cost method
+    final sortedOrders = List<Order>.from(orders)
+      ..sort((a, b) => a.orderDate.compareTo(b.orderDate));
+
+    double totalQty = 0;
+    double totalCostEur = 0;
+
+    for (final order in sortedOrders) {
+      if (order.quantity > 0) {
+        totalQty += order.quantity;
+        totalCostEur += order.totalEur;
+      } else if (order.quantity < 0) {
+        final soldQty = order.quantity.abs();
+        if (totalQty > 0) {
+          final avgCostEur = totalCostEur / totalQty;
+          totalCostEur = math.max(0, totalCostEur - avgCostEur * soldQty);
+          totalQty = math.max(0, totalQty - soldQty);
+        }
+      } else {
+        // Commission
+        totalCostEur += order.totalEur;
+      }
+    }
+
+    final costBasisEur = totalCostEur;
+    final pl = valueEur - costBasisEur;
+
+    // Calculate total portfolio value for weight
+    final allHoldings = await Holding.db.find(
+      session,
+      where: (t) => t.quantity > 0.0,
+    );
+    final allAssets = await Asset.db.find(
+      session,
+      where: (t) => t.archived.equals(false),
+    );
+    final assetMap = {for (var a in allAssets) a.id!.toString(): a};
+
+    double totalPortfolioValue = 0;
+    for (final h in allHoldings) {
+      final a = assetMap[h.assetId.toString()];
+      if (a == null) continue;
+      final key = a.yahooSymbol ?? a.ticker;
+      final price = priceMap[key];
+      totalPortfolioValue += price != null ? price * h.quantity : h.totalCostEur;
+    }
+
+    final weight = totalPortfolioValue > 0
+        ? (valueEur / totalPortfolioValue) * 100
+        : 0.0;
+
+    // Get sleeve assignment
+    final sleeveAssignments = await SleeveAsset.db.find(
+      session,
+      where: (t) => t.assetId.equals(assetId),
+    );
+    String? sleeveId;
+    String? sleeveName;
+
+    if (sleeveAssignments.isNotEmpty) {
+      final assignment = sleeveAssignments.first;
+      sleeveId = assignment.sleeveId.toString();
+      final sleeve = await Sleeve.db.findById(session, assignment.sleeveId);
+      sleeveName = sleeve?.name;
+    }
+
+    // Calculate returns
+    final comparisonDate = _getComparisonDate(period, orders);
+    final lookbackDate =
+        DateTime.parse(comparisonDate).subtract(const Duration(days: 5));
+    final lookbackDateStr = _formatDate(lookbackDate);
+
+    // Get historical prices
+    Map<String, Map<String, double>> priceByTickerDate = {};
+    if (asset.yahooSymbol != null) {
+      final pricesResult = await DailyPrice.db.find(
+        session,
+        where: (t) =>
+            t.ticker.equals(asset.yahooSymbol!) &
+            (t.date >= lookbackDateStr) &
+            (t.date <= todayStr),
+      );
+      for (final p in pricesResult) {
+        priceByTickerDate.putIfAbsent(p.ticker, () => {});
+        priceByTickerDate[p.ticker]![p.date] = p.close;
+      }
+    }
+
+    // Get FX rates
+    final fxRates = await FxCache.db.find(session);
+    final fxRateMap = {for (var f in fxRates) f.pair: f.rate};
+    final derivedFxRateMap = <String, double>{};
+    for (final p in cachedPrices) {
+      if (p.priceNative != 0) {
+        derivedFxRateMap[p.ticker] = p.priceEur / p.priceNative;
+      }
+    }
+
+    // Calculate MWR
+    final mwrResult = _calculateAssetMWR(
+      assetId: assetId.toString(),
+      asset: asset,
+      orders: sortedOrders,
+      holding: holding,
+      period: period,
+      comparisonDate: comparisonDate,
+      todayStr: todayStr,
+      priceMap: priceMap,
+      priceByTickerDate: priceByTickerDate,
+      derivedFxRateMap: derivedFxRateMap,
+      fxRateMap: fxRateMap,
+    );
+
+    // Calculate TWR
+    final twrResult = _calculateAssetTWR(
+      assetId: assetId.toString(),
+      asset: asset,
+      orders: sortedOrders,
+      holding: holding,
+      period: period,
+      comparisonDate: comparisonDate,
+      todayStr: todayStr,
+      priceMap: priceMap,
+      priceByTickerDate: priceByTickerDate,
+      derivedFxRateMap: derivedFxRateMap,
+      fxRateMap: fxRateMap,
+    );
+
+    // Calculate Total Return (percentage)
+    final totalReturnResult = _calculateAssetTotalReturn(
+      asset: asset,
+      orders: sortedOrders,
+      holding: holding,
+      period: period,
+      comparisonDate: comparisonDate,
+      todayStr: todayStr,
+      priceMap: priceMap,
+      priceByTickerDate: priceByTickerDate,
+      derivedFxRateMap: derivedFxRateMap,
+      fxRateMap: fxRateMap,
+    );
+
+    // Unrealized P/L = current value - cost basis
+    final unrealizedPL = valueEur - costBasisEur;
+
+    // Convert orders to OrderSummary list
+    final orderSummaries = orders.map((o) {
+      String orderType;
+      if (o.quantity > 0) {
+        orderType = 'buy';
+      } else if (o.quantity < 0) {
+        orderType = 'sell';
+      } else {
+        orderType = 'fee';
+      }
+
+      return OrderSummary(
+        orderDate: o.orderDate,
+        orderType: orderType,
+        quantity: o.quantity,
+        priceNative: o.priceNative,
+        totalNative: o.totalNative,
+        totalEur: o.totalEur,
+        currency: o.currency,
+      );
+    }).toList();
+
+    return AssetDetailResponse(
+      assetId: assetId.toString(),
+      isin: asset.isin,
+      ticker: asset.ticker,
+      name: asset.name,
+      yahooSymbol: asset.yahooSymbol,
+      assetType: asset.assetType.name,
+      currency: asset.currency,
+      quantity: holding.quantity,
+      value: (valueEur * 100).round() / 100,
+      costBasis: (costBasisEur * 100).round() / 100,
+      weight: (weight * 100).round() / 100,
+      periodReturnAbs: (unrealizedPL * 100).round() / 100,
+      periodReturnPct: totalReturnResult != null
+          ? (totalReturnResult * 10000).round() / 100
+          : null,
+      mwr: (mwrResult * 10000).round() / 100,
+      twr: twrResult != null ? (twrResult * 10000).round() / 100 : null,
+      sleeveId: sleeveId,
+      sleeveName: sleeveName,
+      orders: orderSummaries,
+    );
+  }
 }
 
 /// Internal data class for holding calculations

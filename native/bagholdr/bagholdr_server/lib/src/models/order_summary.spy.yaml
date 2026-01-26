@@ -1,0 +1,23 @@
+### OrderSummary - Simplified order for display in asset detail
+class: OrderSummary
+fields:
+  ### Order date
+  orderDate: DateTime
+
+  ### Order type: buy, sell, fee
+  orderType: String
+
+  ### Quantity (positive for buy, negative for sell, 0 for fee)
+  quantity: double
+
+  ### Price per unit in native currency
+  priceNative: double
+
+  ### Total in native currency
+  totalNative: double
+
+  ### Total in EUR
+  totalEur: double
+
+  ### Currency code
+  currency: String

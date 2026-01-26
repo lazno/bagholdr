@@ -2,6 +2,158 @@ import 'package:test/test.dart';
 import 'package:bagholdr_server/src/generated/protocol.dart';
 
 void main() {
+  group('OrderSummary', () {
+    test('creates order summary with all fields', () {
+      final order = OrderSummary(
+        orderDate: DateTime(2024, 6, 15),
+        orderType: 'buy',
+        quantity: 50.0,
+        priceNative: 100.0,
+        totalNative: 5000.0,
+        totalEur: 5000.0,
+        currency: 'EUR',
+      );
+
+      expect(order.orderDate, equals(DateTime(2024, 6, 15)));
+      expect(order.orderType, equals('buy'));
+      expect(order.quantity, equals(50.0));
+      expect(order.priceNative, equals(100.0));
+      expect(order.totalNative, equals(5000.0));
+      expect(order.totalEur, equals(5000.0));
+      expect(order.currency, equals('EUR'));
+    });
+
+    test('handles fee orders with zero quantity', () {
+      final order = OrderSummary(
+        orderDate: DateTime(2024, 6, 15),
+        orderType: 'fee',
+        quantity: 0.0,
+        priceNative: 0.0,
+        totalNative: 5.0,
+        totalEur: 5.0,
+        currency: 'EUR',
+      );
+
+      expect(order.orderType, equals('fee'));
+      expect(order.quantity, equals(0.0));
+      expect(order.totalEur, equals(5.0));
+    });
+  });
+
+  group('AssetDetailResponse', () {
+    test('creates asset detail with all fields', () {
+      final orders = [
+        OrderSummary(
+          orderDate: DateTime(2024, 6, 15),
+          orderType: 'buy',
+          quantity: 50.0,
+          priceNative: 100.0,
+          totalNative: 5000.0,
+          totalEur: 5000.0,
+          currency: 'EUR',
+        ),
+      ];
+
+      final response = AssetDetailResponse(
+        assetId: '123e4567-e89b-12d3-a456-426614174001',
+        isin: 'IE00B4L5Y983',
+        ticker: 'SWDA',
+        name: 'iShares Core MSCI World',
+        yahooSymbol: 'SWDA.MI',
+        assetType: 'etf',
+        currency: 'EUR',
+        quantity: 123.45,
+        value: 12345.67,
+        costBasis: 10000.0,
+        weight: 25.5,
+        periodReturnAbs: 2345.67,
+        periodReturnPct: 18.50,
+        mwr: 23.45,
+        twr: 21.30,
+        sleeveId: '123e4567-e89b-12d3-a456-426614174000',
+        sleeveName: 'Equity Core',
+        orders: orders,
+      );
+
+      expect(response.assetId, equals('123e4567-e89b-12d3-a456-426614174001'));
+      expect(response.isin, equals('IE00B4L5Y983'));
+      expect(response.name, equals('iShares Core MSCI World'));
+      expect(response.assetType, equals('etf'));
+      expect(response.value, equals(12345.67));
+      expect(response.costBasis, equals(10000.0));
+      expect(response.weight, equals(25.5));
+      expect(response.periodReturnAbs, equals(2345.67));
+      expect(response.periodReturnPct, equals(18.50));
+      expect(response.mwr, equals(23.45));
+      expect(response.twr, equals(21.30));
+      expect(response.sleeveName, equals('Equity Core'));
+      expect(response.orders.length, equals(1));
+    });
+
+    test('allows null optional fields', () {
+      final response = AssetDetailResponse(
+        assetId: '123e4567-e89b-12d3-a456-426614174001',
+        isin: 'IE00B4L5Y983',
+        ticker: 'SWDA',
+        name: 'iShares Core MSCI World',
+        yahooSymbol: null,
+        assetType: 'etf',
+        currency: 'EUR',
+        quantity: 123.45,
+        value: 12345.67,
+        costBasis: 10000.0,
+        weight: 25.5,
+        periodReturnAbs: 2345.67,
+        periodReturnPct: null,
+        mwr: 23.45,
+        twr: null,
+        sleeveId: null,
+        sleeveName: null,
+        orders: [],
+      );
+
+      expect(response.yahooSymbol, isNull);
+      expect(response.twr, isNull);
+      expect(response.periodReturnPct, isNull);
+      expect(response.sleeveId, isNull);
+      expect(response.sleeveName, isNull);
+      expect(response.orders, isEmpty);
+    });
+
+    test('serializes to JSON correctly', () {
+      final response = AssetDetailResponse(
+        assetId: '123e4567-e89b-12d3-a456-426614174001',
+        isin: 'IE00B4L5Y983',
+        ticker: 'SWDA',
+        name: 'iShares Core MSCI World',
+        yahooSymbol: 'SWDA.MI',
+        assetType: 'etf',
+        currency: 'EUR',
+        quantity: 123.45,
+        value: 12345.67,
+        costBasis: 10000.0,
+        weight: 25.5,
+        periodReturnAbs: 2345.67,
+        periodReturnPct: 18.50,
+        mwr: 23.45,
+        twr: 21.30,
+        sleeveId: null,
+        sleeveName: null,
+        orders: [],
+      );
+
+      final json = response.toJson();
+      expect(json['assetId'], equals('123e4567-e89b-12d3-a456-426614174001'));
+      expect(json['isin'], equals('IE00B4L5Y983'));
+      expect(json['name'], equals('iShares Core MSCI World'));
+      expect(json['assetType'], equals('etf'));
+      expect(json['value'], equals(12345.67));
+      expect(json['mwr'], equals(23.45));
+      expect(json['periodReturnAbs'], equals(2345.67));
+      expect(json['periodReturnPct'], equals(18.50));
+    });
+  });
+
   group('HoldingResponse', () {
     test('creates holding response with all required fields', () {
       final response = HoldingResponse(

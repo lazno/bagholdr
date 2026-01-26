@@ -60,7 +60,8 @@
       "Bash(__NEW_LINE_4b2d89ac4fb8c97e__ echo \"\")",
       "Bash(__NEW_LINE_8bac57551fe6f4d9__ echo \"\")",
       "Bash(wc:*)",
-      "WebFetch(domain:docs.serverpod.dev)"
+      "WebFetch(domain:docs.serverpod.dev)",
+      "Bash(cat:*)"
     ]
   }
 }
