@@ -374,3 +374,11 @@ Ported Directa CSV parser and holdings derivation to Dart:
 - `derive_holdings.dart` - Average Cost Method implementation for holdings derivation
 - 45 unit tests + 2 golden-source integration tests
 - Verified output matches TypeScript exactly against 161 real orders → 20 holdings
+
+### NAPP-028: Import Endpoint `[implement]` - DONE
+
+Created Serverpod endpoint for importing Directa CSV:
+- `ImportEndpoint.importDirectaCsv(csvContent)` - parses CSV, creates assets, inserts orders, derives holdings
+- Skips duplicate orders by `orderReference`
+- Returns `ImportResult` with counts (ordersImported, assetsCreated, holdingsUpdated) and errors/warnings
+- 9 integration tests verifying full database flow

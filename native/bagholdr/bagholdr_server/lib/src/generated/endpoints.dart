@@ -14,17 +14,18 @@ import 'package:serverpod/serverpod.dart' as _i1;
 import '../auth/email_idp_endpoint.dart' as _i2;
 import '../auth/jwt_refresh_endpoint.dart' as _i3;
 import '../endpoints/holdings_endpoint.dart' as _i4;
-import '../endpoints/issues_endpoint.dart' as _i5;
-import '../endpoints/portfolio_endpoint.dart' as _i6;
-import '../endpoints/price_stream_endpoint.dart' as _i7;
-import '../endpoints/sleeves_endpoint.dart' as _i8;
-import '../endpoints/valuation_endpoint.dart' as _i9;
-import 'package:bagholdr_server/src/generated/return_period.dart' as _i10;
-import 'package:bagholdr_server/src/generated/chart_range.dart' as _i11;
+import '../endpoints/import_endpoint.dart' as _i5;
+import '../endpoints/issues_endpoint.dart' as _i6;
+import '../endpoints/portfolio_endpoint.dart' as _i7;
+import '../endpoints/price_stream_endpoint.dart' as _i8;
+import '../endpoints/sleeves_endpoint.dart' as _i9;
+import '../endpoints/valuation_endpoint.dart' as _i10;
+import 'package:bagholdr_server/src/generated/return_period.dart' as _i11;
+import 'package:bagholdr_server/src/generated/chart_range.dart' as _i12;
 import 'package:serverpod_auth_idp_server/serverpod_auth_idp_server.dart'
-    as _i12;
-import 'package:serverpod_auth_core_server/serverpod_auth_core_server.dart'
     as _i13;
+import 'package:serverpod_auth_core_server/serverpod_auth_core_server.dart'
+    as _i14;
 
 class Endpoints extends _i1.EndpointDispatch {
   @override
@@ -48,31 +49,37 @@ class Endpoints extends _i1.EndpointDispatch {
           'holdings',
           null,
         ),
-      'issues': _i5.IssuesEndpoint()
+      'import': _i5.ImportEndpoint()
+        ..initialize(
+          server,
+          'import',
+          null,
+        ),
+      'issues': _i6.IssuesEndpoint()
         ..initialize(
           server,
           'issues',
           null,
         ),
-      'portfolio': _i6.PortfolioEndpoint()
+      'portfolio': _i7.PortfolioEndpoint()
         ..initialize(
           server,
           'portfolio',
           null,
         ),
-      'priceStream': _i7.PriceStreamEndpoint()
+      'priceStream': _i8.PriceStreamEndpoint()
         ..initialize(
           server,
           'priceStream',
           null,
         ),
-      'sleeves': _i8.SleevesEndpoint()
+      'sleeves': _i9.SleevesEndpoint()
         ..initialize(
           server,
           'sleeves',
           null,
         ),
-      'valuation': _i9.ValuationEndpoint()
+      'valuation': _i10.ValuationEndpoint()
         ..initialize(
           server,
           'valuation',
@@ -287,7 +294,7 @@ class Endpoints extends _i1.EndpointDispatch {
             ),
             'period': _i1.ParameterDescription(
               name: 'period',
-              type: _i1.getType<_i10.ReturnPeriod>(),
+              type: _i1.getType<_i11.ReturnPeriod>(),
               nullable: false,
             ),
             'sleeveId': _i1.ParameterDescription(
@@ -328,6 +335,31 @@ class Endpoints extends _i1.EndpointDispatch {
         ),
       },
     );
+    connectors['import'] = _i1.EndpointConnector(
+      name: 'import',
+      endpoint: endpoints['import']!,
+      methodConnectors: {
+        'importDirectaCsv': _i1.MethodConnector(
+          name: 'importDirectaCsv',
+          params: {
+            'csvContent': _i1.ParameterDescription(
+              name: 'csvContent',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['import'] as _i5.ImportEndpoint).importDirectaCsv(
+                    session,
+                    csvContent: params['csvContent'],
+                  ),
+        ),
+      },
+    );
     connectors['issues'] = _i1.EndpointConnector(
       name: 'issues',
       endpoint: endpoints['issues']!,
@@ -345,7 +377,7 @@ class Endpoints extends _i1.EndpointDispatch {
               (
                 _i1.Session session,
                 Map<String, dynamic> params,
-              ) async => (endpoints['issues'] as _i5.IssuesEndpoint).getIssues(
+              ) async => (endpoints['issues'] as _i6.IssuesEndpoint).getIssues(
                 session,
                 portfolioId: params['portfolioId'],
               ),
@@ -363,7 +395,7 @@ class Endpoints extends _i1.EndpointDispatch {
               (
                 _i1.Session session,
                 Map<String, dynamic> params,
-              ) async => (endpoints['portfolio'] as _i6.PortfolioEndpoint)
+              ) async => (endpoints['portfolio'] as _i7.PortfolioEndpoint)
                   .getPortfolios(session),
         ),
       },
@@ -379,7 +411,7 @@ class Endpoints extends _i1.EndpointDispatch {
               (
                 _i1.Session session,
                 Map<String, dynamic> params,
-              ) async => (endpoints['priceStream'] as _i7.PriceStreamEndpoint)
+              ) async => (endpoints['priceStream'] as _i8.PriceStreamEndpoint)
                   .getSyncStatus(session),
         ),
         'triggerSync': _i1.MethodConnector(
@@ -389,7 +421,7 @@ class Endpoints extends _i1.EndpointDispatch {
               (
                 _i1.Session session,
                 Map<String, dynamic> params,
-              ) async => (endpoints['priceStream'] as _i7.PriceStreamEndpoint)
+              ) async => (endpoints['priceStream'] as _i8.PriceStreamEndpoint)
                   .triggerSync(session),
         ),
         'streamPriceUpdates': _i1.MethodStreamConnector(
@@ -402,7 +434,7 @@ class Endpoints extends _i1.EndpointDispatch {
                 _i1.Session session,
                 Map<String, dynamic> params,
                 Map<String, Stream> streamParams,
-              ) => (endpoints['priceStream'] as _i7.PriceStreamEndpoint)
+              ) => (endpoints['priceStream'] as _i8.PriceStreamEndpoint)
                   .streamPriceUpdates(session),
         ),
       },
@@ -421,7 +453,7 @@ class Endpoints extends _i1.EndpointDispatch {
             ),
             'period': _i1.ParameterDescription(
               name: 'period',
-              type: _i1.getType<_i10.ReturnPeriod>(),
+              type: _i1.getType<_i11.ReturnPeriod>(),
               nullable: false,
             ),
           },
@@ -430,7 +462,7 @@ class Endpoints extends _i1.EndpointDispatch {
                 _i1.Session session,
                 Map<String, dynamic> params,
               ) async =>
-                  (endpoints['sleeves'] as _i8.SleevesEndpoint).getSleeveTree(
+                  (endpoints['sleeves'] as _i9.SleevesEndpoint).getSleeveTree(
                     session,
                     portfolioId: params['portfolioId'],
                     period: params['period'],
@@ -455,7 +487,7 @@ class Endpoints extends _i1.EndpointDispatch {
               (
                 _i1.Session session,
                 Map<String, dynamic> params,
-              ) async => (endpoints['valuation'] as _i9.ValuationEndpoint)
+              ) async => (endpoints['valuation'] as _i10.ValuationEndpoint)
                   .getPortfolioValuation(
                     session,
                     params['portfolioId'],
@@ -471,7 +503,7 @@ class Endpoints extends _i1.EndpointDispatch {
             ),
             'range': _i1.ParameterDescription(
               name: 'range',
-              type: _i1.getType<_i11.ChartRange>(),
+              type: _i1.getType<_i12.ChartRange>(),
               nullable: false,
             ),
           },
@@ -479,7 +511,7 @@ class Endpoints extends _i1.EndpointDispatch {
               (
                 _i1.Session session,
                 Map<String, dynamic> params,
-              ) async => (endpoints['valuation'] as _i9.ValuationEndpoint)
+              ) async => (endpoints['valuation'] as _i10.ValuationEndpoint)
                   .getChartData(
                     session,
                     params['portfolioId'],
@@ -499,7 +531,7 @@ class Endpoints extends _i1.EndpointDispatch {
               (
                 _i1.Session session,
                 Map<String, dynamic> params,
-              ) async => (endpoints['valuation'] as _i9.ValuationEndpoint)
+              ) async => (endpoints['valuation'] as _i10.ValuationEndpoint)
                   .getHistoricalReturns(
                     session,
                     params['portfolioId'],
@@ -507,9 +539,9 @@ class Endpoints extends _i1.EndpointDispatch {
         ),
       },
     );
-    modules['serverpod_auth_idp'] = _i12.Endpoints()
+    modules['serverpod_auth_idp'] = _i13.Endpoints()
       ..initializeEndpoints(server);
-    modules['serverpod_auth_core'] = _i13.Endpoints()
+    modules['serverpod_auth_core'] = _i14.Endpoints()
       ..initializeEndpoints(server);
   }
 }

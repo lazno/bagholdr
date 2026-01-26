@@ -1,0 +1,21 @@
+### ImportResult - Result of importing orders from CSV
+### Not persisted - just a response type
+class: ImportResult
+fields:
+  ### Number of orders successfully imported
+  ordersImported: int
+
+  ### Number of rows skipped (non-importable transaction types)
+  rowsSkipped: int
+
+  ### Number of new assets created
+  assetsCreated: int
+
+  ### Number of holdings updated
+  holdingsUpdated: int
+
+  ### Parse errors encountered (line number: message)
+  errors: List<String>
+
+  ### Warnings (non-fatal issues)
+  warnings: List<String>

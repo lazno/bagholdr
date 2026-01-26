@@ -178,21 +178,26 @@ Understand existing import logic. **No code changes.**
 
 ---
 
-### NAPP-028: Import UI `[implement]`
+### NAPP-028: Import Endpoint `[implement]`
 
-**Priority**: Medium | **Status**: `[ ]`
+**Priority**: Medium | **Status**: `[x]`
 **Blocked by**: None (NAPP-027 complete)
 
+Backend-only. UI/automation TBD later.
+
 **Tasks**:
-- [ ] Create ImportEndpoint with `importDirectaCsv()`
-- [ ] Create import_screen.dart with file picker
-- [ ] Upload progress indicator
-- [ ] Results summary (orders imported, errors)
-- [ ] Take screenshot to verify
+- [x] Create ImportEndpoint with `importDirectaCsv(csvContent)`
+- [x] Parse CSV using directa_parser.dart
+- [x] Upsert orders to database (skips duplicates by orderReference)
+- [x] Derive holdings using derive_holdings.dart
+- [x] Return import result (orders imported, errors)
+- [x] Write integration tests
 
 **Acceptance Criteria**:
-- [ ] Can upload Directa CSV
-- [ ] Holdings update after import
+- [x] Endpoint accepts CSV string
+- [x] Orders are persisted to database
+- [x] Holdings are recalculated after import
+- [x] Returns meaningful result (count, errors)
 
 ---
 
