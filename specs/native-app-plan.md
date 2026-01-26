@@ -160,11 +160,21 @@ Understand existing import logic. **No code changes.**
 - [ ] Create directa_parser.dart
 - [ ] Port CSV parsing logic
 - [ ] Port derive-holdings logic
-- [ ] Test with sample CSV
+- [ ] Verify against TypeScript implementation (see below)
+
+**Verification Strategy** (golden-source testing):
+1. Dump all rows from the TypeScript SQLite `orders` table as JSON fixture
+2. Dump the `holdings` table as expected output
+3. Feed the same orders into the Dart `deriveHoldings()` and assert output matches exactly
+4. Pay special attention to:
+   - Commissions (quantity=0, adds to cost basis without changing position size)
+   - Dual-currency: `totalNative = currencyAmount != 0 ? currencyAmount : amountEur`
+   - Average cost proportional reduction on sells (both EUR and native tracks)
 
 **Acceptance Criteria**:
 - [ ] Parses Directa CSV correctly
 - [ ] Holdings derived correctly
+- [ ] Dart `deriveHoldings()` output matches TypeScript SQLite `holdings` table exactly when fed the same orders
 
 ---
 

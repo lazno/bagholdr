@@ -58,7 +58,9 @@
       "Bash(__NEW_LINE_51345cd39a664671__ echo \"=== Holdings - 1 Month Period ===\")",
       "Bash(__NEW_LINE_8b2859b8171cdaae__ echo \"\")",
       "Bash(__NEW_LINE_4b2d89ac4fb8c97e__ echo \"\")",
-      "Bash(__NEW_LINE_8bac57551fe6f4d9__ echo \"\")"
+      "Bash(__NEW_LINE_8bac57551fe6f4d9__ echo \"\")",
+      "Bash(wc:*)",
+      "WebFetch(domain:docs.serverpod.dev)"
     ]
   }
 }
