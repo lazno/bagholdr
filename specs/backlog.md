@@ -41,3 +41,25 @@ Tasks and improvements that don't fit into a current implementation plan. These 
 - `native/bagholdr/bagholdr_server/bin/import_migration.dart` (current UTC handling)
 
 ---
+
+### BACK-002: Persist Settings Across App Restarts
+
+**Category**: Feature | **Priority**: Low | **Added**: 2026-01-26
+
+**Context**: NAPP-029 implemented the settings UI but values reset on app restart.
+
+**Settings to persist**:
+- Theme mode (light/dark/system)
+- Privacy mode (hide balances)
+- Server URL (if user-configurable)
+
+**Recommended approach**:
+- Use `shared_preferences` package for simple key-value storage
+- Load settings in `main()` before `runApp()`
+- Update ValueNotifiers with persisted values on startup
+
+**Related files**:
+- `native/bagholdr/bagholdr_flutter/lib/main.dart` (global ValueNotifiers)
+- `native/bagholdr/bagholdr_flutter/lib/screens/settings_screen.dart`
+
+---
