@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 
 import '../main.dart';
 import '../widgets/assets_section.dart';
-import '../widgets/connection_indicator.dart';
 import '../widgets/hero_value_display.dart';
 import '../widgets/issues_bar.dart';
 import '../widgets/portfolio_chart.dart';
@@ -26,7 +25,6 @@ class _PortfolioListScreenState extends State<PortfolioListScreen> {
   late Future<List<Portfolio>> _portfoliosFuture;
   Portfolio? _selectedPortfolio;
   TimePeriod _selectedPeriod = TimePeriod.oneYear;
-  bool _hideBalances = false;
 
   // Assets section state
   List<HoldingResponse> _holdings = [];
@@ -59,12 +57,18 @@ class _PortfolioListScreenState extends State<PortfolioListScreen> {
     // Connect to real-time price stream.
     priceStreamProvider.connect();
     priceStreamProvider.addListener(_onPriceStreamUpdate);
+    hideBalances.addListener(_onHideBalancesChanged);
   }
 
   @override
   void dispose() {
     priceStreamProvider.removeListener(_onPriceStreamUpdate);
+    hideBalances.removeListener(_onHideBalancesChanged);
     super.dispose();
+  }
+
+  void _onHideBalancesChanged() {
+    if (mounted) setState(() {});
   }
 
   void _onPriceStreamUpdate() {
@@ -296,11 +300,62 @@ class _PortfolioListScreenState extends State<PortfolioListScreen> {
     _loadIssues(portfolio.id!);
     _loadSleeveTree(portfolio.id!);
     _loadChartData(portfolio.id!);
+    _loadValuation(portfolio.id!);
+    _loadHistoricalReturns(portfolio.id!);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('Switched to: ${portfolio.name}'),
         behavior: SnackBarBehavior.floating,
         duration: const Duration(seconds: 1),
+      ),
+    );
+  }
+
+  void _onPeriodChanged(TimePeriod period) {
+    setState(() {
+      _selectedPeriod = period;
+      _displayedCount = 8;
+    });
+    if (_selectedPortfolio != null) {
+      _loadHoldings(_selectedPortfolio!.id!);
+      _loadSleeveTree(_selectedPortfolio!.id!);
+      _loadChartData(_selectedPortfolio!.id!);
+    }
+  }
+
+  /// Builds the control bar with portfolio selector and time range picker.
+  Widget _buildControlBar(List<Portfolio> portfolios, Portfolio selected) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        border: Border(
+          bottom: BorderSide(
+            color: colorScheme.outlineVariant,
+            width: 1,
+          ),
+        ),
+      ),
+      child: Row(
+        children: [
+          // Portfolio selector on the left
+          PortfolioSelector(
+            portfolios: portfolios,
+            selected: selected,
+            onChanged: _onPortfolioChanged,
+          ),
+          const SizedBox(width: 12),
+          // Time range bar takes remaining space
+          Expanded(
+            child: TimeRangeBar(
+              selected: _selectedPeriod,
+              onChanged: _onPeriodChanged,
+              embedded: true,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -343,75 +398,26 @@ class _PortfolioListScreenState extends State<PortfolioListScreen> {
         return Scaffold(
           backgroundColor: bgColor,
           appBar: AppBar(
-            // Mockup-style header with hamburger + selector
-            leading: IconButton(
-              icon: const Icon(Icons.menu),
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Menu pressed (placeholder)'),
-                    behavior: SnackBarBehavior.floating,
-                    duration: Duration(seconds: 1),
-                  ),
-                );
-              },
-            ),
-            title: PortfolioSelector(
-              portfolios: portfolios,
-              selected: selected,
-              onChanged: _onPortfolioChanged,
-            ),
-            titleSpacing: 0,
+            title: const Text('Dashboard'),
             actions: [
-              // Connection status indicator
-              ConnectionIndicator(
-                status: priceStreamProvider.connectionStatus,
-                lastUpdateAt: priceStreamProvider.lastUpdateAt,
-              ),
               // Hide balances toggle
               IconButton(
                 icon: Icon(
-                  _hideBalances
+                  hideBalances.value
                       ? Icons.visibility_off_outlined
                       : Icons.visibility_outlined,
                 ),
+                tooltip: hideBalances.value ? 'Show balances' : 'Hide balances',
                 onPressed: () {
-                  setState(() {
-                    _hideBalances = !_hideBalances;
-                  });
-                },
-              ),
-              // Theme toggle
-              IconButton(
-                icon: Icon(
-                  themeMode.value == ThemeMode.dark
-                      ? Icons.light_mode_outlined
-                      : Icons.dark_mode_outlined,
-                ),
-                onPressed: () {
-                  themeMode.value = themeMode.value == ThemeMode.dark
-                      ? ThemeMode.light
-                      : ThemeMode.dark;
+                  hideBalances.value = !hideBalances.value;
                 },
               ),
             ],
           ),
           body: Column(
             children: [
-              TimeRangeBar(
-                selected: _selectedPeriod,
-                onChanged: (period) {
-                  setState(() {
-                    _selectedPeriod = period;
-                    _displayedCount = 8;
-                  });
-                  if (_selectedPortfolio != null) {
-                    _loadHoldings(_selectedPortfolio!.id!);
-                    _loadSleeveTree(_selectedPortfolio!.id!);
-                    _loadChartData(_selectedPortfolio!.id!);
-                  }
-                },
-              ),
+              // Portfolio selector + Time range bar
+              _buildControlBar(portfolios, selected),
               Expanded(child: _buildDashboardPlaceholder(selected)),
             ],
           ),
@@ -473,7 +479,7 @@ class _PortfolioListScreenState extends State<PortfolioListScreen> {
                   returnAbs: returnAbs,
                   cashBalance: cashBalance,
                   totalValue: totalValue,
-                  hideBalances: _hideBalances,
+                  hideBalances: hideBalances.value,
                 ),
                 const SizedBox(height: 24),
                 if (_isLoadingChart)
@@ -484,7 +490,7 @@ class _PortfolioListScreenState extends State<PortfolioListScreen> {
                 else if (_chartData != null && _chartData!.hasData)
                   PortfolioChart(
                     dataPoints: _chartData!.dataPoints,
-                    hideBalances: _hideBalances,
+                    hideBalances: hideBalances.value,
                   )
                 else
                   Container(
@@ -541,7 +547,7 @@ class _PortfolioListScreenState extends State<PortfolioListScreen> {
                 else if (_sleeveTree != null)
                   StrategySectionV2(
                     sleeveTree: _sleeveTree!,
-                    hideBalances: _hideBalances,
+                    hideBalances: hideBalances.value,
                     onSleeveSelected: _onSleeveSelected,
                   )
                 else
@@ -588,7 +594,7 @@ class _PortfolioListScreenState extends State<PortfolioListScreen> {
                 );
               },
               isLoading: _isLoadingHoldings,
-              hideBalances: _hideBalances,
+              hideBalances: hideBalances.value,
               isRecentlyUpdated: (isin) =>
                   priceStreamProvider.isRecentlyUpdated(isin),
             ),

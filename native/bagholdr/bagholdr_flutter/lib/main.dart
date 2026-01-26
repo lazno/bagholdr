@@ -6,7 +6,7 @@ import 'package:serverpod_auth_idp_flutter/serverpod_auth_idp_flutter.dart';
 
 import 'services/price_stream_provider.dart';
 import 'theme/theme.dart';
-import 'screens/portfolio_list_screen.dart';
+import 'screens/app_shell.dart';
 
 /// Sets up a global client object that can be used to talk to the server from
 /// anywhere in our app. The client is generated from your server code
@@ -17,6 +17,9 @@ late final Client client;
 
 /// Global theme mode notifier for app-wide theme switching.
 final themeMode = ValueNotifier<ThemeMode>(ThemeMode.system);
+
+/// Global privacy mode notifier for hiding/showing balances.
+final hideBalances = ValueNotifier<bool>(false);
 
 /// Global price stream provider for real-time price updates.
 final priceStreamProvider = PriceStreamProvider();
@@ -68,7 +71,7 @@ class BagholdrApp extends StatelessWidget {
           theme: BagholdrTheme.light,
           darkTheme: BagholdrTheme.dark,
           themeMode: mode,
-          home: const PortfolioListScreen(),
+          home: const AppShell(),
         );
       },
     );
