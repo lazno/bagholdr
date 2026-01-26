@@ -382,3 +382,12 @@ Created Serverpod endpoint for importing Directa CSV:
 - Skips duplicate orders by `orderReference`
 - Returns `ImportResult` with counts (ordersImported, assetsCreated, holdingsUpdated) and errors/warnings
 - 9 integration tests verifying full database flow
+
+### NAPP-029: Settings `[implement]` - DONE
+
+Added bottom navigation and settings screen:
+- `app_shell.dart` - Bottom navigation with Dashboard and Settings tabs
+- `settings_screen.dart` - Theme toggle (light/dark/system), privacy mode, server URL, connection status, about
+- Moved connection indicator from AppBar to Settings (cloud icons)
+- Moved portfolio selector next to time range bar
+- Global `hideBalances` ValueNotifier for privacy mode sync across screens

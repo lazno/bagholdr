@@ -203,19 +203,22 @@ Backend-only. UI/automation TBD later.
 
 ### NAPP-029: Settings `[implement]`
 
-**Priority**: Low | **Status**: `[ ]`
+**Priority**: Low | **Status**: `[x]`
 **Blocked by**: None (NAPP-004 complete)
 
 **Tasks**:
-- [ ] Create settings_screen.dart
-- [ ] Theme toggle (light/dark/system)
-- [ ] Privacy mode toggle (blur values)
-- [ ] Server URL configuration (for dev)
-- [ ] About/version info
+- [x] Create settings_screen.dart
+- [x] Theme toggle (light/dark/system)
+- [x] Privacy mode toggle (blur values)
+- [x] Server URL configuration (for dev)
+- [x] About/version info
+- [x] Bottom navigation (Dashboard, Settings)
+- [x] Move connection indicator to settings
+- [x] Move portfolio selector next to time range bar
 
 **Acceptance Criteria**:
 - [ ] Settings persist across app restarts
-- [ ] Theme changes apply immediately
+- [x] Theme changes apply immediately
 
 ---
 
