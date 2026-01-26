@@ -366,3 +366,11 @@ class DerivedHolding {
 ### NAPP-102: Add Total Return % Metric `[implement]` - DONE
 
 Added `totalReturn` field to holdings, sleeves, and period returns. Formula: `(currentValue + sellProceeds) / (buyCosts + fees) - 1`. Sub-period variant uses startValue + orders in period.
+
+### NAPP-027: Port Directa Parser `[port]` - DONE
+
+Ported Directa CSV parser and holdings derivation to Dart:
+- `directa_parser.dart` - CSV parsing with Italian date conversion, quoted field handling, transaction type filtering (Buy/Sell/Commissions)
+- `derive_holdings.dart` - Average Cost Method implementation for holdings derivation
+- 45 unit tests + 2 golden-source integration tests
+- Verified output matches TypeScript exactly against 161 real orders → 20 holdings

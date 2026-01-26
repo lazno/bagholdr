@@ -1,0 +1,1233 @@
+{
+  "orders": [
+    {
+      "assetIsin": "US4330001060",
+      "orderDate": "2026-01-13T00:00:00.000Z",
+      "quantity": 62,
+      "totalEur": 1725.11,
+      "totalNative": 2009.41
+    },
+    {
+      "assetIsin": "US9113121068",
+      "orderDate": "2026-01-06T00:00:00.000Z",
+      "quantity": 10,
+      "totalEur": 885.3,
+      "totalNative": 1035
+    },
+    {
+      "assetIsin": "US9113121068",
+      "orderDate": "2026-01-06T00:00:00.000Z",
+      "quantity": 0,
+      "totalEur": 7.7,
+      "totalNative": 9
+    },
+    {
+      "assetIsin": "CA0074082060",
+      "orderDate": "2026-01-06T00:00:00.000Z",
+      "quantity": 48,
+      "totalEur": 510.34,
+      "totalNative": 596.64
+    },
+    {
+      "assetIsin": "CA0074082060",
+      "orderDate": "2026-01-06T00:00:00.000Z",
+      "quantity": 0,
+      "totalEur": 7.7,
+      "totalNative": 9
+    },
+    {
+      "assetIsin": "IE00B6R52259",
+      "orderDate": "2026-01-06T00:00:00.000Z",
+      "quantity": 11,
+      "totalEur": 1036.42,
+      "totalNative": 1036.42
+    },
+    {
+      "assetIsin": "IE00B6R52259",
+      "orderDate": "2026-01-06T00:00:00.000Z",
+      "quantity": 0,
+      "totalEur": 9.5,
+      "totalNative": 9.5
+    },
+    {
+      "assetIsin": "DK0062498333",
+      "orderDate": "2026-01-06T00:00:00.000Z",
+      "quantity": 0,
+      "totalEur": 9.5,
+      "totalNative": 9.5
+    },
+    {
+      "assetIsin": "DK0062498333",
+      "orderDate": "2026-01-06T00:00:00.000Z",
+      "quantity": 20,
+      "totalEur": 980.5,
+      "totalNative": 980.5
+    },
+    {
+      "assetIsin": "IE00B6R52259",
+      "orderDate": "2026-01-02T00:00:00.000Z",
+      "quantity": 8,
+      "totalEur": 742.16,
+      "totalNative": 742.16
+    },
+    {
+      "assetIsin": "IE00B6R52259",
+      "orderDate": "2026-01-02T00:00:00.000Z",
+      "quantity": 0,
+      "totalEur": 9.5,
+      "totalNative": 9.5
+    },
+    {
+      "assetIsin": "US98956A1051",
+      "orderDate": "2026-01-02T00:00:00.000Z",
+      "quantity": 26,
+      "totalEur": 434.04,
+      "totalNative": 508.56
+    },
+    {
+      "assetIsin": "US98956A1051",
+      "orderDate": "2026-01-02T00:00:00.000Z",
+      "quantity": 0,
+      "totalEur": 7.68,
+      "totalNative": 9
+    },
+    {
+      "assetIsin": "US47215P1066",
+      "orderDate": "2025-12-26T00:00:00.000Z",
+      "quantity": 0,
+      "totalEur": 7.64,
+      "totalNative": 9
+    },
+    {
+      "assetIsin": "US47215P1066",
+      "orderDate": "2025-12-26T00:00:00.000Z",
+      "quantity": 51,
+      "totalEur": 1268.5,
+      "totalNative": 1494.29
+    },
+    {
+      "assetIsin": "US91324P1021",
+      "orderDate": "2025-12-26T00:00:00.000Z",
+      "quantity": 5,
+      "totalEur": 1389.01,
+      "totalNative": 1636.25
+    },
+    {
+      "assetIsin": "US91324P1021",
+      "orderDate": "2025-12-26T00:00:00.000Z",
+      "quantity": 0,
+      "totalEur": 7.64,
+      "totalNative": 9
+    },
+    {
+      "assetIsin": "KYG4124C1096",
+      "orderDate": "2025-12-26T00:00:00.000Z",
+      "quantity": 153,
+      "totalEur": 666.29,
+      "totalNative": 784.89
+    },
+    {
+      "assetIsin": "KYG4124C1096",
+      "orderDate": "2025-12-26T00:00:00.000Z",
+      "quantity": 0,
+      "totalEur": 7.64,
+      "totalNative": 9
+    },
+    {
+      "assetIsin": "KYG4124C1096",
+      "orderDate": "2025-12-26T00:00:00.000Z",
+      "quantity": 42,
+      "totalEur": 182.9,
+      "totalNative": 215.46
+    },
+    {
+      "assetIsin": "US00217D1000",
+      "orderDate": "2025-12-24T00:00:00.000Z",
+      "quantity": 17,
+      "totalEur": 1296.1,
+      "totalNative": 1526.94
+    },
+    {
+      "assetIsin": "US00217D1000",
+      "orderDate": "2025-12-24T00:00:00.000Z",
+      "quantity": 0,
+      "totalEur": 7.64,
+      "totalNative": 9
+    },
+    {
+      "assetIsin": "US98956A1051",
+      "orderDate": "2025-12-24T00:00:00.000Z",
+      "quantity": 53,
+      "totalEur": 855.22,
+      "totalNative": 1007.53
+    },
+    {
+      "assetIsin": "US98956A1051",
+      "orderDate": "2025-12-24T00:00:00.000Z",
+      "quantity": 0,
+      "totalEur": 7.64,
+      "totalNative": 9
+    },
+    {
+      "assetIsin": "US01609W1027",
+      "orderDate": "2025-12-23T00:00:00.000Z",
+      "quantity": 10,
+      "totalEur": 1280.52,
+      "totalNative": 1509.73
+    },
+    {
+      "assetIsin": "US01609W1027",
+      "orderDate": "2025-12-23T00:00:00.000Z",
+      "quantity": 0,
+      "totalEur": 7.63,
+      "totalNative": 9
+    },
+    {
+      "assetIsin": "US62914V1061",
+      "orderDate": "2025-12-23T00:00:00.000Z",
+      "quantity": 300,
+      "totalEur": 1248.5,
+      "totalNative": 1471.98
+    },
+    {
+      "assetIsin": "US62914V1061",
+      "orderDate": "2025-12-23T00:00:00.000Z",
+      "quantity": 0,
+      "totalEur": 7.63,
+      "totalNative": 9
+    },
+    {
+      "assetIsin": "CA0074082060",
+      "orderDate": "2025-12-23T00:00:00.000Z",
+      "quantity": 87,
+      "totalEur": 851.55,
+      "totalNative": 1003.98
+    },
+    {
+      "assetIsin": "CA0074082060",
+      "orderDate": "2025-12-23T00:00:00.000Z",
+      "quantity": 0,
+      "totalEur": 7.63,
+      "totalNative": 9
+    },
+    {
+      "assetIsin": "US7134481081",
+      "orderDate": "2025-12-23T00:00:00.000Z",
+      "quantity": 11,
+      "totalEur": 1343.79,
+      "totalNative": 1584.33
+    },
+    {
+      "assetIsin": "US7134481081",
+      "orderDate": "2025-12-23T00:00:00.000Z",
+      "quantity": 0,
+      "totalEur": 7.63,
+      "totalNative": 9
+    },
+    {
+      "assetIsin": "AU0000185993",
+      "orderDate": "2025-12-23T00:00:00.000Z",
+      "quantity": 24,
+      "totalEur": 842.54,
+      "totalNative": 993.36
+    },
+    {
+      "assetIsin": "AU0000185993",
+      "orderDate": "2025-12-23T00:00:00.000Z",
+      "quantity": 0,
+      "totalEur": 7.63,
+      "totalNative": 9
+    },
+    {
+      "assetIsin": "US9113121068",
+      "orderDate": "2025-12-23T00:00:00.000Z",
+      "quantity": 20,
+      "totalEur": 1697.37,
+      "totalNative": 2001.2
+    },
+    {
+      "assetIsin": "US9113121068",
+      "orderDate": "2025-12-23T00:00:00.000Z",
+      "quantity": 0,
+      "totalEur": 7.63,
+      "totalNative": 9
+    },
+    {
+      "assetIsin": "DK0062498333",
+      "orderDate": "2025-12-23T00:00:00.000Z",
+      "quantity": 35,
+      "totalEur": 1514.1,
+      "totalNative": 1514.1
+    },
+    {
+      "assetIsin": "DK0062498333",
+      "orderDate": "2025-12-23T00:00:00.000Z",
+      "quantity": 0,
+      "totalEur": 9.5,
+      "totalNative": 9.5
+    },
+    {
+      "assetIsin": "JE00B1VS3002",
+      "orderDate": "2025-10-22T00:00:00.000Z",
+      "quantity": 3,
+      "totalEur": 335.73,
+      "totalNative": 335.73
+    },
+    {
+      "assetIsin": "JE00B1VS3002",
+      "orderDate": "2025-10-22T00:00:00.000Z",
+      "quantity": 0,
+      "totalEur": 5,
+      "totalNative": 5
+    },
+    {
+      "assetIsin": "IE00BYZK4552",
+      "orderDate": "2025-10-16T00:00:00.000Z",
+      "quantity": -17,
+      "totalEur": 238.44,
+      "totalNative": 238.44
+    },
+    {
+      "assetIsin": "IE00BYZK4552",
+      "orderDate": "2025-10-16T00:00:00.000Z",
+      "quantity": 0,
+      "totalEur": 5,
+      "totalNative": 5
+    },
+    {
+      "assetIsin": "IE00BYZK4552",
+      "orderDate": "2025-10-15T00:00:00.000Z",
+      "quantity": 17,
+      "totalEur": 238.41,
+      "totalNative": 238.41
+    },
+    {
+      "assetIsin": "US17253J1060",
+      "orderDate": "2025-10-08T00:00:00.000Z",
+      "quantity": -20,
+      "totalEur": 305.2,
+      "totalNative": 354.83
+    },
+    {
+      "assetIsin": "US17253J1060",
+      "orderDate": "2025-10-08T00:00:00.000Z",
+      "quantity": 0,
+      "totalEur": 7.74,
+      "totalNative": 9
+    },
+    {
+      "assetIsin": "JE00BN2CJ301",
+      "orderDate": "2025-10-08T00:00:00.000Z",
+      "quantity": 5,
+      "totalEur": 1727.05,
+      "totalNative": 1727.05
+    },
+    {
+      "assetIsin": "JE00BN2CJ301",
+      "orderDate": "2025-10-08T00:00:00.000Z",
+      "quantity": 0,
+      "totalEur": 5,
+      "totalNative": 5
+    },
+    {
+      "assetIsin": "IE00B6R52259",
+      "orderDate": "2025-10-08T00:00:00.000Z",
+      "quantity": 0,
+      "totalEur": 9.5,
+      "totalNative": 9.5
+    },
+    {
+      "assetIsin": "IE00B6R52259",
+      "orderDate": "2025-10-08T00:00:00.000Z",
+      "quantity": 56,
+      "totalEur": 5111.68,
+      "totalNative": 5111.68
+    },
+    {
+      "assetIsin": "JE00B1VS3002",
+      "orderDate": "2025-10-08T00:00:00.000Z",
+      "quantity": 9,
+      "totalEur": 981.63,
+      "totalNative": 981.63
+    },
+    {
+      "assetIsin": "JE00B1VS3002",
+      "orderDate": "2025-10-08T00:00:00.000Z",
+      "quantity": 0,
+      "totalEur": 5,
+      "totalNative": 5
+    },
+    {
+      "assetIsin": "AU0000185993",
+      "orderDate": "2025-10-06T00:00:00.000Z",
+      "quantity": 0,
+      "totalEur": 7.68,
+      "totalNative": 9
+    },
+    {
+      "assetIsin": "AU0000185993",
+      "orderDate": "2025-10-06T00:00:00.000Z",
+      "quantity": -6,
+      "totalEur": 291.11,
+      "totalNative": 341.04
+    },
+    {
+      "assetIsin": "IE00B6R52259",
+      "orderDate": "2025-10-03T00:00:00.000Z",
+      "quantity": 0,
+      "totalEur": 9.5,
+      "totalNative": 9.5
+    },
+    {
+      "assetIsin": "IE00B6R52259",
+      "orderDate": "2025-10-03T00:00:00.000Z",
+      "quantity": 15,
+      "totalEur": 1359.45,
+      "totalNative": 1359.45
+    },
+    {
+      "assetIsin": "AU0000185993",
+      "orderDate": "2025-10-02T00:00:00.000Z",
+      "quantity": -8,
+      "totalEur": 323.26,
+      "totalNative": 378.8
+    },
+    {
+      "assetIsin": "AU0000185993",
+      "orderDate": "2025-10-02T00:00:00.000Z",
+      "quantity": 0,
+      "totalEur": 7.68,
+      "totalNative": 9
+    },
+    {
+      "assetIsin": "US05759B3050",
+      "orderDate": "2025-10-02T00:00:00.000Z",
+      "quantity": -14,
+      "totalEur": 570.61,
+      "totalNative": 668.64
+    },
+    {
+      "assetIsin": "US05759B3050",
+      "orderDate": "2025-10-02T00:00:00.000Z",
+      "quantity": 0,
+      "totalEur": 7.68,
+      "totalNative": 9
+    },
+    {
+      "assetIsin": "US05759B3050",
+      "orderDate": "2025-09-30T00:00:00.000Z",
+      "quantity": 10,
+      "totalEur": 217.65,
+      "totalNative": 255.5
+    },
+    {
+      "assetIsin": "US05759B3050",
+      "orderDate": "2025-09-30T00:00:00.000Z",
+      "quantity": 20,
+      "totalEur": 435.3,
+      "totalNative": 511
+    },
+    {
+      "assetIsin": "US05759B3050",
+      "orderDate": "2025-09-30T00:00:00.000Z",
+      "quantity": 0,
+      "totalEur": 7.67,
+      "totalNative": 9
+    },
+    {
+      "assetIsin": "JE00B1VS3002",
+      "orderDate": "2025-09-24T00:00:00.000Z",
+      "quantity": 21,
+      "totalEur": 1998.99,
+      "totalNative": 1998.99
+    },
+    {
+      "assetIsin": "JE00B1VS3002",
+      "orderDate": "2025-09-24T00:00:00.000Z",
+      "quantity": 0,
+      "totalEur": 5,
+      "totalNative": 5
+    },
+    {
+      "assetIsin": "US05759B3050",
+      "orderDate": "2025-09-22T00:00:00.000Z",
+      "quantity": 40,
+      "totalEur": 473.56,
+      "totalNative": 558.8
+    },
+    {
+      "assetIsin": "US05759B3050",
+      "orderDate": "2025-09-22T00:00:00.000Z",
+      "quantity": 0,
+      "totalEur": 7.63,
+      "totalNative": 9
+    },
+    {
+      "assetIsin": "IE00BDFL4P12",
+      "orderDate": "2025-09-18T00:00:00.000Z",
+      "quantity": 536,
+      "totalEur": 3396.63,
+      "totalNative": 3396.63
+    },
+    {
+      "assetIsin": "IE00BDFL4P12",
+      "orderDate": "2025-09-18T00:00:00.000Z",
+      "quantity": 0,
+      "totalEur": 9.5,
+      "totalNative": 9.5
+    },
+    {
+      "assetIsin": "LU0942970103",
+      "orderDate": "2025-09-18T00:00:00.000Z",
+      "quantity": 0,
+      "totalEur": 9.5,
+      "totalNative": 9.5
+    },
+    {
+      "assetIsin": "LU0942970103",
+      "orderDate": "2025-09-18T00:00:00.000Z",
+      "quantity": 263,
+      "totalEur": 8974.35,
+      "totalNative": 8974.35
+    },
+    {
+      "assetIsin": "IE00BYZK4552",
+      "orderDate": "2025-09-18T00:00:00.000Z",
+      "quantity": -50,
+      "totalEur": 669.1,
+      "totalNative": 669.1
+    },
+    {
+      "assetIsin": "IE00BYZK4552",
+      "orderDate": "2025-09-18T00:00:00.000Z",
+      "quantity": -197,
+      "totalEur": 2634.68,
+      "totalNative": 2634.68
+    },
+    {
+      "assetIsin": "IE00BYZK4552",
+      "orderDate": "2025-09-18T00:00:00.000Z",
+      "quantity": 0,
+      "totalEur": 5,
+      "totalNative": 5
+    },
+    {
+      "assetIsin": "JE00BN2CJ301",
+      "orderDate": "2025-09-18T00:00:00.000Z",
+      "quantity": 10,
+      "totalEur": 3084.3,
+      "totalNative": 3084.3
+    },
+    {
+      "assetIsin": "JE00BN2CJ301",
+      "orderDate": "2025-09-18T00:00:00.000Z",
+      "quantity": 6,
+      "totalEur": 1850.64,
+      "totalNative": 1850.64
+    },
+    {
+      "assetIsin": "IE00B6R52259",
+      "orderDate": "2025-09-18T00:00:00.000Z",
+      "quantity": 0,
+      "totalEur": 9.5,
+      "totalNative": 9.5
+    },
+    {
+      "assetIsin": "IE00B6R52259",
+      "orderDate": "2025-09-18T00:00:00.000Z",
+      "quantity": 309,
+      "totalEur": 27377.4,
+      "totalNative": 27377.4
+    },
+    {
+      "assetIsin": "LU0942970103",
+      "orderDate": "2025-09-18T00:00:00.000Z",
+      "quantity": 0,
+      "totalEur": 9.5,
+      "totalNative": 9.5
+    },
+    {
+      "assetIsin": "LU0942970103",
+      "orderDate": "2025-09-18T00:00:00.000Z",
+      "quantity": 234,
+      "totalEur": 7986.42,
+      "totalNative": 7986.42
+    },
+    {
+      "assetIsin": "IE00B6R52259",
+      "orderDate": "2025-09-18T00:00:00.000Z",
+      "quantity": 0,
+      "totalEur": 9.5,
+      "totalNative": 9.5
+    },
+    {
+      "assetIsin": "IE00B6R52259",
+      "orderDate": "2025-09-18T00:00:00.000Z",
+      "quantity": 113,
+      "totalEur": 10019.71,
+      "totalNative": 10019.71
+    },
+    {
+      "assetIsin": "IE00BL25JL35",
+      "orderDate": "2025-09-18T00:00:00.000Z",
+      "quantity": -45,
+      "totalEur": 2968.65,
+      "totalNative": 2968.65
+    },
+    {
+      "assetIsin": "IE00BL25JL35",
+      "orderDate": "2025-09-18T00:00:00.000Z",
+      "quantity": -55,
+      "totalEur": 3628.35,
+      "totalNative": 3628.35
+    },
+    {
+      "assetIsin": "IE00BL25JL35",
+      "orderDate": "2025-09-18T00:00:00.000Z",
+      "quantity": 0,
+      "totalEur": 5,
+      "totalNative": 5
+    },
+    {
+      "assetIsin": "XS2668070662",
+      "orderDate": "2025-09-17T00:00:00.000Z",
+      "quantity": -9000,
+      "totalEur": 9460.8,
+      "totalNative": 9460.8
+    },
+    {
+      "assetIsin": "XS2668070662",
+      "orderDate": "2025-09-17T00:00:00.000Z",
+      "quantity": 0,
+      "totalEur": 8,
+      "totalNative": 8
+    },
+    {
+      "assetIsin": "XS2364199757",
+      "orderDate": "2025-09-17T00:00:00.000Z",
+      "quantity": -11000,
+      "totalEur": 9749.3,
+      "totalNative": 9749.3
+    },
+    {
+      "assetIsin": "XS2364199757",
+      "orderDate": "2025-09-17T00:00:00.000Z",
+      "quantity": 0,
+      "totalEur": 8,
+      "totalNative": 8
+    },
+    {
+      "assetIsin": "XS2717294487",
+      "orderDate": "2025-09-17T00:00:00.000Z",
+      "quantity": -14000,
+      "totalEur": 14876.4,
+      "totalNative": 14876.4
+    },
+    {
+      "assetIsin": "XS2717294487",
+      "orderDate": "2025-09-17T00:00:00.000Z",
+      "quantity": 0,
+      "totalEur": 8,
+      "totalNative": 8
+    },
+    {
+      "assetIsin": "XS2668070662",
+      "orderDate": "2025-09-17T00:00:00.000Z",
+      "quantity": -1000,
+      "totalEur": 1052.6,
+      "totalNative": 1052.6
+    },
+    {
+      "assetIsin": "XS2668070662",
+      "orderDate": "2025-09-17T00:00:00.000Z",
+      "quantity": 0,
+      "totalEur": 8,
+      "totalNative": 8
+    },
+    {
+      "assetIsin": "IE00BLPK3577",
+      "orderDate": "2025-09-17T00:00:00.000Z",
+      "quantity": -108,
+      "totalEur": 2795.04,
+      "totalNative": 2795.04
+    },
+    {
+      "assetIsin": "IE00BLPK3577",
+      "orderDate": "2025-09-17T00:00:00.000Z",
+      "quantity": 0,
+      "totalEur": 5,
+      "totalNative": 5
+    },
+    {
+      "assetIsin": "JE00BN2CJ301",
+      "orderDate": "2025-09-17T00:00:00.000Z",
+      "quantity": 1,
+      "totalEur": 308.31,
+      "totalNative": 308.31
+    },
+    {
+      "assetIsin": "JE00BN2CJ301",
+      "orderDate": "2025-09-17T00:00:00.000Z",
+      "quantity": 0,
+      "totalEur": 5,
+      "totalNative": 5
+    },
+    {
+      "assetIsin": "LU1079842321",
+      "orderDate": "2025-09-17T00:00:00.000Z",
+      "quantity": -9,
+      "totalEur": 4664.7,
+      "totalNative": 4664.7
+    },
+    {
+      "assetIsin": "LU1079842321",
+      "orderDate": "2025-09-17T00:00:00.000Z",
+      "quantity": 0,
+      "totalEur": 5,
+      "totalNative": 5
+    },
+    {
+      "assetIsin": "FR0010361683",
+      "orderDate": "2025-09-17T00:00:00.000Z",
+      "quantity": -16,
+      "totalEur": 439.92,
+      "totalNative": 439.92
+    },
+    {
+      "assetIsin": "FR0010361683",
+      "orderDate": "2025-09-17T00:00:00.000Z",
+      "quantity": -10,
+      "totalEur": 274.95,
+      "totalNative": 274.95
+    },
+    {
+      "assetIsin": "FR0010361683",
+      "orderDate": "2025-09-17T00:00:00.000Z",
+      "quantity": -10,
+      "totalEur": 274.95,
+      "totalNative": 274.95
+    },
+    {
+      "assetIsin": "FR0010361683",
+      "orderDate": "2025-09-17T00:00:00.000Z",
+      "quantity": -57,
+      "totalEur": 1567.22,
+      "totalNative": 1567.22
+    },
+    {
+      "assetIsin": "FR0010361683",
+      "orderDate": "2025-09-17T00:00:00.000Z",
+      "quantity": 0,
+      "totalEur": 5,
+      "totalNative": 5
+    },
+    {
+      "assetIsin": "XS2717294487",
+      "orderDate": "2025-09-17T00:00:00.000Z",
+      "quantity": -3000,
+      "totalEur": 3187.8,
+      "totalNative": 3187.8
+    },
+    {
+      "assetIsin": "XS2364199757",
+      "orderDate": "2025-09-17T00:00:00.000Z",
+      "quantity": -4000,
+      "totalEur": 3545.2,
+      "totalNative": 3545.2
+    },
+    {
+      "assetIsin": "XS2364199757",
+      "orderDate": "2025-09-17T00:00:00.000Z",
+      "quantity": 0,
+      "totalEur": 8,
+      "totalNative": 8
+    },
+    {
+      "assetIsin": "IE00BLPK3577",
+      "orderDate": "2025-09-15T00:00:00.000Z",
+      "quantity": 9,
+      "totalEur": 236.25,
+      "totalNative": 236.25
+    },
+    {
+      "assetIsin": "IE00BYZK4552",
+      "orderDate": "2025-09-15T00:00:00.000Z",
+      "quantity": 18,
+      "totalEur": 237.13,
+      "totalNative": 237.13
+    },
+    {
+      "assetIsin": "IE00BLPK3577",
+      "orderDate": "2025-08-18T00:00:00.000Z",
+      "quantity": 9,
+      "totalEur": 226.85,
+      "totalNative": 226.85
+    },
+    {
+      "assetIsin": "JE00BN2CJ301",
+      "orderDate": "2025-08-18T00:00:00.000Z",
+      "quantity": 1,
+      "totalEur": 284.06,
+      "totalNative": 284.06
+    },
+    {
+      "assetIsin": "IE00BYZK4552",
+      "orderDate": "2025-08-18T00:00:00.000Z",
+      "quantity": 19,
+      "totalEur": 247.61,
+      "totalNative": 247.61
+    },
+    {
+      "assetIsin": "AU0000185993",
+      "orderDate": "2025-07-24T00:00:00.000Z",
+      "quantity": 17,
+      "totalEur": 268.02,
+      "totalNative": 315.35
+    },
+    {
+      "assetIsin": "AU0000185993",
+      "orderDate": "2025-07-24T00:00:00.000Z",
+      "quantity": 0,
+      "totalEur": 7.65,
+      "totalNative": 9
+    },
+    {
+      "assetIsin": "AU0000185993",
+      "orderDate": "2025-07-23T00:00:00.000Z",
+      "quantity": 28,
+      "totalEur": 436.41,
+      "totalNative": 513.74
+    },
+    {
+      "assetIsin": "AU0000185993",
+      "orderDate": "2025-07-23T00:00:00.000Z",
+      "quantity": 0,
+      "totalEur": 7.65,
+      "totalNative": 9
+    },
+    {
+      "assetIsin": "US17253J1060",
+      "orderDate": "2025-07-23T00:00:00.000Z",
+      "quantity": 117,
+      "totalEur": 643.03,
+      "totalNative": 756.98
+    },
+    {
+      "assetIsin": "US17253J1060",
+      "orderDate": "2025-07-23T00:00:00.000Z",
+      "quantity": 0,
+      "totalEur": 7.65,
+      "totalNative": 9
+    },
+    {
+      "assetIsin": "IE00BLPK3577",
+      "orderDate": "2025-07-15T00:00:00.000Z",
+      "quantity": 9,
+      "totalEur": 235.71,
+      "totalNative": 235.71
+    },
+    {
+      "assetIsin": "IE00BYZK4552",
+      "orderDate": "2025-07-15T00:00:00.000Z",
+      "quantity": 18,
+      "totalEur": 236.48,
+      "totalNative": 236.48
+    },
+    {
+      "assetIsin": "JE00BN2CJ301",
+      "orderDate": "2025-07-15T00:00:00.000Z",
+      "quantity": 1,
+      "totalEur": 285.05,
+      "totalNative": 285.05
+    },
+    {
+      "assetIsin": "IE00BLPK3577",
+      "orderDate": "2025-06-16T00:00:00.000Z",
+      "quantity": 9,
+      "totalEur": 239.36,
+      "totalNative": 239.36
+    },
+    {
+      "assetIsin": "JE00BN2CJ301",
+      "orderDate": "2025-06-16T00:00:00.000Z",
+      "quantity": 1,
+      "totalEur": 292.34,
+      "totalNative": 292.34
+    },
+    {
+      "assetIsin": "IE00BYZK4552",
+      "orderDate": "2025-06-16T00:00:00.000Z",
+      "quantity": 19,
+      "totalEur": 239.7,
+      "totalNative": 239.7
+    },
+    {
+      "assetIsin": "IE00BYZK4552",
+      "orderDate": "2025-05-15T00:00:00.000Z",
+      "quantity": 19,
+      "totalEur": 242.25,
+      "totalNative": 242.25
+    },
+    {
+      "assetIsin": "JE00BN2CJ301",
+      "orderDate": "2025-05-15T00:00:00.000Z",
+      "quantity": 1,
+      "totalEur": 285.9,
+      "totalNative": 285.9
+    },
+    {
+      "assetIsin": "IE00BLPK3577",
+      "orderDate": "2025-05-15T00:00:00.000Z",
+      "quantity": 9,
+      "totalEur": 240.17,
+      "totalNative": 240.17
+    },
+    {
+      "assetIsin": "JE00BN2CJ301",
+      "orderDate": "2025-04-15T00:00:00.000Z",
+      "quantity": 1,
+      "totalEur": 283.66,
+      "totalNative": 283.66
+    },
+    {
+      "assetIsin": "IE00BYZK4552",
+      "orderDate": "2025-04-15T00:00:00.000Z",
+      "quantity": 22,
+      "totalEur": 241.91,
+      "totalNative": 241.91
+    },
+    {
+      "assetIsin": "IE00BLPK3577",
+      "orderDate": "2025-04-15T00:00:00.000Z",
+      "quantity": 10,
+      "totalEur": 234.85,
+      "totalNative": 234.85
+    },
+    {
+      "assetIsin": "IE00BYZK4552",
+      "orderDate": "2025-03-17T00:00:00.000Z",
+      "quantity": 20,
+      "totalEur": 248.44,
+      "totalNative": 248.44
+    },
+    {
+      "assetIsin": "IE00BLPK3577",
+      "orderDate": "2025-03-17T00:00:00.000Z",
+      "quantity": 9,
+      "totalEur": 230.58,
+      "totalNative": 230.58
+    },
+    {
+      "assetIsin": "IE00BLPK3577",
+      "orderDate": "2025-02-18T00:00:00.000Z",
+      "quantity": 8,
+      "totalEur": 245.32,
+      "totalNative": 245.32
+    },
+    {
+      "assetIsin": "IE00BYZK4552",
+      "orderDate": "2025-02-17T00:00:00.000Z",
+      "quantity": 17,
+      "totalEur": 241.23,
+      "totalNative": 241.23
+    },
+    {
+      "assetIsin": "IE00BLPK3577",
+      "orderDate": "2025-01-15T00:00:00.000Z",
+      "quantity": 9,
+      "totalEur": 248.4,
+      "totalNative": 248.4
+    },
+    {
+      "assetIsin": "IE00BYZK4552",
+      "orderDate": "2025-01-15T00:00:00.000Z",
+      "quantity": 18,
+      "totalEur": 246.71,
+      "totalNative": 246.71
+    },
+    {
+      "assetIsin": "IE00BYZK4552",
+      "orderDate": "2024-12-16T00:00:00.000Z",
+      "quantity": 17,
+      "totalEur": 236.03,
+      "totalNative": 236.03
+    },
+    {
+      "assetIsin": "IE00BLPK3577",
+      "orderDate": "2024-12-16T00:00:00.000Z",
+      "quantity": 8,
+      "totalEur": 225.48,
+      "totalNative": 225.48
+    },
+    {
+      "assetIsin": "XS2717294487",
+      "orderDate": "2024-12-06T00:00:00.000Z",
+      "quantity": 2000,
+      "totalEur": 2140,
+      "totalNative": 2140
+    },
+    {
+      "assetIsin": "XS2717294487",
+      "orderDate": "2024-12-06T00:00:00.000Z",
+      "quantity": 0,
+      "totalEur": 8,
+      "totalNative": 8
+    },
+    {
+      "assetIsin": "IE00BYZK4552",
+      "orderDate": "2024-11-15T00:00:00.000Z",
+      "quantity": 19,
+      "totalEur": 245.48,
+      "totalNative": 245.48
+    },
+    {
+      "assetIsin": "JE00BN2CJ301",
+      "orderDate": "2024-11-15T00:00:00.000Z",
+      "quantity": 1,
+      "totalEur": 241.98,
+      "totalNative": 241.98
+    },
+    {
+      "assetIsin": "IE00BLPK3577",
+      "orderDate": "2024-11-15T00:00:00.000Z",
+      "quantity": 9,
+      "totalEur": 228.24,
+      "totalNative": 228.24
+    },
+    {
+      "assetIsin": "IE00BLPK3577",
+      "orderDate": "2024-10-15T00:00:00.000Z",
+      "quantity": 10,
+      "totalEur": 243.6,
+      "totalNative": 243.6
+    },
+    {
+      "assetIsin": "JE00BN2CJ301",
+      "orderDate": "2024-10-15T00:00:00.000Z",
+      "quantity": 1,
+      "totalEur": 243.11,
+      "totalNative": 243.11
+    },
+    {
+      "assetIsin": "IE00BYZK4552",
+      "orderDate": "2024-10-15T00:00:00.000Z",
+      "quantity": 20,
+      "totalEur": 247.88,
+      "totalNative": 247.88
+    },
+    {
+      "assetIsin": "IE00BYZK4552",
+      "orderDate": "2024-09-16T00:00:00.000Z",
+      "quantity": 21,
+      "totalEur": 244.99,
+      "totalNative": 244.99
+    },
+    {
+      "assetIsin": "JE00BN2CJ301",
+      "orderDate": "2024-09-16T00:00:00.000Z",
+      "quantity": 1,
+      "totalEur": 231.02,
+      "totalNative": 231.02
+    },
+    {
+      "assetIsin": "XS2717294487",
+      "orderDate": "2024-09-03T00:00:00.000Z",
+      "quantity": 10000,
+      "totalEur": 10652,
+      "totalNative": 10652
+    },
+    {
+      "assetIsin": "XS2717294487",
+      "orderDate": "2024-09-03T00:00:00.000Z",
+      "quantity": 5000,
+      "totalEur": 5326,
+      "totalNative": 5326
+    },
+    {
+      "assetIsin": "XS2717294487",
+      "orderDate": "2024-09-03T00:00:00.000Z",
+      "quantity": 0,
+      "totalEur": 8,
+      "totalNative": 8
+    },
+    {
+      "assetIsin": "IE00BL25JL35",
+      "orderDate": "2024-09-03T00:00:00.000Z",
+      "quantity": 100,
+      "totalEur": 6427,
+      "totalNative": 6427
+    },
+    {
+      "assetIsin": "JE00BN2CJ301",
+      "orderDate": "2024-09-03T00:00:00.000Z",
+      "quantity": 7,
+      "totalEur": 1561,
+      "totalNative": 1561
+    },
+    {
+      "assetIsin": "JE00BN2CJ301",
+      "orderDate": "2024-09-03T00:00:00.000Z",
+      "quantity": 0,
+      "totalEur": 5,
+      "totalNative": 5
+    },
+    {
+      "assetIsin": "XS2668070662",
+      "orderDate": "2024-09-03T00:00:00.000Z",
+      "quantity": 3000,
+      "totalEur": 3197.4,
+      "totalNative": 3197.4
+    },
+    {
+      "assetIsin": "XS2668070662",
+      "orderDate": "2024-09-03T00:00:00.000Z",
+      "quantity": 7000,
+      "totalEur": 7461.3,
+      "totalNative": 7461.3
+    },
+    {
+      "assetIsin": "XS2668070662",
+      "orderDate": "2024-09-03T00:00:00.000Z",
+      "quantity": 0,
+      "totalEur": 8,
+      "totalNative": 8
+    },
+    {
+      "assetIsin": "XS2364199757",
+      "orderDate": "2024-09-03T00:00:00.000Z",
+      "quantity": 15000,
+      "totalEur": 12636,
+      "totalNative": 12636
+    },
+    {
+      "assetIsin": "XS2364199757",
+      "orderDate": "2024-09-03T00:00:00.000Z",
+      "quantity": 0,
+      "totalEur": 8,
+      "totalNative": 8
+    },
+    {
+      "assetIsin": "LU1079842321",
+      "orderDate": "2024-09-03T00:00:00.000Z",
+      "quantity": 9,
+      "totalEur": 4726.8,
+      "totalNative": 4726.8
+    },
+    {
+      "assetIsin": "LU1079842321",
+      "orderDate": "2024-09-03T00:00:00.000Z",
+      "quantity": 0,
+      "totalEur": 5,
+      "totalNative": 5
+    },
+    {
+      "assetIsin": "FR0010361683",
+      "orderDate": "2024-09-03T00:00:00.000Z",
+      "quantity": 93,
+      "totalEur": 2993.67,
+      "totalNative": 2993.67
+    }
+  ],
+  "expectedHoldings": [
+    {
+      "assetIsin": "AU0000185993",
+      "quantity": 55,
+      "totalCostEur": 1358.8531891891892
+    },
+    {
+      "assetIsin": "CA0074082060",
+      "quantity": 135,
+      "totalCostEur": 1377.22
+    },
+    {
+      "assetIsin": "DK0062498333",
+      "quantity": 55,
+      "totalCostEur": 2513.6
+    },
+    {
+      "assetIsin": "IE00B6R52259",
+      "quantity": 512,
+      "totalCostEur": 45703.82
+    },
+    {
+      "assetIsin": "IE00BDFL4P12",
+      "quantity": 536,
+      "totalCostEur": 3406.13
+    },
+    {
+      "assetIsin": "JE00B1VS3002",
+      "quantity": 33,
+      "totalCostEur": 3331.35
+    },
+    {
+      "assetIsin": "JE00BN2CJ301",
+      "quantity": 37,
+      "totalCostEur": 10693.42
+    },
+    {
+      "assetIsin": "KYG4124C1096",
+      "quantity": 195,
+      "totalCostEur": 856.8299999999999
+    },
+    {
+      "assetIsin": "LU0942970103",
+      "quantity": 497,
+      "totalCostEur": 16979.77
+    },
+    {
+      "assetIsin": "US00217D1000",
+      "quantity": 17,
+      "totalCostEur": 1303.74
+    },
+    {
+      "assetIsin": "US01609W1027",
+      "quantity": 10,
+      "totalCostEur": 1288.15
+    },
+    {
+      "assetIsin": "US05759B3050",
+      "quantity": 56,
+      "totalCostEur": 921.128
+    },
+    {
+      "assetIsin": "US17253J1060",
+      "quantity": 97,
+      "totalCostEur": 547.1926495726495
+    },
+    {
+      "assetIsin": "US4330001060",
+      "quantity": 62,
+      "totalCostEur": 1725.11
+    },
+    {
+      "assetIsin": "US47215P1066",
+      "quantity": 51,
+      "totalCostEur": 1276.14
+    },
+    {
+      "assetIsin": "US62914V1061",
+      "quantity": 300,
+      "totalCostEur": 1256.13
+    },
+    {
+      "assetIsin": "US7134481081",
+      "quantity": 11,
+      "totalCostEur": 1351.42
+    },
+    {
+      "assetIsin": "US9113121068",
+      "quantity": 30,
+      "totalCostEur": 2598
+    },
+    {
+      "assetIsin": "US91324P1021",
+      "quantity": 5,
+      "totalCostEur": 1396.65
+    },
+    {
+      "assetIsin": "US98956A1051",
+      "quantity": 79,
+      "totalCostEur": 1304.5800000000002
+    }
+  ]
+}

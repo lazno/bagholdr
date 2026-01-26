@@ -153,14 +153,14 @@ Understand existing import logic. **No code changes.**
 
 ### NAPP-027: Port Directa Parser `[port]`
 
-**Priority**: Medium | **Status**: `[ ]`
+**Priority**: Medium | **Status**: `[x]`
 **Blocked by**: None (NAPP-026 complete)
 
 **Tasks**:
-- [ ] Create directa_parser.dart
-- [ ] Port CSV parsing logic
-- [ ] Port derive-holdings logic
-- [ ] Verify against TypeScript implementation (see below)
+- [x] Create directa_parser.dart
+- [x] Port CSV parsing logic
+- [x] Port derive-holdings logic
+- [x] Verify against TypeScript implementation (see below)
 
 **Verification Strategy** (golden-source testing):
 1. Dump all rows from the TypeScript SQLite `orders` table as JSON fixture
@@ -172,16 +172,16 @@ Understand existing import logic. **No code changes.**
    - Average cost proportional reduction on sells (both EUR and native tracks)
 
 **Acceptance Criteria**:
-- [ ] Parses Directa CSV correctly
-- [ ] Holdings derived correctly
-- [ ] Dart `deriveHoldings()` output matches TypeScript SQLite `holdings` table exactly when fed the same orders
+- [x] Parses Directa CSV correctly
+- [x] Holdings derived correctly
+- [x] Dart `deriveHoldings()` output matches TypeScript SQLite `holdings` table exactly when fed the same orders
 
 ---
 
 ### NAPP-028: Import UI `[implement]`
 
-**Priority**: Medium | **Status**: `[blocked]`
-**Blocked by**: NAPP-027
+**Priority**: Medium | **Status**: `[ ]`
+**Blocked by**: None (NAPP-027 complete)
 
 **Tasks**:
 - [ ] Create ImportEndpoint with `importDirectaCsv()`
