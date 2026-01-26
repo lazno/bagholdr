@@ -3,10 +3,16 @@ import 'dart:io';
 import 'package:test/test.dart';
 import 'package:bagholdr_server/src/import/derive_holdings.dart';
 
-/// Golden source test - verifies Dart deriveHoldings matches TypeScript exactly
+/// Golden source test - verifies Dart deriveHoldings produces correct results
 ///
-/// This test loads real orders from the TypeScript SQLite database and verifies
-/// that the Dart implementation produces identical holdings.
+/// This test uses synthetic data covering all edge cases:
+/// - Simple buy
+/// - Multiple buys at different prices (average cost)
+/// - Partial sell (proportional cost reduction)
+/// - Commissions (add to cost basis, don't change quantity)
+/// - Fully sold position (excluded from holdings)
+/// - Multi-currency (EUR vs native cost tracking)
+/// - Out-of-order input (chronological sorting)
 void main() {
   group('Golden Source Holdings Test', () {
     late List<OrderForDerivation> orders;
@@ -19,8 +25,7 @@ void main() {
       final file = File(fixturePath);
 
       if (!file.existsSync()) {
-        fail('Fixture file not found: $fixturePath\n'
-            'Run: cd server && npx tsx scripts/dump-orders-holdings.ts');
+        fail('Fixture file not found: $fixturePath');
       }
 
       final data = jsonDecode(file.readAsStringSync()) as Map<String, dynamic>;
