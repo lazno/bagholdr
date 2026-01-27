@@ -40,7 +40,9 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
   bool _isInitialLoading = true;
   String? _error;
   bool _isUpdatingSymbol = false;
+  bool _isUpdatingType = false;
   bool _isUpdatingSleeve = false;
+  bool _isRefreshingPrices = false;
 
   // Track the last price to detect changes
   double? _lastKnownPrice;
@@ -169,6 +171,58 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
     }
   }
 
+  Future<void> _showAssetTypePickerDialog(String currentType) async {
+    final result = await showDialog<String?>(
+      context: context,
+      builder: (context) => _AssetTypePickerDialog(currentType: currentType),
+    );
+
+    if (result != null && result != currentType) {
+      await _updateAssetType(result);
+    }
+  }
+
+  Future<void> _updateAssetType(String newType) async {
+    setState(() => _isUpdatingType = true);
+    try {
+      await client.holdings.updateAssetType(
+        assetId: UuidValue.fromString(widget.assetId),
+        newType: newType,
+      );
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Asset type updated to ${_formatAssetTypeLabel(newType)}')),
+      );
+      _loadAssetDetail();
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed: $e')),
+      );
+    } finally {
+      if (mounted) setState(() => _isUpdatingType = false);
+    }
+  }
+
+  String _formatAssetTypeLabel(String type) {
+    switch (type.toLowerCase()) {
+      case 'etf':
+        return 'ETF';
+      case 'stock':
+        return 'Stock';
+      case 'bond':
+        return 'Bond';
+      case 'fund':
+        return 'Fund';
+      case 'commodity':
+        return 'Commodity';
+      case 'other':
+        return 'Other';
+      default:
+        return type;
+    }
+  }
+
   Future<void> _showSleevePickerDialog(String? currentSleeveId) async {
     // Fetch available sleeves
     List<SleeveOption>? sleeves;
@@ -235,6 +289,39 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
     }
   }
 
+  Future<void> _refreshAssetPrices() async {
+    setState(() => _isRefreshingPrices = true);
+    try {
+      final result = await client.holdings.refreshAssetPrices(
+        assetId: UuidValue.fromString(widget.assetId),
+      );
+      if (!mounted) return;
+
+      if (result.success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+                'Price updated: €${result.priceEur?.toStringAsFixed(2) ?? "N/A"}'),
+          ),
+        );
+        _loadAssetDetail();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(result.errorMessage ?? 'Failed to refresh prices'),
+          ),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e')),
+      );
+    } finally {
+      if (mounted) setState(() => _isRefreshingPrices = false);
+    }
+  }
+
   void _showActionMenu() {
     final colorScheme = Theme.of(context).colorScheme;
 
@@ -247,11 +334,10 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
             ListTile(
               leading: Icon(Icons.refresh, color: colorScheme.onSurface),
               title: const Text('Refresh prices'),
+              enabled: !_isRefreshingPrices,
               onTap: () {
                 Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Not implemented yet')),
-                );
+                _refreshAssetPrices();
               },
             ),
             ListTile(
@@ -383,8 +469,11 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
               detail: detail,
               onEditYahooSymbol: () =>
                   _showEditYahooSymbolDialog(detail.yahooSymbol),
+              onEditAssetType: () =>
+                  _showAssetTypePickerDialog(detail.assetType),
               onEditSleeve: () => _showSleevePickerDialog(detail.sleeveId),
               isUpdatingSymbol: _isUpdatingSymbol,
+              isUpdatingType: _isUpdatingType,
               isUpdatingSleeve: _isUpdatingSleeve,
             ),
           ),
@@ -675,15 +764,19 @@ class _EditableFieldsSection extends StatelessWidget {
   const _EditableFieldsSection({
     required this.detail,
     this.onEditYahooSymbol,
+    this.onEditAssetType,
     this.onEditSleeve,
     this.isUpdatingSymbol = false,
+    this.isUpdatingType = false,
     this.isUpdatingSleeve = false,
   });
 
   final AssetDetailResponse detail;
   final VoidCallback? onEditYahooSymbol;
+  final VoidCallback? onEditAssetType;
   final VoidCallback? onEditSleeve;
   final bool isUpdatingSymbol;
+  final bool isUpdatingType;
   final bool isUpdatingSleeve;
 
   @override
@@ -703,11 +796,8 @@ class _EditableFieldsSection extends StatelessWidget {
         _EditableField(
           label: 'Asset Type',
           value: _formatAssetType(detail.assetType),
-          onEdit: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Not implemented yet')),
-            );
-          },
+          onEdit: onEditAssetType ?? () {},
+          isLoading: isUpdatingType,
         ),
         Divider(height: 1, color: colorScheme.outlineVariant),
         _EditableField(
@@ -732,6 +822,8 @@ class _EditableFieldsSection extends StatelessWidget {
         return 'Fund';
       case 'commodity':
         return 'Commodity';
+      case 'other':
+        return 'Other';
       default:
         return type;
     }
@@ -1069,6 +1161,82 @@ class _SleeveOptionTile extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// Dialog for selecting an asset type.
+class _AssetTypePickerDialog extends StatelessWidget {
+  const _AssetTypePickerDialog({required this.currentType});
+
+  final String currentType;
+
+  static const _assetTypes = [
+    ('etf', 'ETF'),
+    ('stock', 'Stock'),
+    ('bond', 'Bond'),
+    ('fund', 'Fund'),
+    ('commodity', 'Commodity'),
+    ('other', 'Other'),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return AlertDialog(
+      title: const Text('Change Asset Type'),
+      contentPadding: const EdgeInsets.symmetric(vertical: 16),
+      content: SizedBox(
+        width: double.maxFinite,
+        child: ListView.separated(
+          shrinkWrap: true,
+          itemCount: _assetTypes.length,
+          separatorBuilder: (context, index) =>
+              Divider(height: 1, color: colorScheme.outlineVariant),
+          itemBuilder: (context, index) {
+            final (value, label) = _assetTypes[index];
+            final isSelected = currentType.toLowerCase() == value;
+
+            return InkWell(
+              onTap: () => Navigator.pop(context, value),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        label,
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: colorScheme.onSurface,
+                          fontWeight:
+                              isSelected ? FontWeight.w600 : FontWeight.normal,
+                        ),
+                      ),
+                    ),
+                    if (isSelected)
+                      Icon(
+                        Icons.check,
+                        size: 20,
+                        color: colorScheme.primary,
+                      ),
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancel'),
+        ),
+      ],
     );
   }
 }

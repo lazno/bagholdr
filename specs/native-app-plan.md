@@ -229,28 +229,6 @@ Allow user to edit the Yahoo symbol for an asset. Changing the symbol should cle
 
 ---
 
-### NAPP-033: Edit Asset Type `[implement]`
-
-**Priority**: Low | **Status**: `[ ]`
-**Blocked by**: None
-
-Allow user to change asset type (ETF, Stock, Bond, etc.).
-
-**Backend**:
-- [ ] Add `updateAssetType(assetId, newType)` endpoint
-- [ ] Validate type is one of allowed values
-
-**Frontend**:
-- [ ] Wire up edit button in `_EditableFieldsSection`
-- [ ] Show picker dialog with asset type options
-- [ ] Call endpoint and refresh asset detail on success
-
-**Acceptance Criteria**:
-- [ ] User can change asset type from asset detail page
-- [ ] Type badge updates immediately
-
----
-
 ### NAPP-034: Assign Asset to Sleeve `[implement]`
 
 **Priority**: Medium | **Status**: `[x]`
@@ -496,26 +474,6 @@ Add a compact, extensible filter to the dashboard for filtering the assets list.
 - [ ] Get user sign-off before implementation
 
 ---
-
----
-
-### NAPP-043: Bottom Navigation Visual Separation `[implement]`
-
-**Priority**: Low | **Status**: `[x]`
-**Blocked by**: None
-
-The bottom navigation bar blends into the dark background with no visual distinction. Add a top border for clear separation.
-
-**Tasks**:
-- [x] Wrap `NavigationBar` in `Container` with top border decoration
-- [x] Use `colorScheme.outlineVariant` for border color (matches existing patterns)
-
-**File modified**:
-- `native/bagholdr/bagholdr_flutter/lib/screens/app_shell.dart`
-
-**Acceptance Criteria**:
-- [x] Bottom navigation has visible top border
-- [x] Border color adapts to light/dark theme
 
 ---
 

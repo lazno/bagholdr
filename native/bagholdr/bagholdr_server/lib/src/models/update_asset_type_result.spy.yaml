@@ -1,0 +1,9 @@
+### UpdateAssetTypeResult - Response from updating an asset's type
+class: UpdateAssetTypeResult
+
+fields:
+  ### Whether the update succeeded
+  success: bool
+
+  ### The new asset type (as string for display)
+  newType: String?

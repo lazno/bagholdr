@@ -432,3 +432,19 @@ Full-screen asset detail page with comprehensive information:
 - Order history: full list with date, type, quantity, price, total
 - Actions menu: refresh prices, clear history (stub), archive (stub)
 - Live price updates via SSE subscription
+
+### NAPP-043: Bottom Navigation Visual Separation `[implement]` - DONE
+
+Added top border to bottom navigation bar for visual separation from content:
+- Wrapped `NavigationBar` in `Container` with top border decoration
+- Used `colorScheme.outlineVariant` for theme-adaptive border color
+
+### NAPP-033: Edit Asset Type `[implement]` - DONE
+
+Edit asset type (ETF, Stock, Bond, etc.) from asset detail page:
+- `updateAssetType(assetId, newType)` endpoint in `HoldingsEndpoint`
+- Validates type against `AssetType` enum values
+- Picker dialog with all 6 asset type options
+- Loading state and success feedback
+- 4 unit tests for `UpdateAssetTypeResult` serialization
+- 7 integration tests verifying end-to-end endpoint functionality

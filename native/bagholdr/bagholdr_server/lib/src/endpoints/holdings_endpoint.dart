@@ -2,6 +2,7 @@ import 'dart:math' as math;
 import 'package:serverpod/serverpod.dart' hide Order;
 
 import '../generated/protocol.dart';
+import '../oracle/cache.dart';
 import '../services/asset_returns_calculator.dart';
 
 /// Endpoint for holdings/assets list data.
@@ -722,6 +723,87 @@ class HoldingsEndpoint extends Endpoint {
       sleeveId: sleeveId.toString(),
       sleeveName: sleeve.name,
     );
+  }
+
+  /// Update the asset type for an asset
+  ///
+  /// [assetId] - UUID of the asset to update
+  /// [newType] - New asset type (stock, etf, bond, fund, commodity, other)
+  Future<UpdateAssetTypeResult> updateAssetType(
+    Session session, {
+    required UuidValue assetId,
+    required String newType,
+  }) async {
+    // 1. Validate asset type
+    final validTypes = AssetType.values.map((e) => e.name).toSet();
+    if (!validTypes.contains(newType)) {
+      throw Exception(
+          'Invalid asset type: $newType. Valid types: ${validTypes.join(', ')}');
+    }
+
+    // 2. Fetch asset
+    final asset = await Asset.db.findById(session, assetId);
+    if (asset == null) {
+      throw Exception('Asset not found: $assetId');
+    }
+
+    // 3. Update asset type
+    asset.assetType = AssetType.values.firstWhere((e) => e.name == newType);
+    await Asset.db.updateRow(session, asset);
+
+    return UpdateAssetTypeResult(
+      success: true,
+      newType: newType,
+    );
+  }
+
+  /// Refresh prices for a single asset
+  ///
+  /// Fetches fresh price data from Yahoo Finance, bypassing cache.
+  /// [assetId] - UUID of the asset to refresh
+  Future<RefreshPriceResult> refreshAssetPrices(
+    Session session, {
+    required UuidValue assetId,
+  }) async {
+    // 1. Fetch asset
+    final asset = await Asset.db.findById(session, assetId);
+    if (asset == null) {
+      return RefreshPriceResult(
+        success: false,
+        errorMessage: 'Asset not found: $assetId',
+      );
+    }
+
+    // 2. Check Yahoo symbol
+    if (asset.yahooSymbol == null) {
+      return RefreshPriceResult(
+        success: false,
+        errorMessage: 'No Yahoo symbol set for ${asset.name}. Set a symbol first.',
+      );
+    }
+
+    // 3. Force fetch fresh price
+    try {
+      final result = await getPrice(
+        session,
+        asset.isin,
+        asset.yahooSymbol,
+        forceRefresh: true,
+      );
+
+      return RefreshPriceResult(
+        success: true,
+        ticker: result.ticker,
+        priceEur: result.priceEur,
+        currency: result.currency,
+        fetchedAt: result.fetchedAt,
+      );
+    } catch (e) {
+      return RefreshPriceResult(
+        success: false,
+        errorMessage: 'Failed to fetch price: $e',
+      );
+    }
   }
 }
 

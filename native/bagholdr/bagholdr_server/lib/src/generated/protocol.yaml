@@ -14,6 +14,8 @@ holdings:
   - updateYahooSymbol:
   - getSleevesForPicker:
   - assignAssetToSleeve:
+  - updateAssetType:
+  - refreshAssetPrices:
 import:
   - importDirectaCsv:
 issues:

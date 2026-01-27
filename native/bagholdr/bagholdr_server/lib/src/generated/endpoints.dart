@@ -433,6 +433,50 @@ class Endpoints extends _i1.EndpointDispatch {
                     sleeveId: params['sleeveId'],
                   ),
         ),
+        'updateAssetType': _i1.MethodConnector(
+          name: 'updateAssetType',
+          params: {
+            'assetId': _i1.ParameterDescription(
+              name: 'assetId',
+              type: _i1.getType<_i1.UuidValue>(),
+              nullable: false,
+            ),
+            'newType': _i1.ParameterDescription(
+              name: 'newType',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['holdings'] as _i4.HoldingsEndpoint)
+                  .updateAssetType(
+                    session,
+                    assetId: params['assetId'],
+                    newType: params['newType'],
+                  ),
+        ),
+        'refreshAssetPrices': _i1.MethodConnector(
+          name: 'refreshAssetPrices',
+          params: {
+            'assetId': _i1.ParameterDescription(
+              name: 'assetId',
+              type: _i1.getType<_i1.UuidValue>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['holdings'] as _i4.HoldingsEndpoint)
+                  .refreshAssetPrices(
+                    session,
+                    assetId: params['assetId'],
+                  ),
+        ),
       },
     );
     connectors['import'] = _i1.EndpointConnector(
