@@ -305,22 +305,22 @@ Archive an asset to hide it from the main view (for sold positions or mistakes).
 
 ### NAPP-038: Add Portfolio Weight to Asset Detail `[implement]`
 
-**Priority**: Low | **Status**: `[ ]`
+**Priority**: Low | **Status**: `[x]`
 **Blocked by**: None
 
 Display the asset's weight as a percentage of the total portfolio value.
 
 **Backend**:
-- [ ] Add `weightPct` field to `AssetDetailResponse` (already may exist, verify)
-- [ ] Calculate: `(asset value / portfolio total value) * 100`
+- [x] Add `weight` field to `AssetDetailResponse` (already existed)
+- [x] Calculate: `(asset value / portfolio total value) * 100`
 
 **Frontend**:
-- [ ] Display weight in position summary section
-- [ ] Format as percentage (e.g., "12.5%")
+- [x] Display weight in position summary section
+- [x] Format as percentage (e.g., "12.5%")
 
 **Acceptance Criteria**:
-- [ ] Asset detail shows weight relative to total portfolio
-- [ ] Weight updates when value changes
+- [x] Asset detail shows weight relative to total portfolio
+- [x] Weight updates when value changes
 
 ---
 
@@ -474,6 +474,51 @@ Add a compact, extensible filter to the dashboard for filtering the assets list.
 - [ ] Get user sign-off before implementation
 
 ---
+
+---
+
+### NAPP-043: Remove Page Titles from Main Screens `[implement]`
+
+**Priority**: Low | **Status**: `[ ]`
+**Blocked by**: None
+
+Remove redundant page titles from the top of the 3 main screens (Dashboard, Strategy, Settings) since they're already displayed in the bottom navigation menu. Also remove the privacy mode buttons from Dashboard and Strategy (accessible via Settings).
+
+**Files to modify**:
+- `lib/screens/portfolio_list_screen.dart` - Remove AppBar (title + privacy button)
+- `lib/screens/strategy_screen.dart` - Remove AppBar (title + privacy button)
+- `lib/screens/settings_screen.dart` - Remove AppBar (title only)
+
+**NOT modified**:
+- `lib/screens/asset_detail_screen.dart` - Keep the title bar (shows dynamic asset name + action menu)
+
+**Acceptance Criteria**:
+- [ ] Dashboard, Strategy, Settings screens have no AppBar/title bar
+- [ ] Asset Detail screen still shows the asset name and action menu
+- [ ] Privacy mode toggle in Settings still works
+- [ ] Bottom navigation still functions correctly
+
+---
+
+### NAPP-044: Fix Search Box Focus Behavior `[implement]`
+
+**Priority**: Low | **Status**: `[ ]`
+**Blocked by**: None
+
+Search box on dashboard retains focus after navigating to asset detail. When returning via back button, keyboard immediately opens because search field still has focus.
+
+**Fix**:
+1. Wrap dashboard in `GestureDetector` with `onTap` that calls `FocusScope.of(context).unfocus()` - allows tapping outside search to dismiss keyboard
+2. Clear focus when navigating to asset detail page
+
+**Files to modify**:
+- `lib/screens/portfolio_list_screen.dart` - Add GestureDetector wrapper
+- `lib/widgets/assets_section.dart` - Clear focus on asset tap (if search is here)
+
+**Acceptance Criteria**:
+- [ ] Tapping outside search box dismisses keyboard
+- [ ] Navigating to asset detail clears search focus
+- [ ] Returning to dashboard does not auto-open keyboard
 
 ---
 

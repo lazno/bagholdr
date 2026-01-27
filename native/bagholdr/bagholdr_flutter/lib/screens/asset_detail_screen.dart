@@ -575,7 +575,7 @@ class _PositionSummary extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '${detail.quantity.toStringAsFixed(detail.quantity == detail.quantity.roundToDouble() ? 0 : 2)} shares',
+                    '${detail.quantity.toStringAsFixed(detail.quantity == detail.quantity.roundToDouble() ? 0 : 2)} shares · ${Formatters.formatPercent(detail.weight / 100)} of portfolio',
                     style: TextStyle(
                       fontSize: 14,
                       color: colorScheme.onSurfaceVariant,
