@@ -617,6 +617,112 @@ class HoldingsEndpoint extends Endpoint {
       dividendsCleared: dividendsCleared,
     );
   }
+
+  /// Get available sleeves for assignment picker
+  ///
+  /// Returns a flat list of sleeves for the portfolio, with hierarchy
+  /// indicated by depth field. Excludes cash sleeves.
+  ///
+  /// [portfolioId] - Portfolio to fetch sleeves for
+  Future<List<SleeveOption>> getSleevesForPicker(
+    Session session, {
+    required UuidValue portfolioId,
+  }) async {
+    // Get all non-cash sleeves for this portfolio
+    final allSleeves = await Sleeve.db.find(
+      session,
+      where: (t) => t.portfolioId.equals(portfolioId) & t.isCash.equals(false),
+      orderBy: (t) => t.sortOrder,
+    );
+
+    if (allSleeves.isEmpty) {
+      return [];
+    }
+
+    // Build parent map for hierarchy lookup
+    final sleeveMap = {for (var s in allSleeves) s.id!.toString(): s};
+    final childrenMap = <String?, List<Sleeve>>{};
+    for (final sleeve in allSleeves) {
+      final parentId = sleeve.parentSleeveId?.toString();
+      childrenMap.putIfAbsent(parentId, () => []).add(sleeve);
+    }
+
+    // Build flat list with hierarchy info using DFS
+    final result = <SleeveOption>[];
+
+    void addSleeveWithChildren(Sleeve sleeve, int depth, String prefix) {
+      final displayName = prefix.isEmpty ? sleeve.name : '$prefix > ${sleeve.name}';
+      result.add(SleeveOption(
+        id: sleeve.id!.toString(),
+        name: displayName,
+        depth: depth,
+      ));
+
+      // Add children recursively
+      final children = childrenMap[sleeve.id!.toString()] ?? [];
+      for (final child in children) {
+        addSleeveWithChildren(child, depth + 1, displayName);
+      }
+    }
+
+    // Start with root sleeves (no parent)
+    final rootSleeves = childrenMap[null] ?? [];
+    for (final sleeve in rootSleeves) {
+      addSleeveWithChildren(sleeve, 0, '');
+    }
+
+    return result;
+  }
+
+  /// Assign or unassign an asset to/from a sleeve
+  ///
+  /// [assetId] - UUID of the asset to assign
+  /// [sleeveId] - UUID of the sleeve to assign to (null to unassign)
+  Future<AssignSleeveResult> assignAssetToSleeve(
+    Session session, {
+    required UuidValue assetId,
+    UuidValue? sleeveId,
+  }) async {
+    // Verify asset exists
+    final asset = await Asset.db.findById(session, assetId);
+    if (asset == null) {
+      throw Exception('Asset not found: $assetId');
+    }
+
+    // Delete any existing sleeve assignments for this asset
+    await SleeveAsset.db.deleteWhere(
+      session,
+      where: (t) => t.assetId.equals(assetId),
+    );
+
+    // If sleeveId is null, we're done (unassigned)
+    if (sleeveId == null) {
+      return AssignSleeveResult(
+        success: true,
+        sleeveId: null,
+        sleeveName: null,
+      );
+    }
+
+    // Verify sleeve exists
+    final sleeve = await Sleeve.db.findById(session, sleeveId);
+    if (sleeve == null) {
+      throw Exception('Sleeve not found: $sleeveId');
+    }
+
+    // Create new assignment
+    final assignment = SleeveAsset(
+      sleeveId: sleeveId,
+      assetId: assetId,
+    );
+    await SleeveAsset.db.insertRow(session, assignment);
+
+    return AssignSleeveResult(
+      success: true,
+      sleeveId: sleeveId.toString(),
+      sleeveName: sleeve.name,
+    );
+  }
 }
 
 /// Internal data class for holding calculations

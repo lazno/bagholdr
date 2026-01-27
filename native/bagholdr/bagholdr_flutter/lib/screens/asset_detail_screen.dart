@@ -40,6 +40,7 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
   bool _isInitialLoading = true;
   String? _error;
   bool _isUpdatingSymbol = false;
+  bool _isUpdatingSleeve = false;
 
   // Track the last price to detect changes
   double? _lastKnownPrice;
@@ -165,6 +166,72 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
       );
     } finally {
       if (mounted) setState(() => _isUpdatingSymbol = false);
+    }
+  }
+
+  Future<void> _showSleevePickerDialog(String? currentSleeveId) async {
+    // Fetch available sleeves
+    List<SleeveOption>? sleeves;
+    try {
+      sleeves = await client.holdings.getSleevesForPicker(
+        portfolioId: UuidValue.fromString(widget.portfolioId),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to load sleeves: $e')),
+      );
+      return;
+    }
+
+    if (!mounted) return;
+
+    // Show picker dialog
+    final result = await showDialog<String?>(
+      context: context,
+      builder: (context) => _SleevePickerDialog(
+        sleeves: sleeves!,
+        currentSleeveId: currentSleeveId,
+      ),
+    );
+
+    // Result is:
+    // - null: user cancelled
+    // - empty string: user selected "Unassigned"
+    // - sleeve ID: user selected a sleeve
+    if (result == null) return; // Cancelled
+
+    final newSleeveId = result.isEmpty ? null : result;
+
+    // Don't update if same sleeve selected
+    if (newSleeveId == currentSleeveId) return;
+
+    await _updateSleeve(newSleeveId);
+  }
+
+  Future<void> _updateSleeve(String? sleeveId) async {
+    setState(() => _isUpdatingSleeve = true);
+    try {
+      final result = await client.holdings.assignAssetToSleeve(
+        assetId: UuidValue.fromString(widget.assetId),
+        sleeveId: sleeveId != null ? UuidValue.fromString(sleeveId) : null,
+      );
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(result.sleeveName != null
+              ? 'Assigned to ${result.sleeveName}'
+              : 'Unassigned from sleeve'),
+        ),
+      );
+      _loadAssetDetail();
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed: $e')),
+      );
+    } finally {
+      if (mounted) setState(() => _isUpdatingSleeve = false);
     }
   }
 
@@ -316,7 +383,9 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
               detail: detail,
               onEditYahooSymbol: () =>
                   _showEditYahooSymbolDialog(detail.yahooSymbol),
-              isUpdating: _isUpdatingSymbol,
+              onEditSleeve: () => _showSleevePickerDialog(detail.sleeveId),
+              isUpdatingSymbol: _isUpdatingSymbol,
+              isUpdatingSleeve: _isUpdatingSleeve,
             ),
           ),
 
@@ -606,12 +675,16 @@ class _EditableFieldsSection extends StatelessWidget {
   const _EditableFieldsSection({
     required this.detail,
     this.onEditYahooSymbol,
-    this.isUpdating = false,
+    this.onEditSleeve,
+    this.isUpdatingSymbol = false,
+    this.isUpdatingSleeve = false,
   });
 
   final AssetDetailResponse detail;
   final VoidCallback? onEditYahooSymbol;
-  final bool isUpdating;
+  final VoidCallback? onEditSleeve;
+  final bool isUpdatingSymbol;
+  final bool isUpdatingSleeve;
 
   @override
   Widget build(BuildContext context) {
@@ -624,7 +697,7 @@ class _EditableFieldsSection extends StatelessWidget {
           label: 'Yahoo Symbol',
           value: detail.yahooSymbol ?? '—',
           onEdit: onEditYahooSymbol ?? () {},
-          isLoading: isUpdating,
+          isLoading: isUpdatingSymbol,
         ),
         Divider(height: 1, color: colorScheme.outlineVariant),
         _EditableField(
@@ -640,11 +713,8 @@ class _EditableFieldsSection extends StatelessWidget {
         _EditableField(
           label: 'Sleeve',
           value: detail.sleeveName ?? 'Unassigned',
-          onEdit: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Not implemented yet')),
-            );
-          },
+          onEdit: onEditSleeve ?? () {},
+          isLoading: isUpdatingSleeve,
         ),
       ],
     );
@@ -897,5 +967,108 @@ class _OrderRow extends StatelessWidget {
   String _formatPrice(double price, String currency) {
     final symbol = currency == 'EUR' ? '\u20ac' : (currency == 'USD' ? '\$' : currency);
     return '$symbol${price.toStringAsFixed(2)}';
+  }
+}
+
+/// Dialog for selecting a sleeve to assign an asset to.
+class _SleevePickerDialog extends StatelessWidget {
+  const _SleevePickerDialog({
+    required this.sleeves,
+    required this.currentSleeveId,
+  });
+
+  final List<SleeveOption> sleeves;
+  final String? currentSleeveId;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return AlertDialog(
+      title: const Text('Assign to Sleeve'),
+      contentPadding: const EdgeInsets.symmetric(vertical: 16),
+      content: SizedBox(
+        width: double.maxFinite,
+        child: ListView(
+          shrinkWrap: true,
+          children: [
+            // "Unassigned" option
+            _SleeveOptionTile(
+              name: 'Unassigned',
+              depth: 0,
+              isSelected: currentSleeveId == null,
+              onTap: () => Navigator.pop(context, ''),
+            ),
+            if (sleeves.isNotEmpty)
+              Divider(height: 1, color: colorScheme.outlineVariant),
+            // Sleeve options
+            ...sleeves.map((sleeve) => _SleeveOptionTile(
+                  name: sleeve.name,
+                  depth: sleeve.depth,
+                  isSelected: sleeve.id == currentSleeveId,
+                  onTap: () => Navigator.pop(context, sleeve.id),
+                )),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancel'),
+        ),
+      ],
+    );
+  }
+}
+
+/// Single sleeve option row in the picker.
+class _SleeveOptionTile extends StatelessWidget {
+  const _SleeveOptionTile({
+    required this.name,
+    required this.depth,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  final String name;
+  final int depth;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: EdgeInsets.only(
+          left: 24 + (depth * 16.0),
+          right: 24,
+          top: 12,
+          bottom: 12,
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                name,
+                style: TextStyle(
+                  fontSize: 16,
+                  color: colorScheme.onSurface,
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                ),
+              ),
+            ),
+            if (isSelected)
+              Icon(
+                Icons.check,
+                size: 20,
+                color: colorScheme.primary,
+              ),
+          ],
+        ),
+      ),
+    );
   }
 }

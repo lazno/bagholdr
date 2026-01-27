@@ -270,7 +270,7 @@ Allow user to change asset type (ETF, Stock, Bond, etc.).
 
 ### NAPP-034: Assign Asset to Sleeve `[implement]`
 
-**Priority**: Medium | **Status**: `[ ]`
+**Priority**: Medium | **Status**: `[~]`
 **Blocked by**: None
 
 Allow user to assign/reassign an asset to a sleeve.

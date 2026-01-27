@@ -1,0 +1,11 @@
+### AssignSleeveResult - Result of assigning an asset to a sleeve
+class: AssignSleeveResult
+fields:
+  ### Whether the operation succeeded
+  success: bool
+
+  ### New sleeve ID (null if unassigned)
+  sleeveId: String?
+
+  ### New sleeve name (null if unassigned)
+  sleeveName: String?

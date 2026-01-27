@@ -1,0 +1,11 @@
+### SleeveOption - Simplified sleeve info for picker dialogs
+class: SleeveOption
+fields:
+  ### Sleeve UUID
+  id: String
+
+  ### Display name (e.g., "Core > Equities")
+  name: String
+
+  ### Hierarchy depth (0 = root, 1 = child, etc.)
+  depth: int

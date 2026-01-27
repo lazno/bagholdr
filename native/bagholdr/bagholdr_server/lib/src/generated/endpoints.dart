@@ -389,6 +389,50 @@ class Endpoints extends _i1.EndpointDispatch {
                     newSymbol: params['newSymbol'],
                   ),
         ),
+        'getSleevesForPicker': _i1.MethodConnector(
+          name: 'getSleevesForPicker',
+          params: {
+            'portfolioId': _i1.ParameterDescription(
+              name: 'portfolioId',
+              type: _i1.getType<_i1.UuidValue>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['holdings'] as _i4.HoldingsEndpoint)
+                  .getSleevesForPicker(
+                    session,
+                    portfolioId: params['portfolioId'],
+                  ),
+        ),
+        'assignAssetToSleeve': _i1.MethodConnector(
+          name: 'assignAssetToSleeve',
+          params: {
+            'assetId': _i1.ParameterDescription(
+              name: 'assetId',
+              type: _i1.getType<_i1.UuidValue>(),
+              nullable: false,
+            ),
+            'sleeveId': _i1.ParameterDescription(
+              name: 'sleeveId',
+              type: _i1.getType<_i1.UuidValue?>(),
+              nullable: true,
+            ),
+          },
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['holdings'] as _i4.HoldingsEndpoint)
+                  .assignAssetToSleeve(
+                    session,
+                    assetId: params['assetId'],
+                    sleeveId: params['sleeveId'],
+                  ),
+        ),
       },
     );
     connectors['import'] = _i1.EndpointConnector(
