@@ -1,0 +1,9 @@
+### UpdateYahooSymbolResult - Result of updating an asset's Yahoo symbol
+### Contains info about what was cleared when the symbol changed
+class: UpdateYahooSymbolResult
+fields:
+  success: bool
+  newSymbol: String?
+  dailyPricesCleared: int
+  intradayPricesCleared: int
+  dividendsCleared: int

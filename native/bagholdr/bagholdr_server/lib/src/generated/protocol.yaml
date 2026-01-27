@@ -11,6 +11,7 @@ jwtRefresh:
 holdings:
   - getHoldings:
   - getAssetDetail:
+  - updateYahooSymbol:
 import:
   - importDirectaCsv:
 issues:

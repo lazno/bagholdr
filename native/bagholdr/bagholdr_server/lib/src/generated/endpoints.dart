@@ -364,6 +364,31 @@ class Endpoints extends _i1.EndpointDispatch {
                     period: params['period'],
                   ),
         ),
+        'updateYahooSymbol': _i1.MethodConnector(
+          name: 'updateYahooSymbol',
+          params: {
+            'assetId': _i1.ParameterDescription(
+              name: 'assetId',
+              type: _i1.getType<_i1.UuidValue>(),
+              nullable: false,
+            ),
+            'newSymbol': _i1.ParameterDescription(
+              name: 'newSymbol',
+              type: _i1.getType<String?>(),
+              nullable: true,
+            ),
+          },
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['holdings'] as _i4.HoldingsEndpoint)
+                  .updateYahooSymbol(
+                    session,
+                    assetId: params['assetId'],
+                    newSymbol: params['newSymbol'],
+                  ),
+        ),
       },
     );
     connectors['import'] = _i1.EndpointConnector(

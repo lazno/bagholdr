@@ -224,25 +224,25 @@ Backend-only. UI/automation TBD later.
 
 ### NAPP-032: Edit Yahoo Symbol `[implement]`
 
-**Priority**: Medium | **Status**: `[ ]`
+**Priority**: Medium | **Status**: `[x]`
 **Blocked by**: None
 
 Allow user to edit the Yahoo symbol for an asset. Changing the symbol should clear historical price data for the old ticker.
 
 **Backend**:
-- [ ] Add `updateYahooSymbol(assetId, newSymbol)` endpoint
-- [ ] Clear `DailyPrice`, `IntradayPrice`, `DividendEvent`, `TickerMetadata` for old symbol
-- [ ] Update asset record with new symbol
+- [x] Add `updateYahooSymbol(assetId, newSymbol)` endpoint
+- [x] Clear `DailyPrice`, `IntradayPrice`, `DividendEvent`, `TickerMetadata` for old symbol
+- [x] Update asset record with new symbol
 
 **Frontend**:
-- [ ] Wire up edit button in `_EditableFieldsSection`
-- [ ] Show text input dialog for new symbol
-- [ ] Call endpoint and refresh asset detail on success
+- [x] Wire up edit button in `_EditableFieldsSection`
+- [x] Show text input dialog for new symbol
+- [x] Call endpoint and refresh asset detail on success
 
 **Acceptance Criteria**:
-- [ ] User can change Yahoo symbol from asset detail page
-- [ ] Old price data is cleared when symbol changes
-- [ ] New prices are fetched on next price refresh
+- [x] User can change Yahoo symbol from asset detail page
+- [x] Old price data is cleared when symbol changes
+- [x] New prices are fetched on next price refresh
 
 ---
 

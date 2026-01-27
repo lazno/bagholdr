@@ -546,6 +546,77 @@ class HoldingsEndpoint extends Endpoint {
       orders: orderSummaries,
     );
   }
+
+  /// Update the Yahoo symbol for an asset
+  ///
+  /// When the symbol changes, clears all cached price data for the old symbol
+  /// to prevent stale data from affecting calculations.
+  ///
+  /// [assetId] - UUID of the asset to update
+  /// [newSymbol] - New Yahoo symbol (null to clear)
+  Future<UpdateYahooSymbolResult> updateYahooSymbol(
+    Session session, {
+    required UuidValue assetId,
+    String? newSymbol,
+  }) async {
+    // 1. Fetch asset
+    final asset = await Asset.db.findById(session, assetId);
+    if (asset == null) {
+      throw Exception('Asset not found: $assetId');
+    }
+
+    final oldSymbol = asset.yahooSymbol;
+    var dailyCleared = 0;
+    var intradayCleared = 0;
+    var dividendsCleared = 0;
+
+    // Trim whitespace from new symbol
+    final trimmedNewSymbol = newSymbol?.trim();
+    final effectiveNewSymbol =
+        (trimmedNewSymbol?.isEmpty ?? true) ? null : trimmedNewSymbol;
+
+    // 2. Clear price data if symbol actually changed
+    if (oldSymbol != null && oldSymbol != effectiveNewSymbol) {
+      final deletedDaily = await DailyPrice.db.deleteWhere(
+        session,
+        where: (t) => t.ticker.equals(oldSymbol),
+      );
+      dailyCleared = deletedDaily.length;
+
+      final deletedIntraday = await IntradayPrice.db.deleteWhere(
+        session,
+        where: (t) => t.ticker.equals(oldSymbol),
+      );
+      intradayCleared = deletedIntraday.length;
+
+      final deletedDividends = await DividendEvent.db.deleteWhere(
+        session,
+        where: (t) => t.ticker.equals(oldSymbol),
+      );
+      dividendsCleared = deletedDividends.length;
+
+      await TickerMetadata.db.deleteWhere(
+        session,
+        where: (t) => t.ticker.equals(oldSymbol),
+      );
+      await PriceCache.db.deleteWhere(
+        session,
+        where: (t) => t.ticker.equals(oldSymbol),
+      );
+    }
+
+    // 3. Update asset
+    asset.yahooSymbol = effectiveNewSymbol;
+    await Asset.db.updateRow(session, asset);
+
+    return UpdateYahooSymbolResult(
+      success: true,
+      newSymbol: effectiveNewSymbol,
+      dailyPricesCleared: dailyCleared,
+      intradayPricesCleared: intradayCleared,
+      dividendsCleared: dividendsCleared,
+    );
+  }
 }
 
 /// Internal data class for holding calculations

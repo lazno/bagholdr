@@ -39,6 +39,7 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
   AssetDetailResponse? _assetDetail;
   bool _isInitialLoading = true;
   String? _error;
+  bool _isUpdatingSymbol = false;
 
   // Track the last price to detect changes
   double? _lastKnownPrice;
@@ -105,6 +106,66 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
     if (period == _selectedPeriod) return;
     setState(() => _selectedPeriod = period);
     _loadAssetDetail();
+  }
+
+  Future<void> _showEditYahooSymbolDialog(String? currentSymbol) async {
+    final controller = TextEditingController(text: currentSymbol ?? '');
+
+    final result = await showDialog<String?>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Edit Yahoo Symbol'),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          textCapitalization: TextCapitalization.characters,
+          decoration: const InputDecoration(
+            labelText: 'Symbol',
+            hintText: 'e.g., SWDA.MI',
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, controller.text.trim()),
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+
+    if (result != null) {
+      await _updateYahooSymbol(result.isEmpty ? null : result);
+    }
+  }
+
+  Future<void> _updateYahooSymbol(String? newSymbol) async {
+    setState(() => _isUpdatingSymbol = true);
+    try {
+      await client.holdings.updateYahooSymbol(
+        assetId: UuidValue.fromString(widget.assetId),
+        newSymbol: newSymbol,
+      );
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(newSymbol != null
+              ? 'Symbol updated to $newSymbol'
+              : 'Symbol cleared'),
+        ),
+      );
+      _loadAssetDetail();
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed: $e')),
+      );
+    } finally {
+      if (mounted) setState(() => _isUpdatingSymbol = false);
+    }
   }
 
   void _showActionMenu() {
@@ -251,7 +312,12 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
           Container(
             color: colorScheme.surface,
             padding: const EdgeInsets.all(16),
-            child: _EditableFieldsSection(detail: detail),
+            child: _EditableFieldsSection(
+              detail: detail,
+              onEditYahooSymbol: () =>
+                  _showEditYahooSymbolDialog(detail.yahooSymbol),
+              isUpdating: _isUpdatingSymbol,
+            ),
           ),
 
           const SizedBox(height: 8),
@@ -535,11 +601,17 @@ class _InfoTooltip extends StatelessWidget {
   }
 }
 
-/// Editable fields with edit icons (non-functional placeholders).
+/// Editable fields with edit icons.
 class _EditableFieldsSection extends StatelessWidget {
-  const _EditableFieldsSection({required this.detail});
+  const _EditableFieldsSection({
+    required this.detail,
+    this.onEditYahooSymbol,
+    this.isUpdating = false,
+  });
 
   final AssetDetailResponse detail;
+  final VoidCallback? onEditYahooSymbol;
+  final bool isUpdating;
 
   @override
   Widget build(BuildContext context) {
@@ -551,11 +623,8 @@ class _EditableFieldsSection extends StatelessWidget {
         _EditableField(
           label: 'Yahoo Symbol',
           value: detail.yahooSymbol ?? '—',
-          onEdit: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Not implemented yet')),
-            );
-          },
+          onEdit: onEditYahooSymbol ?? () {},
+          isLoading: isUpdating,
         ),
         Divider(height: 1, color: colorScheme.outlineVariant),
         _EditableField(
@@ -605,18 +674,20 @@ class _EditableField extends StatelessWidget {
     required this.label,
     required this.value,
     required this.onEdit,
+    this.isLoading = false,
   });
 
   final String label;
   final String value;
   final VoidCallback onEdit;
+  final bool isLoading;
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
     return InkWell(
-      onTap: onEdit,
+      onTap: isLoading ? null : onEdit,
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 12),
         child: Row(
@@ -643,11 +714,21 @@ class _EditableField extends StatelessWidget {
                 ],
               ),
             ),
-            Icon(
-              Icons.edit_outlined,
-              size: 20,
-              color: colorScheme.onSurfaceVariant,
-            ),
+            if (isLoading)
+              SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: colorScheme.onSurfaceVariant,
+                ),
+              )
+            else
+              Icon(
+                Icons.edit_outlined,
+                size: 20,
+                color: colorScheme.onSurfaceVariant,
+              ),
           ],
         ),
       ),

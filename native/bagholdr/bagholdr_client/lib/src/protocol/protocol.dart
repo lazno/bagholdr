@@ -55,12 +55,13 @@ import 'sleeve_tree_response.dart' as _i42;
 import 'stale_price_asset.dart' as _i43;
 import 'sync_status.dart' as _i44;
 import 'ticker_metadata.dart' as _i45;
-import 'yahoo_symbol.dart' as _i46;
-import 'package:bagholdr_client/src/protocol/portfolio.dart' as _i47;
+import 'update_yahoo_symbol_result.dart' as _i46;
+import 'yahoo_symbol.dart' as _i47;
+import 'package:bagholdr_client/src/protocol/portfolio.dart' as _i48;
 import 'package:serverpod_auth_idp_client/serverpod_auth_idp_client.dart'
-    as _i48;
-import 'package:serverpod_auth_core_client/serverpod_auth_core_client.dart'
     as _i49;
+import 'package:serverpod_auth_core_client/serverpod_auth_core_client.dart'
+    as _i50;
 export 'allocation_status.dart';
 export 'asset.dart';
 export 'asset_detail_response.dart';
@@ -105,6 +106,7 @@ export 'sleeve_tree_response.dart';
 export 'stale_price_asset.dart';
 export 'sync_status.dart';
 export 'ticker_metadata.dart';
+export 'update_yahoo_symbol_result.dart';
 export 'yahoo_symbol.dart';
 export 'client.dart';
 
@@ -274,8 +276,11 @@ class Protocol extends _i1.SerializationManager {
     if (t == _i45.TickerMetadata) {
       return _i45.TickerMetadata.fromJson(data) as T;
     }
-    if (t == _i46.YahooSymbol) {
-      return _i46.YahooSymbol.fromJson(data) as T;
+    if (t == _i46.UpdateYahooSymbolResult) {
+      return _i46.UpdateYahooSymbolResult.fromJson(data) as T;
+    }
+    if (t == _i47.YahooSymbol) {
+      return _i47.YahooSymbol.fromJson(data) as T;
     }
     if (t == _i1.getType<_i2.AllocationStatus?>()) {
       return (data != null ? _i2.AllocationStatus.fromJson(data) : null) as T;
@@ -416,8 +421,12 @@ class Protocol extends _i1.SerializationManager {
     if (t == _i1.getType<_i45.TickerMetadata?>()) {
       return (data != null ? _i45.TickerMetadata.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i46.YahooSymbol?>()) {
-      return (data != null ? _i46.YahooSymbol.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i46.UpdateYahooSymbolResult?>()) {
+      return (data != null ? _i46.UpdateYahooSymbolResult.fromJson(data) : null)
+          as T;
+    }
+    if (t == _i1.getType<_i47.YahooSymbol?>()) {
+      return (data != null ? _i47.YahooSymbol.fromJson(data) : null) as T;
     }
     if (t == List<_i30.OrderSummary>) {
       return (data as List)
@@ -513,15 +522,15 @@ class Protocol extends _i1.SerializationManager {
               : null)
           as T;
     }
-    if (t == List<_i47.Portfolio>) {
-      return (data as List).map((e) => deserialize<_i47.Portfolio>(e)).toList()
+    if (t == List<_i48.Portfolio>) {
+      return (data as List).map((e) => deserialize<_i48.Portfolio>(e)).toList()
           as T;
     }
     try {
-      return _i48.Protocol().deserialize<T>(data, t);
+      return _i49.Protocol().deserialize<T>(data, t);
     } on _i1.DeserializationTypeNotFoundException catch (_) {}
     try {
-      return _i49.Protocol().deserialize<T>(data, t);
+      return _i50.Protocol().deserialize<T>(data, t);
     } on _i1.DeserializationTypeNotFoundException catch (_) {}
     return super.deserialize<T>(data, t);
   }
@@ -572,7 +581,8 @@ class Protocol extends _i1.SerializationManager {
       _i43.StalePriceAsset => 'StalePriceAsset',
       _i44.SyncStatus => 'SyncStatus',
       _i45.TickerMetadata => 'TickerMetadata',
-      _i46.YahooSymbol => 'YahooSymbol',
+      _i46.UpdateYahooSymbolResult => 'UpdateYahooSymbolResult',
+      _i47.YahooSymbol => 'YahooSymbol',
       _ => null,
     };
   }
@@ -675,14 +685,16 @@ class Protocol extends _i1.SerializationManager {
         return 'SyncStatus';
       case _i45.TickerMetadata():
         return 'TickerMetadata';
-      case _i46.YahooSymbol():
+      case _i46.UpdateYahooSymbolResult():
+        return 'UpdateYahooSymbolResult';
+      case _i47.YahooSymbol():
         return 'YahooSymbol';
     }
-    className = _i48.Protocol().getClassNameForObject(data);
+    className = _i49.Protocol().getClassNameForObject(data);
     if (className != null) {
       return 'serverpod_auth_idp.$className';
     }
-    className = _i49.Protocol().getClassNameForObject(data);
+    className = _i50.Protocol().getClassNameForObject(data);
     if (className != null) {
       return 'serverpod_auth_core.$className';
     }
@@ -827,16 +839,19 @@ class Protocol extends _i1.SerializationManager {
     if (dataClassName == 'TickerMetadata') {
       return deserialize<_i45.TickerMetadata>(data['data']);
     }
+    if (dataClassName == 'UpdateYahooSymbolResult') {
+      return deserialize<_i46.UpdateYahooSymbolResult>(data['data']);
+    }
     if (dataClassName == 'YahooSymbol') {
-      return deserialize<_i46.YahooSymbol>(data['data']);
+      return deserialize<_i47.YahooSymbol>(data['data']);
     }
     if (dataClassName.startsWith('serverpod_auth_idp.')) {
       data['className'] = dataClassName.substring(19);
-      return _i48.Protocol().deserializeByClassName(data);
+      return _i49.Protocol().deserializeByClassName(data);
     }
     if (dataClassName.startsWith('serverpod_auth_core.')) {
       data['className'] = dataClassName.substring(20);
-      return _i49.Protocol().deserializeByClassName(data);
+      return _i50.Protocol().deserializeByClassName(data);
     }
     return super.deserializeByClassName(data);
   }
@@ -851,10 +866,10 @@ class Protocol extends _i1.SerializationManager {
       return null;
     }
     try {
-      return _i48.Protocol().mapRecordToJson(record);
+      return _i49.Protocol().mapRecordToJson(record);
     } catch (_) {}
     try {
-      return _i49.Protocol().mapRecordToJson(record);
+      return _i50.Protocol().mapRecordToJson(record);
     } catch (_) {}
     throw Exception('Unsupported record type ${record.runtimeType}');
   }

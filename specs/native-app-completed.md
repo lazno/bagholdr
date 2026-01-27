@@ -391,3 +391,11 @@ Added bottom navigation and settings screen:
 - Moved connection indicator from AppBar to Settings (cloud icons)
 - Moved portfolio selector next to time range bar
 - Global `hideBalances` ValueNotifier for privacy mode sync across screens
+
+### NAPP-032: Edit Yahoo Symbol `[implement]` - DONE
+
+Edit Yahoo symbol for assets from asset detail page:
+- `updateYahooSymbol(assetId, newSymbol)` endpoint in `HoldingsEndpoint`
+- Clears `DailyPrice`, `IntradayPrice`, `DividendEvent`, `TickerMetadata`, `PriceCache` for old symbol
+- Text input dialog in asset detail screen with loading state
+- 7 unit tests for `UpdateYahooSymbolResult` serialization

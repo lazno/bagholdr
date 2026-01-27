@@ -60,8 +60,9 @@ import 'sleeve_tree_response.dart' as _i45;
 import 'stale_price_asset.dart' as _i46;
 import 'sync_status.dart' as _i47;
 import 'ticker_metadata.dart' as _i48;
-import 'yahoo_symbol.dart' as _i49;
-import 'package:bagholdr_server/src/generated/portfolio.dart' as _i50;
+import 'update_yahoo_symbol_result.dart' as _i49;
+import 'yahoo_symbol.dart' as _i50;
+import 'package:bagholdr_server/src/generated/portfolio.dart' as _i51;
 export 'allocation_status.dart';
 export 'asset.dart';
 export 'asset_detail_response.dart';
@@ -106,6 +107,7 @@ export 'sleeve_tree_response.dart';
 export 'stale_price_asset.dart';
 export 'sync_status.dart';
 export 'ticker_metadata.dart';
+export 'update_yahoo_symbol_result.dart';
 export 'yahoo_symbol.dart';
 
 class Protocol extends _i1.SerializationManagerServer {
@@ -1644,8 +1646,11 @@ class Protocol extends _i1.SerializationManagerServer {
     if (t == _i48.TickerMetadata) {
       return _i48.TickerMetadata.fromJson(data) as T;
     }
-    if (t == _i49.YahooSymbol) {
-      return _i49.YahooSymbol.fromJson(data) as T;
+    if (t == _i49.UpdateYahooSymbolResult) {
+      return _i49.UpdateYahooSymbolResult.fromJson(data) as T;
+    }
+    if (t == _i50.YahooSymbol) {
+      return _i50.YahooSymbol.fromJson(data) as T;
     }
     if (t == _i1.getType<_i5.AllocationStatus?>()) {
       return (data != null ? _i5.AllocationStatus.fromJson(data) : null) as T;
@@ -1786,8 +1791,12 @@ class Protocol extends _i1.SerializationManagerServer {
     if (t == _i1.getType<_i48.TickerMetadata?>()) {
       return (data != null ? _i48.TickerMetadata.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i49.YahooSymbol?>()) {
-      return (data != null ? _i49.YahooSymbol.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i49.UpdateYahooSymbolResult?>()) {
+      return (data != null ? _i49.UpdateYahooSymbolResult.fromJson(data) : null)
+          as T;
+    }
+    if (t == _i1.getType<_i50.YahooSymbol?>()) {
+      return (data != null ? _i50.YahooSymbol.fromJson(data) : null) as T;
     }
     if (t == List<_i33.OrderSummary>) {
       return (data as List)
@@ -1883,8 +1892,8 @@ class Protocol extends _i1.SerializationManagerServer {
               : null)
           as T;
     }
-    if (t == List<_i50.Portfolio>) {
-      return (data as List).map((e) => deserialize<_i50.Portfolio>(e)).toList()
+    if (t == List<_i51.Portfolio>) {
+      return (data as List).map((e) => deserialize<_i51.Portfolio>(e)).toList()
           as T;
     }
     try {
@@ -1945,7 +1954,8 @@ class Protocol extends _i1.SerializationManagerServer {
       _i46.StalePriceAsset => 'StalePriceAsset',
       _i47.SyncStatus => 'SyncStatus',
       _i48.TickerMetadata => 'TickerMetadata',
-      _i49.YahooSymbol => 'YahooSymbol',
+      _i49.UpdateYahooSymbolResult => 'UpdateYahooSymbolResult',
+      _i50.YahooSymbol => 'YahooSymbol',
       _ => null,
     };
   }
@@ -2048,7 +2058,9 @@ class Protocol extends _i1.SerializationManagerServer {
         return 'SyncStatus';
       case _i48.TickerMetadata():
         return 'TickerMetadata';
-      case _i49.YahooSymbol():
+      case _i49.UpdateYahooSymbolResult():
+        return 'UpdateYahooSymbolResult';
+      case _i50.YahooSymbol():
         return 'YahooSymbol';
     }
     className = _i2.Protocol().getClassNameForObject(data);
@@ -2204,8 +2216,11 @@ class Protocol extends _i1.SerializationManagerServer {
     if (dataClassName == 'TickerMetadata') {
       return deserialize<_i48.TickerMetadata>(data['data']);
     }
+    if (dataClassName == 'UpdateYahooSymbolResult') {
+      return deserialize<_i49.UpdateYahooSymbolResult>(data['data']);
+    }
     if (dataClassName == 'YahooSymbol') {
-      return deserialize<_i49.YahooSymbol>(data['data']);
+      return deserialize<_i50.YahooSymbol>(data['data']);
     }
     if (dataClassName.startsWith('serverpod.')) {
       data['className'] = dataClassName.substring(10);
@@ -2271,8 +2286,8 @@ class Protocol extends _i1.SerializationManagerServer {
         return _i43.SleeveAsset.t;
       case _i48.TickerMetadata:
         return _i48.TickerMetadata.t;
-      case _i49.YahooSymbol:
-        return _i49.YahooSymbol.t;
+      case _i50.YahooSymbol:
+        return _i50.YahooSymbol.t;
     }
     return null;
   }
