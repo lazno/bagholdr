@@ -1,0 +1,9 @@
+### ClearPriceHistoryResult - Result of clearing price history for an asset
+### Contains counts of records cleared from each table
+class: ClearPriceHistoryResult
+fields:
+  success: bool
+  dailyPricesCleared: int
+  intradayPricesCleared: int
+  dividendsCleared: int
+  priceCacheCleared: bool

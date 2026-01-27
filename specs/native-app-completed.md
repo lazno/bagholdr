@@ -469,3 +469,12 @@ Removed redundant AppBars from Dashboard, Strategy, and Settings screens:
 Fixed keyboard auto-opening when returning to dashboard from asset detail:
 - Wrapped dashboard body in `GestureDetector` with `HitTestBehavior.translucent` to dismiss keyboard on tap outside search
 - Added managed `FocusNode` to search bar, unfocus in `.then()` after `Navigator.push()` returns to prevent Flutter's focus restoration from reopening keyboard
+
+### NAPP-036: Clear Price History `[implement]` - DONE
+
+Clear all historical price data for an asset (useful when data is corrupted or wrong symbol was used):
+- `clearPriceHistory(assetId)` endpoint in `HoldingsEndpoint` - deletes all price data for asset's Yahoo symbol
+- Clears `DailyPrice`, `IntradayPrice`, `DividendEvent`, `TickerMetadata`, `PriceCache` records
+- Returns `ClearPriceHistoryResult` with counts of cleared records
+- "Clear price history" menu item in asset detail screen with confirmation dialog
+- 4 unit tests for result serialization, 3 integration tests for end-to-end verification

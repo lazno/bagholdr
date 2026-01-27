@@ -389,6 +389,25 @@ class Endpoints extends _i1.EndpointDispatch {
                     newSymbol: params['newSymbol'],
                   ),
         ),
+        'clearPriceHistory': _i1.MethodConnector(
+          name: 'clearPriceHistory',
+          params: {
+            'assetId': _i1.ParameterDescription(
+              name: 'assetId',
+              type: _i1.getType<_i1.UuidValue>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['holdings'] as _i4.HoldingsEndpoint)
+                  .clearPriceHistory(
+                    session,
+                    assetId: params['assetId'],
+                  ),
+        ),
         'getSleevesForPicker': _i1.MethodConnector(
           name: 'getSleevesForPicker',
           params: {

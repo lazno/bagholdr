@@ -255,25 +255,25 @@ Allow user to assign/reassign an asset to a sleeve.
 
 ### NAPP-036: Clear Price History `[implement]`
 
-**Priority**: Low | **Status**: `[ ]`
+**Priority**: Low | **Status**: `[x]`
 **Blocked by**: None
 
 Clear all historical price data for an asset (useful when data is corrupted or wrong symbol was used).
 
 **Backend**:
-- [ ] Add `clearPriceHistory(assetId)` endpoint
-- [ ] Delete `DailyPrice`, `IntradayPrice` records for asset
-- [ ] Optionally clear `DividendEvent`, `TickerMetadata`
+- [x] Add `clearPriceHistory(assetId)` endpoint
+- [x] Delete `DailyPrice`, `IntradayPrice` records for asset
+- [x] Optionally clear `DividendEvent`, `TickerMetadata`
 
 **Frontend**:
-- [ ] Wire up "Clear price history" menu item
-- [ ] Show confirmation dialog (destructive action)
-- [ ] Call endpoint and show result
+- [x] Wire up "Clear price history" menu item
+- [x] Show confirmation dialog (destructive action)
+- [x] Call endpoint and show result
 
 **Acceptance Criteria**:
-- [ ] User can clear price history with confirmation
-- [ ] Price data is removed from database
-- [ ] Asset shows "no price data" state until next refresh
+- [x] User can clear price history with confirmation
+- [x] Price data is removed from database
+- [x] Asset shows "no price data" state until next refresh
 
 ---
 

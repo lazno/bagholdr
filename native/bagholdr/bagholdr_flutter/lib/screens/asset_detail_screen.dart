@@ -43,6 +43,7 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
   bool _isUpdatingType = false;
   bool _isUpdatingSleeve = false;
   bool _isRefreshingPrices = false;
+  bool _isClearingHistory = false;
 
   // Track the last price to detect changes
   double? _lastKnownPrice;
@@ -322,6 +323,66 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
     }
   }
 
+  Future<void> _clearPriceHistory() async {
+    // Show confirmation dialog
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Clear Price History'),
+        content: const Text(
+          'This will delete all historical price data for this asset. '
+          'New prices will be fetched on the next refresh.\n\n'
+          'Are you sure you want to continue?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: FilledButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.error,
+            ),
+            child: const Text('Clear'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    setState(() => _isClearingHistory = true);
+    try {
+      final result = await client.holdings.clearPriceHistory(
+        assetId: UuidValue.fromString(widget.assetId),
+      );
+      if (!mounted) return;
+
+      final total = result.dailyPricesCleared +
+          result.intradayPricesCleared +
+          result.dividendsCleared;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            total > 0
+                ? 'Cleared $total price records'
+                : 'No price data to clear',
+          ),
+        ),
+      );
+      _loadAssetDetail();
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e')),
+      );
+    } finally {
+      if (mounted) setState(() => _isClearingHistory = false);
+    }
+  }
+
   void _showActionMenu() {
     final colorScheme = Theme.of(context).colorScheme;
 
@@ -343,11 +404,10 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
             ListTile(
               leading: Icon(Icons.delete_outline, color: colorScheme.onSurface),
               title: const Text('Clear price history'),
+              enabled: !_isClearingHistory,
               onTap: () {
                 Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Not implemented yet')),
-                );
+                _clearPriceHistory();
               },
             ),
             ListTile(

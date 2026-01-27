@@ -619,6 +619,71 @@ class HoldingsEndpoint extends Endpoint {
     );
   }
 
+  /// Clear all price history for an asset
+  ///
+  /// Removes all cached price data: DailyPrice, IntradayPrice, DividendEvent,
+  /// TickerMetadata, and PriceCache. Useful when data is corrupted or wrong
+  /// symbol was used.
+  ///
+  /// [assetId] - UUID of the asset to clear price history for
+  Future<ClearPriceHistoryResult> clearPriceHistory(
+    Session session, {
+    required UuidValue assetId,
+  }) async {
+    // 1. Fetch asset
+    final asset = await Asset.db.findById(session, assetId);
+    if (asset == null) {
+      throw Exception('Asset not found: $assetId');
+    }
+
+    // 2. Check if Yahoo symbol is set
+    final symbol = asset.yahooSymbol;
+    if (symbol == null) {
+      // No symbol means no price data to clear
+      return ClearPriceHistoryResult(
+        success: true,
+        dailyPricesCleared: 0,
+        intradayPricesCleared: 0,
+        dividendsCleared: 0,
+        priceCacheCleared: false,
+      );
+    }
+
+    // 3. Clear all price data for this symbol
+    final deletedDaily = await DailyPrice.db.deleteWhere(
+      session,
+      where: (t) => t.ticker.equals(symbol),
+    );
+
+    final deletedIntraday = await IntradayPrice.db.deleteWhere(
+      session,
+      where: (t) => t.ticker.equals(symbol),
+    );
+
+    final deletedDividends = await DividendEvent.db.deleteWhere(
+      session,
+      where: (t) => t.ticker.equals(symbol),
+    );
+
+    await TickerMetadata.db.deleteWhere(
+      session,
+      where: (t) => t.ticker.equals(symbol),
+    );
+
+    final deletedCache = await PriceCache.db.deleteWhere(
+      session,
+      where: (t) => t.ticker.equals(symbol),
+    );
+
+    return ClearPriceHistoryResult(
+      success: true,
+      dailyPricesCleared: deletedDaily.length,
+      intradayPricesCleared: deletedIntraday.length,
+      dividendsCleared: deletedDividends.length,
+      priceCacheCleared: deletedCache.isNotEmpty,
+    );
+  }
+
   /// Get available sleeves for assignment picker
   ///
   /// Returns a flat list of sleeves for the portfolio, with hierarchy

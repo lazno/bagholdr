@@ -12,6 +12,7 @@ holdings:
   - getHoldings:
   - getAssetDetail:
   - updateYahooSymbol:
+  - clearPriceHistory:
   - getSleevesForPicker:
   - assignAssetToSleeve:
   - updateAssetType:
