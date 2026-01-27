@@ -479,7 +479,7 @@ Add a compact, extensible filter to the dashboard for filtering the assets list.
 
 ### NAPP-043: Remove Page Titles from Main Screens `[implement]`
 
-**Priority**: Low | **Status**: `[ ]`
+**Priority**: Low | **Status**: `[x]`
 **Blocked by**: None
 
 Remove redundant page titles from the top of the 3 main screens (Dashboard, Strategy, Settings) since they're already displayed in the bottom navigation menu. Also remove the privacy mode buttons from Dashboard and Strategy (accessible via Settings).
@@ -493,10 +493,10 @@ Remove redundant page titles from the top of the 3 main screens (Dashboard, Stra
 - `lib/screens/asset_detail_screen.dart` - Keep the title bar (shows dynamic asset name + action menu)
 
 **Acceptance Criteria**:
-- [ ] Dashboard, Strategy, Settings screens have no AppBar/title bar
-- [ ] Asset Detail screen still shows the asset name and action menu
-- [ ] Privacy mode toggle in Settings still works
-- [ ] Bottom navigation still functions correctly
+- [x] Dashboard, Strategy, Settings screens have no AppBar/title bar
+- [x] Asset Detail screen still shows the asset name and action menu
+- [x] Privacy mode toggle in Settings still works
+- [x] Bottom navigation still functions correctly
 
 ---
 

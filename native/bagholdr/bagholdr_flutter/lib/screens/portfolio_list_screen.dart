@@ -291,7 +291,6 @@ class _PortfolioListScreenState extends State<PortfolioListScreen> {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Scaffold(
             backgroundColor: bgColor,
-            appBar: AppBar(title: const Text('Loading...')),
             body: const Center(child: CircularProgressIndicator()),
           );
         }
@@ -299,8 +298,7 @@ class _PortfolioListScreenState extends State<PortfolioListScreen> {
         if (snapshot.hasError) {
           return Scaffold(
             backgroundColor: bgColor,
-            appBar: AppBar(title: const Text('Error')),
-            body: _buildErrorState(snapshot.error!),
+            body: SafeArea(child: _buildErrorState(snapshot.error!)),
           );
         }
 
@@ -309,8 +307,7 @@ class _PortfolioListScreenState extends State<PortfolioListScreen> {
         if (portfolios.isEmpty) {
           return Scaffold(
             backgroundColor: bgColor,
-            appBar: AppBar(title: const Text('Portfolios')),
-            body: _buildEmptyState(),
+            body: SafeArea(child: _buildEmptyState()),
           );
         }
 
@@ -318,29 +315,14 @@ class _PortfolioListScreenState extends State<PortfolioListScreen> {
 
         return Scaffold(
           backgroundColor: bgColor,
-          appBar: AppBar(
-            title: const Text('Dashboard'),
-            actions: [
-              // Hide balances toggle
-              IconButton(
-                icon: Icon(
-                  hideBalances.value
-                      ? Icons.visibility_off_outlined
-                      : Icons.visibility_outlined,
-                ),
-                tooltip: hideBalances.value ? 'Show balances' : 'Hide balances',
-                onPressed: () {
-                  hideBalances.value = !hideBalances.value;
-                },
-              ),
-            ],
-          ),
-          body: Column(
-            children: [
-              // Portfolio selector + Time range bar
-              _buildControlBar(portfolios, selected),
-              Expanded(child: _buildDashboardPlaceholder(selected)),
-            ],
+          body: SafeArea(
+            child: Column(
+              children: [
+                // Portfolio selector + Time range bar
+                _buildControlBar(portfolios, selected),
+                Expanded(child: _buildDashboardPlaceholder(selected)),
+              ],
+            ),
           ),
         );
       },

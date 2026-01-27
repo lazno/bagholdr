@@ -45,10 +45,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     return Scaffold(
       backgroundColor: colorScheme.surfaceContainerLow,
-      appBar: AppBar(
-        title: const Text('Settings'),
-      ),
-      body: ListView(
+      body: SafeArea(
+        child: ListView(
         children: [
           const SizedBox(height: 8),
           // Connection Status Section
@@ -74,6 +72,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           _buildSectionHeader(context, 'About'),
           _buildAboutTile(context),
         ],
+        ),
       ),
     );
   }

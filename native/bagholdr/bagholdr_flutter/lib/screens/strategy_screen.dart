@@ -158,7 +158,6 @@ class _StrategyScreenState extends State<StrategyScreen> {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Scaffold(
             backgroundColor: bgColor,
-            appBar: AppBar(title: const Text('Strategy')),
             body: const Center(child: CircularProgressIndicator()),
           );
         }
@@ -166,9 +165,10 @@ class _StrategyScreenState extends State<StrategyScreen> {
         if (snapshot.hasError) {
           return Scaffold(
             backgroundColor: bgColor,
-            appBar: AppBar(title: const Text('Strategy')),
-            body: Center(
-              child: Text('Error: ${snapshot.error}'),
+            body: SafeArea(
+              child: Center(
+                child: Text('Error: ${snapshot.error}'),
+              ),
             ),
           );
         }
@@ -178,9 +178,10 @@ class _StrategyScreenState extends State<StrategyScreen> {
         if (portfolios.isEmpty) {
           return Scaffold(
             backgroundColor: bgColor,
-            appBar: AppBar(title: const Text('Strategy')),
-            body: const Center(
-              child: Text('No portfolios available'),
+            body: const SafeArea(
+              child: Center(
+                child: Text('No portfolios available'),
+              ),
             ),
           );
         }
@@ -189,26 +190,11 @@ class _StrategyScreenState extends State<StrategyScreen> {
 
         return Scaffold(
           backgroundColor: bgColor,
-          appBar: AppBar(
-            title: const Text('Strategy'),
-            actions: [
-              IconButton(
-                icon: Icon(
-                  hideBalances.value
-                      ? Icons.visibility_off_outlined
-                      : Icons.visibility_outlined,
-                ),
-                tooltip: hideBalances.value ? 'Show balances' : 'Hide balances',
-                onPressed: () {
-                  hideBalances.value = !hideBalances.value;
-                },
-              ),
-            ],
-          ),
-          body: Column(
-            children: [
-              _buildControlBar(portfolios, selected),
-              Expanded(
+          body: SafeArea(
+            child: Column(
+              children: [
+                _buildControlBar(portfolios, selected),
+                Expanded(
                 child: SingleChildScrollView(
                   child: Container(
                     color: colorScheme.surface,
@@ -275,7 +261,8 @@ class _StrategyScreenState extends State<StrategyScreen> {
                   ),
                 ),
               ),
-            ],
+              ],
+            ),
           ),
         );
       },
