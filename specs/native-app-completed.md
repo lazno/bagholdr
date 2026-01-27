@@ -448,3 +448,10 @@ Edit asset type (ETF, Stock, Bond, etc.) from asset detail page:
 - Loading state and success feedback
 - 4 unit tests for `UpdateAssetTypeResult` serialization
 - 7 integration tests verifying end-to-end endpoint functionality
+
+### NAPP-038: Add Portfolio Weight to Asset Detail `[implement]` - DONE
+
+Display asset's portfolio weight in position summary:
+- Backend already had `weight` field in `AssetDetailResponse` (value / total portfolio * 100)
+- Added weight display next to share count: "15 shares · 12.50% of portfolio"
+- Weight updates live with price changes
