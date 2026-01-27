@@ -468,4 +468,4 @@ Removed redundant AppBars from Dashboard, Strategy, and Settings screens:
 
 Fixed keyboard auto-opening when returning to dashboard from asset detail:
 - Wrapped dashboard body in `GestureDetector` with `HitTestBehavior.translucent` to dismiss keyboard on tap outside search
-- Added `FocusScope.of(context).unfocus()` before navigating to asset detail to clear focus
+- Added managed `FocusNode` to search bar, unfocus in `.then()` after `Navigator.push()` returns to prevent Flutter's focus restoration from reopening keyboard

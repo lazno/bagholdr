@@ -500,28 +500,6 @@ Remove redundant page titles from the top of the 3 main screens (Dashboard, Stra
 
 ---
 
-### NAPP-044: Fix Search Box Focus Behavior `[implement]`
-
-**Priority**: Low | **Status**: `[x]`
-**Blocked by**: None
-
-Search box on dashboard retains focus after navigating to asset detail. When returning via back button, keyboard immediately opens because search field still has focus.
-
-**Fix**:
-1. Wrap dashboard in `GestureDetector` with `onTap` that calls `FocusScope.of(context).unfocus()` - allows tapping outside search to dismiss keyboard
-2. Clear focus when navigating to asset detail page
-
-**Files to modify**:
-- `lib/screens/portfolio_list_screen.dart` - Add GestureDetector wrapper
-- `lib/widgets/assets_section.dart` - Clear focus on asset tap (if search is here)
-
-**Acceptance Criteria**:
-- [x] Tapping outside search box dismisses keyboard
-- [x] Navigating to asset detail clears search focus
-- [x] Returning to dashboard does not auto-open keyboard
-
----
-
 ### NAPP-101: Short Holding Period Indicator `[implement]`
 
 **Priority**: Low | **Status**: `[ ]`
