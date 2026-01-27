@@ -4,10 +4,8 @@ import 'package:flutter/material.dart';
 import '../main.dart';
 import '../widgets/assets_section.dart';
 import '../widgets/hero_value_display.dart';
-import '../widgets/issues_bar.dart';
 import '../widgets/portfolio_chart.dart';
 import '../widgets/portfolio_selector.dart';
-import '../widgets/strategy_section_v2.dart';
 import '../widgets/time_range_bar.dart';
 import 'asset_detail_screen.dart';
 
@@ -34,14 +32,6 @@ class _PortfolioListScreenState extends State<PortfolioListScreen> {
   String _searchQuery = '';
   int _displayedCount = 8;
   bool _isLoadingHoldings = false;
-
-  // Issues state
-  List<Issue> _issues = [];
-
-  // Strategy section state
-  SleeveTreeResponse? _sleeveTree;
-  bool _isLoadingSleeveTree = false;
-  String? _selectedSleeveId;
 
   // Chart state
   ChartDataResult? _chartData;
@@ -113,48 +103,11 @@ class _PortfolioListScreenState extends State<PortfolioListScreen> {
       });
       // Load all data for the first portfolio
       _loadHoldings(portfolios.first.id!);
-      _loadIssues(portfolios.first.id!);
-      _loadSleeveTree(portfolios.first.id!);
       _loadChartData(portfolios.first.id!);
       _loadValuation(portfolios.first.id!);
       _loadHistoricalReturns(portfolios.first.id!);
     }
     return portfolios;
-  }
-
-  Future<void> _loadIssues(UuidValue portfolioId) async {
-    try {
-      final response = await client.issues.getIssues(portfolioId: portfolioId);
-      setState(() {
-        _issues = response.issues;
-      });
-    } catch (e) {
-      // Silently fail for issues - they're not critical
-      debugPrint('Error loading issues: $e');
-    }
-  }
-
-  Future<void> _loadSleeveTree(UuidValue portfolioId) async {
-    // Only show loading on initial load
-    final isInitialLoad = _sleeveTree == null;
-    if (isInitialLoad) {
-      setState(() => _isLoadingSleeveTree = true);
-    }
-
-    try {
-      final period = toReturnPeriod(_selectedPeriod);
-      final response = await client.sleeves.getSleeveTree(
-        portfolioId: portfolioId,
-        period: period,
-      );
-      setState(() {
-        _sleeveTree = response;
-        _isLoadingSleeveTree = false;
-      });
-    } catch (e) {
-      setState(() => _isLoadingSleeveTree = false);
-      debugPrint('Error loading sleeve tree: $e');
-    }
   }
 
   Future<void> _loadChartData(UuidValue portfolioId) async {
@@ -220,16 +173,9 @@ class _PortfolioListScreenState extends State<PortfolioListScreen> {
 
     try {
       final period = toReturnPeriod(_selectedPeriod);
-      // Convert string sleeveId to UuidValue if selected
-      UuidValue? sleeveUuid;
-      if (_selectedSleeveId != null) {
-        sleeveUuid = UuidValue.fromString(_selectedSleeveId!);
-      }
-
       final response = await client.holdings.getHoldings(
         portfolioId: portfolioId,
         period: period,
-        sleeveId: sleeveUuid,
         search: _searchQuery.isEmpty ? null : _searchQuery,
         offset: 0,
         limit: _displayedCount,
@@ -249,29 +195,6 @@ class _PortfolioListScreenState extends State<PortfolioListScreen> {
         );
       }
     }
-  }
-
-  void _onSleeveSelected(String? sleeveId) {
-    setState(() {
-      _selectedSleeveId = sleeveId;
-      _displayedCount = 8;
-    });
-    if (_selectedPortfolio != null) {
-      _loadHoldings(_selectedPortfolio!.id!);
-    }
-  }
-
-  String _getSelectedSleeveName() {
-    if (_selectedSleeveId == null || _sleeveTree == null) return 'All';
-    for (final parent in _sleeveTree!.sleeves) {
-      if (parent.id == _selectedSleeveId) return parent.name;
-      if (parent.children != null) {
-        for (final child in parent.children!) {
-          if (child.id == _selectedSleeveId) return child.name;
-        }
-      }
-    }
-    return 'All';
   }
 
   void _onSearchChanged(String query) {
@@ -298,8 +221,6 @@ class _PortfolioListScreenState extends State<PortfolioListScreen> {
       _displayedCount = 8;
     });
     _loadHoldings(portfolio.id!);
-    _loadIssues(portfolio.id!);
-    _loadSleeveTree(portfolio.id!);
     _loadChartData(portfolio.id!);
     _loadValuation(portfolio.id!);
     _loadHistoricalReturns(portfolio.id!);
@@ -319,7 +240,6 @@ class _PortfolioListScreenState extends State<PortfolioListScreen> {
     });
     if (_selectedPortfolio != null) {
       _loadHoldings(_selectedPortfolio!.id!);
-      _loadSleeveTree(_selectedPortfolio!.id!);
       _loadChartData(_selectedPortfolio!.id!);
     }
   }
@@ -514,66 +434,6 @@ class _PortfolioListScreenState extends State<PortfolioListScreen> {
             ),
           ),
           const SizedBox(height: 8),
-          // Strategy section
-          Container(
-            color: colorScheme.surface,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
-                  child: Text(
-                    'Strategy',
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          fontWeight: FontWeight.w600,
-                        ),
-                  ),
-                ),
-                IssuesBar(
-                  issues: _issues,
-                  onIssueTap: (issue) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Issue tapped: ${issue.message}'),
-                        duration: const Duration(seconds: 1),
-                      ),
-                    );
-                  },
-                ),
-                if (_isLoadingSleeveTree)
-                  const Padding(
-                    padding: EdgeInsets.all(32),
-                    child: Center(child: CircularProgressIndicator()),
-                  )
-                else if (_sleeveTree != null)
-                  StrategySectionV2(
-                    sleeveTree: _sleeveTree!,
-                    hideBalances: hideBalances.value,
-                    onSleeveSelected: _onSleeveSelected,
-                  )
-                else
-                  Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Container(
-                      height: 150,
-                      decoration: BoxDecoration(
-                        color: colorScheme.surfaceContainerLow,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Center(
-                        child: Text(
-                          'No sleeve data available',
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                color: colorScheme.onSurfaceVariant,
-                              ),
-                        ),
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 8),
           // Assets section
           Container(
             color: colorScheme.surface,
@@ -581,7 +441,7 @@ class _PortfolioListScreenState extends State<PortfolioListScreen> {
               holdings: _holdings,
               totalCount: _totalCount,
               filteredCount: _filteredCount,
-              selectedSleeveName: _getSelectedSleeveName(),
+              selectedSleeveName: 'All',
               searchQuery: _searchQuery,
               onSearchChanged: _onSearchChanged,
               onLoadMore: _onLoadMore,

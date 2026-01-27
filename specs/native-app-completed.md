@@ -403,3 +403,21 @@ Edit Yahoo symbol for assets from asset detail page:
 - Clears `DailyPrice`, `IntradayPrice`, `DividendEvent`, `TickerMetadata`, `PriceCache` for old symbol
 - Text input dialog in asset detail screen with loading state
 - 7 unit tests for `UpdateYahooSymbolResult` serialization
+
+### NAPP-035: Refresh Asset Prices `[implement]` - DONE
+
+Trigger price refresh for single asset from asset detail action menu:
+- `refreshAssetPrices(assetId)` endpoint in `HoldingsEndpoint` - fetches fresh price via oracle with `forceRefresh: true`
+- Returns `RefreshPriceResult` with success/error status, ticker, priceEur, currency, fetchedAt
+- "Refresh prices" menu item in asset detail screen with loading state
+- Success snackbar shows new price, error snackbar on failure
+- 7 unit tests for `RefreshPriceResult` serialization
+
+### NAPP-040: Move Strategy Section to Dedicated Page `[implement]` - DONE
+
+Moved Strategy section from Dashboard to dedicated page with bottom navigation:
+- `strategy_screen.dart` - Dedicated page with StrategySectionV2, portfolio selector, time range bar
+- Added Strategy tab to bottom navigation (pie chart icon)
+- Removed Strategy section from Dashboard (portfolio_list_screen.dart)
+- Removed sleeve filtering from Dashboard assets - sleeve selection is now local to Strategy page
+- Dashboard shows hero values, chart, and assets list only

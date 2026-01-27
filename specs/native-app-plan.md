@@ -95,7 +95,6 @@ backholdr/
 - [ ] Extend holdings endpoint with `getAssetDetail()` or add to existing
 - [ ] Create asset detail bottom sheet
 - [ ] Show: full asset info, order history, key stats
-- [ ] Take screenshot to verify
 
 **Acceptance Criteria**:
 - [ ] Asset detail shows complete information
@@ -292,30 +291,6 @@ Allow user to assign/reassign an asset to a sleeve.
 
 ---
 
-### NAPP-035: Refresh Asset Prices `[implement]`
-
-**Priority**: Medium | **Status**: `[ ]`
-**Blocked by**: None (NAPP-024 complete)
-
-Trigger a price refresh for a single asset from the action menu.
-
-**Backend**:
-- [ ] Add `refreshAssetPrices(assetId)` endpoint
-- [ ] Call price oracle for the asset's Yahoo symbol
-- [ ] Store updated prices
-
-**Frontend**:
-- [ ] Wire up "Refresh prices" menu item in `_showActionMenu()`
-- [ ] Show loading indicator during refresh
-- [ ] Refresh asset detail on completion
-- [ ] Show success/error snackbar
-
-**Acceptance Criteria**:
-- [ ] User can manually trigger price refresh for single asset
-- [ ] Asset detail updates with new price data
-
----
-
 ### NAPP-036: Clear Price History `[implement]`
 
 **Priority**: Low | **Status**: `[ ]`
@@ -427,7 +402,7 @@ Add an interactive TWR chart to the asset detail page, with buy/sell order marke
 
 ### NAPP-040: Move Strategy Section to Dedicated Page `[implement]`
 
-**Priority**: Medium | **Status**: `[ ]`
+**Priority**: Medium | **Status**: `[x]`
 **Blocked by**: None
 
 Move the Strategy section to a dedicated page AS-IS. Preserve all current functionality but remove the asset filtering behavior. This is a stepping stone before future redesign.
@@ -444,18 +419,18 @@ Move the Strategy section to a dedicated page AS-IS. Preserve all current functi
 - No assets displayed on this page (pure strategy visualization)
 
 **Tasks**:
-- [ ] Create `strategy_screen.dart`
-- [ ] Move `StrategySectionV2` content to new screen
-- [ ] Add TimeRangeBar and portfolio selector
-- [ ] Add navigation to Strategy page (bottom nav tab)
-- [ ] Remove `StrategySectionV2` from `portfolio_list_screen.dart`
-- [ ] Remove `onSleeveSelected` callback that was filtering dashboard assets
+- [x] Create `strategy_screen.dart`
+- [x] Move `StrategySectionV2` content to new screen
+- [x] Add TimeRangeBar and portfolio selector
+- [x] Add navigation to Strategy page (bottom nav tab)
+- [x] Remove `StrategySectionV2` from `portfolio_list_screen.dart`
+- [x] Remove `onSleeveSelected` callback that was filtering dashboard assets
 
 **Acceptance Criteria**:
-- [ ] Strategy page shows pie chart with full current functionality
-- [ ] Time period and portfolio can be selected on Strategy page
-- [ ] Dashboard no longer shows the pie chart
-- [ ] Sleeve selection on Strategy page does NOT affect dashboard
+- [x] Strategy page shows pie chart with full current functionality
+- [x] Time period and portfolio can be selected on Strategy page
+- [x] Dashboard no longer shows the pie chart
+- [x] Sleeve selection on Strategy page does NOT affect dashboard
 
 ---
 
