@@ -455,3 +455,11 @@ Display asset's portfolio weight in position summary:
 - Backend already had `weight` field in `AssetDetailResponse` (value / total portfolio * 100)
 - Added weight display next to share count: "15 shares · 12.50% of portfolio"
 - Weight updates live with price changes
+
+### NAPP-043: Remove Page Titles from Main Screens `[implement]` - DONE
+
+Removed redundant AppBars from Dashboard, Strategy, and Settings screens:
+- Page names already shown in bottom navigation, no need for title bars
+- Removed privacy mode buttons from Dashboard/Strategy (accessible via Settings)
+- Added SafeArea wrappers to ensure proper spacing on notched devices
+- Asset detail screen still has AppBar (shows dynamic asset name + action menu)
