@@ -421,3 +421,14 @@ Moved Strategy section from Dashboard to dedicated page with bottom navigation:
 - Removed Strategy section from Dashboard (portfolio_list_screen.dart)
 - Removed sleeve filtering from Dashboard assets - sleeve selection is now local to Strategy page
 - Dashboard shows hero values, chart, and assets list only
+
+### NAPP-019: Asset Detail `[implement]` - DONE
+
+Full-screen asset detail page with comprehensive information:
+- `getAssetDetail(assetId, portfolioId, period)` endpoint in `HoldingsEndpoint`
+- Asset info: name, ISIN, type badge
+- Position summary: value, quantity, unrealized P/L, realized P/L, TWR, MWR, cost basis, total return
+- Editable fields: Yahoo symbol, asset type, sleeve assignment
+- Order history: full list with date, type, quantity, price, total
+- Actions menu: refresh prices, clear history (stub), archive (stub)
+- Live price updates via SSE subscription

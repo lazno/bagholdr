@@ -86,22 +86,6 @@ backholdr/
 
 ## Active Tasks
 
-### NAPP-019: Asset Detail `[implement]`
-
-**Priority**: Low | **Status**: `[ ]`
-**Blocked by**: None (NAPP-018 complete)
-
-**Tasks**:
-- [ ] Extend holdings endpoint with `getAssetDetail()` or add to existing
-- [ ] Create asset detail bottom sheet
-- [ ] Show: full asset info, order history, key stats
-
-**Acceptance Criteria**:
-- [ ] Asset detail shows complete information
-- [ ] Order history is correct
-
----
-
 ### NAPP-024: Port Price Oracle `[port]`
 
 **Priority**: Medium | **Status**: `[x]`
@@ -512,6 +496,26 @@ Add a compact, extensible filter to the dashboard for filtering the assets list.
 - [ ] Get user sign-off before implementation
 
 ---
+
+---
+
+### NAPP-043: Bottom Navigation Visual Separation `[implement]`
+
+**Priority**: Low | **Status**: `[x]`
+**Blocked by**: None
+
+The bottom navigation bar blends into the dark background with no visual distinction. Add a top border for clear separation.
+
+**Tasks**:
+- [x] Wrap `NavigationBar` in `Container` with top border decoration
+- [x] Use `colorScheme.outlineVariant` for border color (matches existing patterns)
+
+**File modified**:
+- `native/bagholdr/bagholdr_flutter/lib/screens/app_shell.dart`
+
+**Acceptance Criteria**:
+- [x] Bottom navigation has visible top border
+- [x] Border color adapts to light/dark theme
 
 ---
 
