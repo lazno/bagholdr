@@ -44,7 +44,7 @@ Follow the task type workflow:
 | `[setup]` | Human-assisted, wait for confirmation at each step |
 | `[research]` | Read files, document findings, NO code changes |
 | `[design]` | Analyze options, create mockups, document decisions |
-| `[implement]` | Write code + tests, verify, screenshot if UI |
+| `[implement]` | Write code + tests, verify |
 | `[port]` | Translate code, write tests, validate against reference |
 
 ### 5. Verify Completion
@@ -54,7 +54,6 @@ Before marking done, verify:
 - [ ] All acceptance criteria in the task are checked off
 - [ ] Quality standards from AGENTS.md are met:
   - Tests written and passing
-  - Screenshots taken (if UI change)
   - Code style followed
 - [ ] For `[port]` tasks: validated against TypeScript backend
 

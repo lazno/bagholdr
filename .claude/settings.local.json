@@ -62,7 +62,9 @@
       "Bash(wc:*)",
       "WebFetch(domain:docs.serverpod.dev)",
       "Bash(cat:*)",
-      "Bash(/Users/norbertlazzeri/.pub-cache/bin/serverpod generate:*)"
+      "Bash(/Users/norbertlazzeri/.pub-cache/bin/serverpod generate:*)",
+      "Bash(tree:*)",
+      "Bash(flutter build:*)"
     ]
   }
 }

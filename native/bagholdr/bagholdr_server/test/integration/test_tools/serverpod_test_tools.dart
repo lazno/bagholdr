@@ -26,18 +26,22 @@ import 'package:bagholdr_server/src/generated/update_yahoo_symbol_result.dart'
 import 'package:bagholdr_server/src/generated/sleeve_option.dart' as _i9;
 import 'package:bagholdr_server/src/generated/assign_sleeve_result.dart'
     as _i10;
-import 'package:bagholdr_server/src/generated/import_result.dart' as _i11;
-import 'package:bagholdr_server/src/generated/issues_response.dart' as _i12;
-import 'package:bagholdr_server/src/generated/portfolio.dart' as _i13;
-import 'package:bagholdr_server/src/generated/price_update.dart' as _i14;
-import 'package:bagholdr_server/src/generated/sync_status.dart' as _i15;
+import 'package:bagholdr_server/src/generated/update_asset_type_result.dart'
+    as _i11;
+import 'package:bagholdr_server/src/generated/refresh_price_result.dart'
+    as _i12;
+import 'package:bagholdr_server/src/generated/import_result.dart' as _i13;
+import 'package:bagholdr_server/src/generated/issues_response.dart' as _i14;
+import 'package:bagholdr_server/src/generated/portfolio.dart' as _i15;
+import 'package:bagholdr_server/src/generated/price_update.dart' as _i16;
+import 'package:bagholdr_server/src/generated/sync_status.dart' as _i17;
 import 'package:bagholdr_server/src/generated/sleeve_tree_response.dart'
-    as _i16;
-import 'package:bagholdr_server/src/generated/portfolio_valuation.dart' as _i17;
-import 'package:bagholdr_server/src/generated/chart_data_result.dart' as _i18;
-import 'package:bagholdr_server/src/generated/chart_range.dart' as _i19;
+    as _i18;
+import 'package:bagholdr_server/src/generated/portfolio_valuation.dart' as _i19;
+import 'package:bagholdr_server/src/generated/chart_data_result.dart' as _i20;
+import 'package:bagholdr_server/src/generated/chart_range.dart' as _i21;
 import 'package:bagholdr_server/src/generated/historical_returns_result.dart'
-    as _i20;
+    as _i22;
 import 'package:bagholdr_server/src/generated/protocol.dart';
 import 'package:bagholdr_server/src/generated/endpoints.dart';
 export 'package:serverpod_test/serverpod_test_public_exports.dart';
@@ -690,6 +694,72 @@ class _HoldingsEndpoint {
       }
     });
   }
+
+  _i3.Future<_i11.UpdateAssetTypeResult> updateAssetType(
+    _i1.TestSessionBuilder sessionBuilder, {
+    required _i2.UuidValue assetId,
+    required String newType,
+  }) async {
+    return _i1.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _i1.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'holdings',
+            method: 'updateAssetType',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'holdings',
+          methodName: 'updateAssetType',
+          parameters: _i1.testObjectToJson({
+            'assetId': assetId,
+            'newType': newType,
+          }),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _i3.Future<_i11.UpdateAssetTypeResult>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _i3.Future<_i12.RefreshPriceResult> refreshAssetPrices(
+    _i1.TestSessionBuilder sessionBuilder, {
+    required _i2.UuidValue assetId,
+  }) async {
+    return _i1.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _i1.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'holdings',
+            method: 'refreshAssetPrices',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'holdings',
+          methodName: 'refreshAssetPrices',
+          parameters: _i1.testObjectToJson({'assetId': assetId}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _i3.Future<_i12.RefreshPriceResult>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
 }
 
 class _ImportEndpoint {
@@ -702,7 +772,7 @@ class _ImportEndpoint {
 
   final _i2.SerializationManager _serializationManager;
 
-  _i3.Future<_i11.ImportResult> importDirectaCsv(
+  _i3.Future<_i13.ImportResult> importDirectaCsv(
     _i1.TestSessionBuilder sessionBuilder, {
     required String csvContent,
   }) async {
@@ -725,7 +795,7 @@ class _ImportEndpoint {
                   _localUniqueSession,
                   _localCallContext.arguments,
                 )
-                as _i3.Future<_i11.ImportResult>);
+                as _i3.Future<_i13.ImportResult>);
         return _localReturnValue;
       } finally {
         await _localUniqueSession.close();
@@ -744,7 +814,7 @@ class _IssuesEndpoint {
 
   final _i2.SerializationManager _serializationManager;
 
-  _i3.Future<_i12.IssuesResponse> getIssues(
+  _i3.Future<_i14.IssuesResponse> getIssues(
     _i1.TestSessionBuilder sessionBuilder, {
     required _i2.UuidValue portfolioId,
   }) async {
@@ -767,7 +837,7 @@ class _IssuesEndpoint {
                   _localUniqueSession,
                   _localCallContext.arguments,
                 )
-                as _i3.Future<_i12.IssuesResponse>);
+                as _i3.Future<_i14.IssuesResponse>);
         return _localReturnValue;
       } finally {
         await _localUniqueSession.close();
@@ -786,7 +856,7 @@ class _PortfolioEndpoint {
 
   final _i2.SerializationManager _serializationManager;
 
-  _i3.Future<List<_i13.Portfolio>> getPortfolios(
+  _i3.Future<List<_i15.Portfolio>> getPortfolios(
     _i1.TestSessionBuilder sessionBuilder,
   ) async {
     return _i1.callAwaitableFunctionAndHandleExceptions(() async {
@@ -808,7 +878,7 @@ class _PortfolioEndpoint {
                   _localUniqueSession,
                   _localCallContext.arguments,
                 )
-                as _i3.Future<List<_i13.Portfolio>>);
+                as _i3.Future<List<_i15.Portfolio>>);
         return _localReturnValue;
       } finally {
         await _localUniqueSession.close();
@@ -827,10 +897,10 @@ class _PriceStreamEndpoint {
 
   final _i2.SerializationManager _serializationManager;
 
-  _i3.Stream<_i14.PriceUpdate> streamPriceUpdates(
+  _i3.Stream<_i16.PriceUpdate> streamPriceUpdates(
     _i1.TestSessionBuilder sessionBuilder,
   ) {
-    var _localTestStreamManager = _i1.TestStreamManager<_i14.PriceUpdate>();
+    var _localTestStreamManager = _i1.TestStreamManager<_i16.PriceUpdate>();
     _i1.callStreamFunctionAndHandleExceptions(
       () async {
         var _localUniqueSession =
@@ -858,7 +928,7 @@ class _PriceStreamEndpoint {
     return _localTestStreamManager.outputStreamController.stream;
   }
 
-  _i3.Future<_i15.SyncStatus> getSyncStatus(
+  _i3.Future<_i17.SyncStatus> getSyncStatus(
     _i1.TestSessionBuilder sessionBuilder,
   ) async {
     return _i1.callAwaitableFunctionAndHandleExceptions(() async {
@@ -880,7 +950,7 @@ class _PriceStreamEndpoint {
                   _localUniqueSession,
                   _localCallContext.arguments,
                 )
-                as _i3.Future<_i15.SyncStatus>);
+                as _i3.Future<_i17.SyncStatus>);
         return _localReturnValue;
       } finally {
         await _localUniqueSession.close();
@@ -888,7 +958,7 @@ class _PriceStreamEndpoint {
     });
   }
 
-  _i3.Future<_i15.SyncStatus> triggerSync(
+  _i3.Future<_i17.SyncStatus> triggerSync(
     _i1.TestSessionBuilder sessionBuilder,
   ) async {
     return _i1.callAwaitableFunctionAndHandleExceptions(() async {
@@ -910,7 +980,7 @@ class _PriceStreamEndpoint {
                   _localUniqueSession,
                   _localCallContext.arguments,
                 )
-                as _i3.Future<_i15.SyncStatus>);
+                as _i3.Future<_i17.SyncStatus>);
         return _localReturnValue;
       } finally {
         await _localUniqueSession.close();
@@ -929,7 +999,7 @@ class _SleevesEndpoint {
 
   final _i2.SerializationManager _serializationManager;
 
-  _i3.Future<_i16.SleeveTreeResponse> getSleeveTree(
+  _i3.Future<_i18.SleeveTreeResponse> getSleeveTree(
     _i1.TestSessionBuilder sessionBuilder, {
     required _i2.UuidValue portfolioId,
     required _i6.ReturnPeriod period,
@@ -956,7 +1026,7 @@ class _SleevesEndpoint {
                   _localUniqueSession,
                   _localCallContext.arguments,
                 )
-                as _i3.Future<_i16.SleeveTreeResponse>);
+                as _i3.Future<_i18.SleeveTreeResponse>);
         return _localReturnValue;
       } finally {
         await _localUniqueSession.close();
@@ -975,7 +1045,7 @@ class _ValuationEndpoint {
 
   final _i2.SerializationManager _serializationManager;
 
-  _i3.Future<_i17.PortfolioValuation> getPortfolioValuation(
+  _i3.Future<_i19.PortfolioValuation> getPortfolioValuation(
     _i1.TestSessionBuilder sessionBuilder,
     _i2.UuidValue portfolioId,
   ) async {
@@ -998,7 +1068,7 @@ class _ValuationEndpoint {
                   _localUniqueSession,
                   _localCallContext.arguments,
                 )
-                as _i3.Future<_i17.PortfolioValuation>);
+                as _i3.Future<_i19.PortfolioValuation>);
         return _localReturnValue;
       } finally {
         await _localUniqueSession.close();
@@ -1006,10 +1076,10 @@ class _ValuationEndpoint {
     });
   }
 
-  _i3.Future<_i18.ChartDataResult> getChartData(
+  _i3.Future<_i20.ChartDataResult> getChartData(
     _i1.TestSessionBuilder sessionBuilder,
     _i2.UuidValue portfolioId,
-    _i19.ChartRange range,
+    _i21.ChartRange range,
   ) async {
     return _i1.callAwaitableFunctionAndHandleExceptions(() async {
       var _localUniqueSession =
@@ -1033,7 +1103,7 @@ class _ValuationEndpoint {
                   _localUniqueSession,
                   _localCallContext.arguments,
                 )
-                as _i3.Future<_i18.ChartDataResult>);
+                as _i3.Future<_i20.ChartDataResult>);
         return _localReturnValue;
       } finally {
         await _localUniqueSession.close();
@@ -1041,7 +1111,7 @@ class _ValuationEndpoint {
     });
   }
 
-  _i3.Future<_i20.HistoricalReturnsResult> getHistoricalReturns(
+  _i3.Future<_i22.HistoricalReturnsResult> getHistoricalReturns(
     _i1.TestSessionBuilder sessionBuilder,
     _i2.UuidValue portfolioId,
   ) async {
@@ -1064,7 +1134,7 @@ class _ValuationEndpoint {
                   _localUniqueSession,
                   _localCallContext.arguments,
                 )
-                as _i3.Future<_i20.HistoricalReturnsResult>);
+                as _i3.Future<_i22.HistoricalReturnsResult>);
         return _localReturnValue;
       } finally {
         await _localUniqueSession.close();

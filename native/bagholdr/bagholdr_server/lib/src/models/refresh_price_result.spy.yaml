@@ -1,0 +1,10 @@
+### RefreshPriceResult - Result of refreshing an asset's price
+### Contains success status and the new price data (or error message on failure)
+class: RefreshPriceResult
+fields:
+  success: bool
+  ticker: String?
+  priceEur: double?
+  currency: String?
+  fetchedAt: DateTime?
+  errorMessage: String?

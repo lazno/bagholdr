@@ -62,12 +62,6 @@ When implementing any API endpoint, you MUST perform an end-to-end test before m
 
 **Do NOT mark an endpoint task complete until you have verified it works end-to-end.**
 
-### Visual Verification
-
-- UI changes require screenshot verification
-- Take screenshots BEFORE marking a task complete
-- IMPORTANT: For UI work: ALWAYS test on BOTH web and mobile emulator (see commands below). Acceptance criterias are not met until you tested on both: web AND emulator.
-
 ### Code Quality
 
 - No hardcoded colors in Flutter (use theme)
@@ -145,31 +139,7 @@ docker compose down -v && docker compose up -d
 
 ---
 
-## Screenshots
-
-### Efficient Workflow
-
-**Start servers at the beginning of UI tasks, not when you need screenshots.**
-
-For Flutter UI work:
-
-```bash
-./native/scripts/start-with-hotreload.sh
-```
-
-This single command:
-1. Starts Docker, PostgreSQL, Redis
-2. Starts Serverpod server
-3. Starts Android emulator
-4. Starts Flutter web on port 3001
-5. Starts Flutter on emulator (waits for build to complete)
-6. Starts both hot reload watchers (web + emulator)
-
-Make changes → they hot reload automatically on both web and emulator.
-
-To stop: `./native/scripts/stop.sh --all`
-
-### Svelte Web App
+## Screenshots (Svelte Web App)
 
 Both servers must be running (`pnpm dev` + `cd server && pnpm dev`).
 
@@ -179,16 +149,6 @@ pnpm screenshot <path> [name]
 # Examples
 pnpm screenshot /                     # saves as tests/screenshots/home.png
 pnpm screenshot /portfolios/1 detail  # saves as tests/screenshots/detail.png
-```
-
-### Flutter App
-
-```bash
-# Web screenshot (Flutter web must be running on port 3001)
-pnpm screenshot /path name --flutter
-
-# Mobile screenshot (emulator must be running)
-pnpm screenshot name --emulator
 ```
 
 Screenshots are saved to `tests/screenshots/` (gitignored).
