@@ -463,3 +463,9 @@ Removed redundant AppBars from Dashboard, Strategy, and Settings screens:
 - Removed privacy mode buttons from Dashboard/Strategy (accessible via Settings)
 - Added SafeArea wrappers to ensure proper spacing on notched devices
 - Asset detail screen still has AppBar (shows dynamic asset name + action menu)
+
+### NAPP-044: Fix Search Box Focus Behavior `[implement]` - DONE
+
+Fixed keyboard auto-opening when returning to dashboard from asset detail:
+- Wrapped dashboard body in `GestureDetector` with `HitTestBehavior.translucent` to dismiss keyboard on tap outside search
+- Added `FocusScope.of(context).unfocus()` before navigating to asset detail to clear focus

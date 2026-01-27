@@ -316,12 +316,16 @@ class _PortfolioListScreenState extends State<PortfolioListScreen> {
         return Scaffold(
           backgroundColor: bgColor,
           body: SafeArea(
-            child: Column(
-              children: [
-                // Portfolio selector + Time range bar
-                _buildControlBar(portfolios, selected),
-                Expanded(child: _buildDashboardPlaceholder(selected)),
-              ],
+            child: GestureDetector(
+              behavior: HitTestBehavior.translucent,
+              onTap: () => FocusScope.of(context).unfocus(),
+              child: Column(
+                children: [
+                  // Portfolio selector + Time range bar
+                  _buildControlBar(portfolios, selected),
+                  Expanded(child: _buildDashboardPlaceholder(selected)),
+                ],
+              ),
             ),
           ),
         );
@@ -429,6 +433,9 @@ class _PortfolioListScreenState extends State<PortfolioListScreen> {
               onLoadMore: _onLoadMore,
               hasMore: _holdings.length < _filteredCount,
               onAssetTap: (holding) {
+                // Clear search focus before navigating to prevent keyboard
+                // from auto-opening when returning
+                FocusScope.of(context).unfocus();
                 Navigator.of(context).push(
                   MaterialPageRoute(
                     builder: (context) => AssetDetailScreen(
