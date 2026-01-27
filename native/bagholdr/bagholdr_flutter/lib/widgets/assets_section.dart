@@ -56,6 +56,7 @@ class AssetsSection extends StatelessWidget {
     this.isLoading = false,
     this.hideBalances = false,
     this.isRecentlyUpdated,
+    this.searchFocusNode,
   });
 
   /// List of holdings to display.
@@ -94,6 +95,9 @@ class AssetsSection extends StatelessWidget {
   /// Callback to check if an ISIN was recently updated via price stream.
   final bool Function(String isin)? isRecentlyUpdated;
 
+  /// Optional focus node for the search bar, allowing external control.
+  final FocusNode? searchFocusNode;
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -112,6 +116,7 @@ class AssetsSection extends StatelessWidget {
           _SearchBar(
             value: searchQuery,
             onChanged: onSearchChanged,
+            focusNode: searchFocusNode,
           ),
           const SizedBox(height: 12),
 
@@ -189,10 +194,12 @@ class _SearchBar extends StatelessWidget {
   const _SearchBar({
     required this.value,
     required this.onChanged,
+    this.focusNode,
   });
 
   final String value;
   final ValueChanged<String> onChanged;
+  final FocusNode? focusNode;
 
   @override
   Widget build(BuildContext context) {
@@ -214,6 +221,7 @@ class _SearchBar extends StatelessWidget {
           const SizedBox(width: 8),
           Expanded(
             child: TextField(
+              focusNode: focusNode,
               controller: TextEditingController(text: value)
                 ..selection = TextSelection.collapsed(offset: value.length),
               onChanged: onChanged,

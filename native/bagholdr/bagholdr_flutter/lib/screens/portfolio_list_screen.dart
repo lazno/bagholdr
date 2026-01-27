@@ -22,6 +22,7 @@ class PortfolioListScreen extends StatefulWidget {
 
 class _PortfolioListScreenState extends State<PortfolioListScreen> {
   late Future<List<Portfolio>> _portfoliosFuture;
+  final FocusNode _searchFocusNode = FocusNode();
   Portfolio? _selectedPortfolio;
   TimePeriod _selectedPeriod = TimePeriod.oneYear;
 
@@ -53,6 +54,7 @@ class _PortfolioListScreenState extends State<PortfolioListScreen> {
 
   @override
   void dispose() {
+    _searchFocusNode.dispose();
     priceStreamProvider.removeListener(_onPriceStreamUpdate);
     hideBalances.removeListener(_onHideBalancesChanged);
     super.dispose();
@@ -432,10 +434,8 @@ class _PortfolioListScreenState extends State<PortfolioListScreen> {
               onSearchChanged: _onSearchChanged,
               onLoadMore: _onLoadMore,
               hasMore: _holdings.length < _filteredCount,
+              searchFocusNode: _searchFocusNode,
               onAssetTap: (holding) {
-                // Clear search focus before navigating to prevent keyboard
-                // from auto-opening when returning
-                FocusScope.of(context).unfocus();
                 Navigator.of(context).push(
                   MaterialPageRoute(
                     builder: (context) => AssetDetailScreen(
@@ -444,7 +444,11 @@ class _PortfolioListScreenState extends State<PortfolioListScreen> {
                       initialPeriod: _selectedPeriod,
                     ),
                   ),
-                );
+                ).then((_) {
+                  // Unfocus search after returning from detail page
+                  // to prevent keyboard from auto-opening
+                  _searchFocusNode.unfocus();
+                });
               },
               isLoading: _isLoadingHoldings,
               hideBalances: hideBalances.value,
