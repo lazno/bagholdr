@@ -72,35 +72,35 @@ class _PortfolioListScreenState extends State<PortfolioListScreen> {
     if (mounted) setState(() {});
   }
 
+  // Track if we have a pending refresh to avoid multiple concurrent requests
+  bool _pendingHoldingsRefresh = false;
+
   void _onPriceStreamUpdate() {
-    if (!mounted) return;
-    // Update displayed holdings with new prices.
-    for (int i = 0; i < _holdings.length; i++) {
-      final holding = _holdings[i];
+    if (!mounted || _selectedPortfolio == null) return;
+
+    // Check if any displayed holding has a price update
+    bool hasUpdate = false;
+    for (final holding in _holdings) {
       final update = priceStreamProvider.getPrice(holding.isin);
       if (update != null) {
         final newValue = update.priceEur * holding.quantity;
         if ((newValue - holding.value).abs() > 0.001) {
-          _holdings[i] = HoldingResponse(
-            symbol: holding.symbol,
-            name: holding.name,
-            isin: holding.isin,
-            value: newValue,
-            costBasis: holding.costBasis,
-            pl: newValue - holding.costBasis,
-            weight: holding.weight,
-            mwr: holding.mwr,
-            twr: holding.twr,
-            totalReturn: holding.totalReturn,
-            sleeveId: holding.sleeveId,
-            sleeveName: holding.sleeveName,
-            assetId: holding.assetId,
-            quantity: holding.quantity,
-          );
+          hasUpdate = true;
+          break;
         }
       }
     }
-    // Rebuild for price changes and recently-updated animation.
+
+    // Re-fetch from backend if there's a meaningful price change
+    // All calculations done server-side via AssetReturnsCalculator
+    if (hasUpdate && !_pendingHoldingsRefresh) {
+      _pendingHoldingsRefresh = true;
+      _loadHoldings(_selectedPortfolio!.id!).then((_) {
+        _pendingHoldingsRefresh = false;
+      });
+    }
+
+    // Rebuild for recently-updated animation
     setState(() {});
   }
 

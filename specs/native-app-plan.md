@@ -222,6 +222,322 @@ Backend-only. UI/automation TBD later.
 
 ---
 
+### NAPP-032: Edit Yahoo Symbol `[implement]`
+
+**Priority**: Medium | **Status**: `[ ]`
+**Blocked by**: None
+
+Allow user to edit the Yahoo symbol for an asset. Changing the symbol should clear historical price data for the old ticker.
+
+**Backend**:
+- [ ] Add `updateYahooSymbol(assetId, newSymbol)` endpoint
+- [ ] Clear `DailyPrice`, `IntradayPrice`, `DividendEvent`, `TickerMetadata` for old symbol
+- [ ] Update asset record with new symbol
+
+**Frontend**:
+- [ ] Wire up edit button in `_EditableFieldsSection`
+- [ ] Show text input dialog for new symbol
+- [ ] Call endpoint and refresh asset detail on success
+
+**Acceptance Criteria**:
+- [ ] User can change Yahoo symbol from asset detail page
+- [ ] Old price data is cleared when symbol changes
+- [ ] New prices are fetched on next price refresh
+
+---
+
+### NAPP-033: Edit Asset Type `[implement]`
+
+**Priority**: Low | **Status**: `[ ]`
+**Blocked by**: None
+
+Allow user to change asset type (ETF, Stock, Bond, etc.).
+
+**Backend**:
+- [ ] Add `updateAssetType(assetId, newType)` endpoint
+- [ ] Validate type is one of allowed values
+
+**Frontend**:
+- [ ] Wire up edit button in `_EditableFieldsSection`
+- [ ] Show picker dialog with asset type options
+- [ ] Call endpoint and refresh asset detail on success
+
+**Acceptance Criteria**:
+- [ ] User can change asset type from asset detail page
+- [ ] Type badge updates immediately
+
+---
+
+### NAPP-034: Assign Asset to Sleeve `[implement]`
+
+**Priority**: Medium | **Status**: `[ ]`
+**Blocked by**: None
+
+Allow user to assign/reassign an asset to a sleeve.
+
+**Backend**:
+- [ ] Add `assignAssetToSleeve(assetId, sleeveId)` endpoint (null sleeveId = unassign)
+- [ ] Update asset record
+
+**Frontend**:
+- [ ] Wire up edit button in `_EditableFieldsSection`
+- [ ] Fetch available sleeves for picker
+- [ ] Show picker dialog with sleeve options + "Unassigned"
+- [ ] Call endpoint and refresh asset detail on success
+
+**Acceptance Criteria**:
+- [ ] User can assign asset to a sleeve
+- [ ] User can unassign asset from sleeve
+- [ ] Dashboard sleeve grouping updates accordingly
+
+---
+
+### NAPP-035: Refresh Asset Prices `[implement]`
+
+**Priority**: Medium | **Status**: `[ ]`
+**Blocked by**: None (NAPP-024 complete)
+
+Trigger a price refresh for a single asset from the action menu.
+
+**Backend**:
+- [ ] Add `refreshAssetPrices(assetId)` endpoint
+- [ ] Call price oracle for the asset's Yahoo symbol
+- [ ] Store updated prices
+
+**Frontend**:
+- [ ] Wire up "Refresh prices" menu item in `_showActionMenu()`
+- [ ] Show loading indicator during refresh
+- [ ] Refresh asset detail on completion
+- [ ] Show success/error snackbar
+
+**Acceptance Criteria**:
+- [ ] User can manually trigger price refresh for single asset
+- [ ] Asset detail updates with new price data
+
+---
+
+### NAPP-036: Clear Price History `[implement]`
+
+**Priority**: Low | **Status**: `[ ]`
+**Blocked by**: None
+
+Clear all historical price data for an asset (useful when data is corrupted or wrong symbol was used).
+
+**Backend**:
+- [ ] Add `clearPriceHistory(assetId)` endpoint
+- [ ] Delete `DailyPrice`, `IntradayPrice` records for asset
+- [ ] Optionally clear `DividendEvent`, `TickerMetadata`
+
+**Frontend**:
+- [ ] Wire up "Clear price history" menu item
+- [ ] Show confirmation dialog (destructive action)
+- [ ] Call endpoint and show result
+
+**Acceptance Criteria**:
+- [ ] User can clear price history with confirmation
+- [ ] Price data is removed from database
+- [ ] Asset shows "no price data" state until next refresh
+
+---
+
+### NAPP-037: Archive Asset `[implement]`
+
+**Priority**: Low | **Status**: `[ ]`
+**Blocked by**: None
+
+Archive an asset to hide it from the main view (for sold positions or mistakes).
+
+**Backend**:
+- [ ] Add `archived` boolean field to Asset model
+- [ ] Add `archiveAsset(assetId, archived)` endpoint
+- [ ] Filter archived assets from holdings queries by default
+- [ ] Create migration
+
+**Frontend**:
+- [ ] Wire up "Archive asset" menu item
+- [ ] Show confirmation dialog
+- [ ] Navigate back to dashboard on success (asset no longer visible)
+- [ ] Consider: settings toggle to show archived assets
+
+**Acceptance Criteria**:
+- [ ] User can archive an asset
+- [ ] Archived assets don't appear in dashboard
+- [ ] (Optional) User can view/unarchive from settings or filter
+
+---
+
+### NAPP-038: Add Portfolio Weight to Asset Detail `[implement]`
+
+**Priority**: Low | **Status**: `[ ]`
+**Blocked by**: None
+
+Display the asset's weight as a percentage of the total portfolio value.
+
+**Backend**:
+- [ ] Add `weightPct` field to `AssetDetailResponse` (already may exist, verify)
+- [ ] Calculate: `(asset value / portfolio total value) * 100`
+
+**Frontend**:
+- [ ] Display weight in position summary section
+- [ ] Format as percentage (e.g., "12.5%")
+
+**Acceptance Criteria**:
+- [ ] Asset detail shows weight relative to total portfolio
+- [ ] Weight updates when value changes
+
+---
+
+### NAPP-039: Asset Performance Chart with Order Events `[implement]`
+
+**Priority**: Medium | **Status**: `[ ]`
+**Blocked by**: None
+
+Add an interactive TWR chart to the asset detail page, with buy/sell order markers overlaid.
+
+**Backend**:
+- [ ] Add `getAssetChartData(assetId, portfolioId, period)` endpoint
+- [ ] Return time series of cumulative TWR for the asset (same date range logic as portfolio chart)
+- [ ] Include order events in response: `{ date, orderType, quantity }`
+
+**Frontend** (reuse ergonomics from `PortfolioChart`):
+- [ ] Create `AssetPerformanceChart` widget
+- [ ] X-axis: days-from-start with smart label intervals (same as portfolio chart)
+- [ ] Y-axis: percentage (TWR), auto-scaled with padding
+- [ ] Main line: cumulative TWR with gradient fill
+- [ ] Order markers: scatter points or vertical lines at buy (green up arrow/dot) and sell (red down arrow/dot) dates
+- [ ] Interactive: tap to see TWR value + date in tooltip
+- [ ] When touching near an order marker, show order details in tooltip (type, quantity)
+- [ ] Legend: "TWR" line + "Buy" / "Sell" markers
+
+**UX considerations**:
+- Chart should respect the selected time period from the TimeRangeBar
+- Order markers only shown if they fall within the selected period
+- If no TWR data available (new asset), show placeholder message
+
+**Reference**: `lib/widgets/portfolio_chart.dart` for axis implementation and touch handling
+
+**Acceptance Criteria**:
+- [ ] Chart displays cumulative TWR for asset over selected period
+- [ ] Buy/sell orders are visible as overlaid markers
+- [ ] Touch interaction shows TWR value and date
+- [ ] Touching order marker shows order details
+- [ ] Same visual polish as portfolio chart
+
+---
+
+### NAPP-040: Move Strategy Section to Dedicated Page `[implement]`
+
+**Priority**: Medium | **Status**: `[ ]`
+**Blocked by**: None
+
+Move the Strategy section to a dedicated page AS-IS. Preserve all current functionality but remove the asset filtering behavior. This is a stepping stone before future redesign.
+
+**What to preserve**:
+- Two-ring pie chart with animations
+- Sleeve selection → shows stats panel (slide animation)
+- Sleeve pills for quick selection
+- Time range selector (same as dashboard)
+- Portfolio picker (same as dashboard)
+
+**What to remove/change**:
+- Clicking a sleeve NO LONGER filters assets on dashboard
+- No assets displayed on this page (pure strategy visualization)
+
+**Tasks**:
+- [ ] Create `strategy_screen.dart`
+- [ ] Move `StrategySectionV2` content to new screen
+- [ ] Add TimeRangeBar and portfolio selector
+- [ ] Add navigation to Strategy page (bottom nav tab)
+- [ ] Remove `StrategySectionV2` from `portfolio_list_screen.dart`
+- [ ] Remove `onSleeveSelected` callback that was filtering dashboard assets
+
+**Acceptance Criteria**:
+- [ ] Strategy page shows pie chart with full current functionality
+- [ ] Time period and portfolio can be selected on Strategy page
+- [ ] Dashboard no longer shows the pie chart
+- [ ] Sleeve selection on Strategy page does NOT affect dashboard
+
+---
+
+### NAPP-041: Dashboard Asset Filter `[implement]`
+
+**Priority**: Medium | **Status**: `[ ]`
+**Blocked by**: NAPP-040
+
+Add a compact, extensible filter to the dashboard for filtering the assets list. Initial implementation filters by sleeve, but design should accommodate future filter types.
+
+**NOT pills** - need a more scalable UX pattern.
+
+**Design ideas to explore**:
+- Filter bar with dropdown/popover for each filter type
+- Single "Filter" button that opens a sheet with all filter options
+- Inline chips that appear when filters are active (showing active state)
+- Segmented control or tab-style for primary filter (sleeve)
+
+**Potential future filter extensions**:
+- Asset type (ETF, Stock, Bond, etc.)
+- Geographic exposure (if tracked)
+- Sector/industry
+- Performance (gainers/losers)
+- Holding period (short-term vs long-term)
+
+**Requirements**:
+- [ ] Compact - minimal vertical space when no filter active
+- [ ] Extensible - architecture allows adding new filter types
+- [ ] Clear active state - obvious what filters are applied
+- [ ] Quick to use - minimal taps to filter
+- [ ] Easy to clear - one tap to reset all filters
+
+**Tasks**:
+- [ ] Design filter UX (mockup or prototype)
+- [ ] Implement sleeve filter as first filter type
+- [ ] Show active filter indicator
+- [ ] Wire up to holdings query (sleeveId parameter already exists)
+
+**Related files**:
+- `lib/screens/portfolio_list_screen.dart` - dashboard layout
+- `lib/widgets/assets_section.dart` - assets list that will be filtered
+
+**Acceptance Criteria**:
+- [ ] Dashboard has compact filter UI
+- [ ] Can filter assets by sleeve
+- [ ] Filter state is visually clear
+- [ ] Design accommodates future filter types
+
+---
+
+### NAPP-042: Strategy Page Redesign `[exploration]`
+
+**Priority**: Low | **Status**: `[ ]`
+**Blocked by**: NAPP-040
+
+**This is an exploratory task.** The Strategy page (created in NAPP-040) needs a complete redesign. Everything is open for reconsideration.
+
+**Open questions**:
+- What is the purpose of this page?
+- Should it show assets? Which ones? How?
+- How should sleeves be visualized? (pie chart? bars? treemap? list?)
+- Should it include rebalancing suggestions?
+- Should it allow sleeve management (create, edit, delete, assign assets)?
+- Should it show allocation over time (historical)?
+- Should it compare against benchmarks?
+- Should it show drift analysis in more detail?
+
+**Possible directions**:
+1. **Rebalancing focus**: Show current vs target, suggest trades
+2. **Analytics focus**: Performance by sleeve, attribution analysis
+3. **Management focus**: CRUD for sleeves, drag-drop asset assignment
+4. **Monitoring focus**: Drift alerts, allocation health
+
+**Deliverable**: Before implementation, create mockups exploring 2-3 different directions and get user feedback.
+
+**Acceptance Criteria**:
+- [ ] Explore multiple design directions
+- [ ] Create mockups for preferred approach
+- [ ] Get user sign-off before implementation
+
+---
+
 ---
 
 ### NAPP-101: Short Holding Period Indicator `[implement]`

@@ -40,9 +40,8 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
   bool _isInitialLoading = true;
   String? _error;
 
-  // Live price update state
-  double? _liveValue;
-  double? _livePL;
+  // Track the last price to detect changes
+  double? _lastKnownPrice;
 
   @override
   void initState() {
@@ -63,15 +62,12 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
 
     final update = priceStreamProvider.getPrice(_assetDetail!.isin);
     if (update != null) {
-      final newValue = update.priceEur * _assetDetail!.quantity;
-      final newPL = newValue - _assetDetail!.costBasis;
-
-      // Only update if there's a meaningful change
-      if (_liveValue == null || (newValue - _liveValue!).abs() > 0.001) {
-        setState(() {
-          _liveValue = newValue;
-          _livePL = newPL;
-        });
+      // Only refresh if price has meaningfully changed
+      if (_lastKnownPrice == null ||
+          (update.priceEur - _lastKnownPrice!).abs() > 0.001) {
+        _lastKnownPrice = update.priceEur;
+        // Re-fetch from server - all calculations done centrally
+        _loadAssetDetail();
       }
     }
   }
@@ -96,9 +92,6 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
       setState(() {
         _assetDetail = response;
         _isInitialLoading = false;
-        // Reset live values - will be updated by price stream
-        _liveValue = null;
-        _livePL = null;
       });
     } catch (e) {
       setState(() {
@@ -249,11 +242,7 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
           Container(
             color: colorScheme.surface,
             padding: const EdgeInsets.all(16),
-            child: _PositionSummary(
-              detail: detail,
-              liveValue: _liveValue,
-              livePL: _livePL,
-            ),
+            child: _PositionSummary(detail: detail),
           ),
 
           const SizedBox(height: 8),
@@ -320,37 +309,31 @@ class _AssetHeader extends StatelessWidget {
   }
 }
 
-/// Position summary with value, period return, and key stats.
+/// Position summary with value, unrealized P/L, and key stats.
 class _PositionSummary extends StatelessWidget {
-  const _PositionSummary({
-    required this.detail,
-    this.liveValue,
-    this.livePL,
-  });
+  const _PositionSummary({required this.detail});
 
   final AssetDetailResponse detail;
-  final double? liveValue;
-  final double? livePL;
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final financialColors = context.financialColors;
 
-    // Use live values if available, otherwise fall back to server values
-    final displayValue = liveValue ?? detail.value;
-    final displayPL = livePL ?? detail.periodReturnAbs;
-    final displayPLPct = detail.costBasis > 0
-        ? (displayPL / detail.costBasis)
-        : (detail.periodReturnPct != null ? detail.periodReturnPct! / 100 : null);
+    // All values come from the server (recalculated on price updates)
+    final displayValue = detail.value;
+    final displayUnrealizedPL = detail.unrealizedPL;
+    final displayUnrealizedPLPct = detail.unrealizedPLPct != null
+        ? detail.unrealizedPLPct! / 100
+        : (detail.costBasis > 0 ? displayUnrealizedPL / detail.costBasis : null);
 
-    final isPositive = displayPL >= 0;
-    final returnColor = isPositive ? financialColors.positive : financialColors.negative;
+    final isPositive = displayUnrealizedPL >= 0;
+    final unrealizedColor = isPositive ? financialColors.positive : financialColors.negative;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Value and period return row
+        // Value and unrealized P/L (paper gain) row
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -377,23 +360,35 @@ class _PositionSummary extends StatelessWidget {
                 ],
               ),
             ),
+            // Unrealized P/L - the prominent "paper gain" number
             Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                Text(
-                  Formatters.formatSignedCurrency(displayPL),
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w600,
-                    color: returnColor,
-                  ),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _InfoTooltip(
+                      message: 'Unrealized P/L (paper gain) on your current holdings. '
+                          'For the selected period, this shows how much the price has moved '
+                          'since the start of that period. Updates live with price changes.',
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      Formatters.formatSignedCurrency(displayUnrealizedPL),
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w600,
+                        color: unrealizedColor,
+                      ),
+                    ),
+                  ],
                 ),
-                if (displayPLPct != null)
+                if (displayUnrealizedPLPct != null)
                   Text(
-                    '(${Formatters.formatPercent(displayPLPct, showSign: true)})',
+                    '(${Formatters.formatPercent(displayUnrealizedPLPct, showSign: true)})',
                     style: TextStyle(
                       fontSize: 14,
-                      color: returnColor,
+                      color: unrealizedColor,
                     ),
                   ),
               ],
@@ -404,8 +399,15 @@ class _PositionSummary extends StatelessWidget {
         const SizedBox(height: 20),
 
         // Stats grid
-        _StatRow(label: 'Cost basis', value: Formatters.formatCurrency(detail.costBasis)),
-        _StatRow(label: 'Weight', value: Formatters.formatWeight(detail.weight)),
+        _StatRow(
+          label: 'Realized P/L',
+          value: Formatters.formatSignedCurrency(detail.realizedPL),
+          valueColor: detail.realizedPL >= 0
+              ? financialColors.positive
+              : financialColors.negative,
+          tooltip: 'Profit or loss from shares sold during the selected period. '
+              'Calculated as sale proceeds minus average cost of sold shares.',
+        ),
         _StatRow(
           label: 'TWR',
           value: detail.twr != null
@@ -414,28 +416,51 @@ class _PositionSummary extends StatelessWidget {
           valueColor: detail.twr != null
               ? (detail.twr! >= 0 ? financialColors.positive : financialColors.negative)
               : null,
+          tooltip: 'Time-Weighted Return measures pure investment performance, '
+              'ignoring when you added or removed money. Use this to compare against benchmarks.',
         ),
         _StatRow(
           label: 'MWR',
           value: Formatters.formatPercent(detail.mwr / 100, showSign: true),
           valueColor: detail.mwr >= 0 ? financialColors.positive : financialColors.negative,
+          tooltip: 'Money-Weighted Return (XIRR) measures your actual rate of return, '
+              'accounting for when you invested. This is your personal performance.',
+        ),
+        _StatRow(
+          label: 'Cost basis',
+          value: Formatters.formatCurrency(detail.costBasis),
+          tooltip: 'Total amount paid for your current shares, calculated using '
+              'the average cost method. Includes purchase price and fees.',
+        ),
+        _StatRow(
+          label: 'Total return',
+          value: detail.totalReturn != null
+              ? Formatters.formatPercent(detail.totalReturn! / 100, showSign: true)
+              : '—',
+          valueColor: detail.totalReturn != null
+              ? (detail.totalReturn! >= 0 ? financialColors.positive : financialColors.negative)
+              : null,
+          tooltip: 'Combined realized and unrealized return as a percentage. '
+              'Includes both paper gains and locked-in profits from sales.',
         ),
       ],
     );
   }
 }
 
-/// Single stat row with label and value.
+/// Single stat row with label, value, and optional tooltip.
 class _StatRow extends StatelessWidget {
   const _StatRow({
     required this.label,
     required this.value,
     this.valueColor,
+    this.tooltip,
   });
 
   final String label;
   final String value;
   final Color? valueColor;
+  final String? tooltip;
 
   @override
   Widget build(BuildContext context) {
@@ -446,12 +471,21 @@ class _StatRow extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 14,
-              color: colorScheme.onSurfaceVariant,
-            ),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: colorScheme.onSurfaceVariant,
+                ),
+              ),
+              if (tooltip != null) ...[
+                const SizedBox(width: 4),
+                _InfoTooltip(message: tooltip!),
+              ],
+            ],
           ),
           Text(
             value,
@@ -462,6 +496,40 @@ class _StatRow extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Small info icon that shows a tooltip on tap.
+class _InfoTooltip extends StatelessWidget {
+  const _InfoTooltip({required this.message});
+
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return GestureDetector(
+      onTap: () {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            content: Text(message),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('OK'),
+              ),
+            ],
+          ),
+        );
+      },
+      child: Icon(
+        Icons.info_outline,
+        size: 16,
+        color: colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
       ),
     );
   }

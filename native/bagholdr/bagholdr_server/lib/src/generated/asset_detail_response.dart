@@ -30,10 +30,12 @@ abstract class AssetDetailResponse
     required this.value,
     required this.costBasis,
     required this.weight,
-    required this.periodReturnAbs,
-    this.periodReturnPct,
+    required this.unrealizedPL,
+    this.unrealizedPLPct,
+    required this.realizedPL,
     required this.mwr,
     this.twr,
+    this.totalReturn,
     this.sleeveId,
     this.sleeveName,
     required this.orders,
@@ -51,10 +53,12 @@ abstract class AssetDetailResponse
     required double value,
     required double costBasis,
     required double weight,
-    required double periodReturnAbs,
-    double? periodReturnPct,
+    required double unrealizedPL,
+    double? unrealizedPLPct,
+    required double realizedPL,
     required double mwr,
     double? twr,
+    double? totalReturn,
     String? sleeveId,
     String? sleeveName,
     required List<_i2.OrderSummary> orders,
@@ -73,11 +77,13 @@ abstract class AssetDetailResponse
       value: (jsonSerialization['value'] as num).toDouble(),
       costBasis: (jsonSerialization['costBasis'] as num).toDouble(),
       weight: (jsonSerialization['weight'] as num).toDouble(),
-      periodReturnAbs: (jsonSerialization['periodReturnAbs'] as num).toDouble(),
-      periodReturnPct: (jsonSerialization['periodReturnPct'] as num?)
+      unrealizedPL: (jsonSerialization['unrealizedPL'] as num).toDouble(),
+      unrealizedPLPct: (jsonSerialization['unrealizedPLPct'] as num?)
           ?.toDouble(),
+      realizedPL: (jsonSerialization['realizedPL'] as num).toDouble(),
       mwr: (jsonSerialization['mwr'] as num).toDouble(),
       twr: (jsonSerialization['twr'] as num?)?.toDouble(),
+      totalReturn: (jsonSerialization['totalReturn'] as num?)?.toDouble(),
       sleeveId: jsonSerialization['sleeveId'] as String?,
       sleeveName: jsonSerialization['sleeveName'] as String?,
       orders: _i3.Protocol().deserialize<List<_i2.OrderSummary>>(
@@ -111,13 +117,21 @@ abstract class AssetDetailResponse
   double weight;
 
   /// Returns (period-specific)
-  double periodReturnAbs;
+  /// Unrealized P/L (paper gain on current holdings)
+  double unrealizedPL;
 
-  double? periodReturnPct;
+  double? unrealizedPLPct;
 
+  /// Realized P/L (gains from sales during period)
+  double realizedPL;
+
+  /// TWR and MWR
   double mwr;
 
   double? twr;
+
+  /// Total return percentage for the period
+  double? totalReturn;
 
   /// Sleeve assignment
   String? sleeveId;
@@ -142,10 +156,12 @@ abstract class AssetDetailResponse
     double? value,
     double? costBasis,
     double? weight,
-    double? periodReturnAbs,
-    double? periodReturnPct,
+    double? unrealizedPL,
+    double? unrealizedPLPct,
+    double? realizedPL,
     double? mwr,
     double? twr,
+    double? totalReturn,
     String? sleeveId,
     String? sleeveName,
     List<_i2.OrderSummary>? orders,
@@ -165,10 +181,12 @@ abstract class AssetDetailResponse
       'value': value,
       'costBasis': costBasis,
       'weight': weight,
-      'periodReturnAbs': periodReturnAbs,
-      if (periodReturnPct != null) 'periodReturnPct': periodReturnPct,
+      'unrealizedPL': unrealizedPL,
+      if (unrealizedPLPct != null) 'unrealizedPLPct': unrealizedPLPct,
+      'realizedPL': realizedPL,
       'mwr': mwr,
       if (twr != null) 'twr': twr,
+      if (totalReturn != null) 'totalReturn': totalReturn,
       if (sleeveId != null) 'sleeveId': sleeveId,
       if (sleeveName != null) 'sleeveName': sleeveName,
       'orders': orders.toJson(valueToJson: (v) => v.toJson()),
@@ -190,10 +208,12 @@ abstract class AssetDetailResponse
       'value': value,
       'costBasis': costBasis,
       'weight': weight,
-      'periodReturnAbs': periodReturnAbs,
-      if (periodReturnPct != null) 'periodReturnPct': periodReturnPct,
+      'unrealizedPL': unrealizedPL,
+      if (unrealizedPLPct != null) 'unrealizedPLPct': unrealizedPLPct,
+      'realizedPL': realizedPL,
       'mwr': mwr,
       if (twr != null) 'twr': twr,
+      if (totalReturn != null) 'totalReturn': totalReturn,
       if (sleeveId != null) 'sleeveId': sleeveId,
       if (sleeveName != null) 'sleeveName': sleeveName,
       'orders': orders.toJson(valueToJson: (v) => v.toJsonForProtocol()),
@@ -221,10 +241,12 @@ class _AssetDetailResponseImpl extends AssetDetailResponse {
     required double value,
     required double costBasis,
     required double weight,
-    required double periodReturnAbs,
-    double? periodReturnPct,
+    required double unrealizedPL,
+    double? unrealizedPLPct,
+    required double realizedPL,
     required double mwr,
     double? twr,
+    double? totalReturn,
     String? sleeveId,
     String? sleeveName,
     required List<_i2.OrderSummary> orders,
@@ -240,10 +262,12 @@ class _AssetDetailResponseImpl extends AssetDetailResponse {
          value: value,
          costBasis: costBasis,
          weight: weight,
-         periodReturnAbs: periodReturnAbs,
-         periodReturnPct: periodReturnPct,
+         unrealizedPL: unrealizedPL,
+         unrealizedPLPct: unrealizedPLPct,
+         realizedPL: realizedPL,
          mwr: mwr,
          twr: twr,
+         totalReturn: totalReturn,
          sleeveId: sleeveId,
          sleeveName: sleeveName,
          orders: orders,
@@ -265,10 +289,12 @@ class _AssetDetailResponseImpl extends AssetDetailResponse {
     double? value,
     double? costBasis,
     double? weight,
-    double? periodReturnAbs,
-    Object? periodReturnPct = _Undefined,
+    double? unrealizedPL,
+    Object? unrealizedPLPct = _Undefined,
+    double? realizedPL,
     double? mwr,
     Object? twr = _Undefined,
+    Object? totalReturn = _Undefined,
     Object? sleeveId = _Undefined,
     Object? sleeveName = _Undefined,
     List<_i2.OrderSummary>? orders,
@@ -285,12 +311,14 @@ class _AssetDetailResponseImpl extends AssetDetailResponse {
       value: value ?? this.value,
       costBasis: costBasis ?? this.costBasis,
       weight: weight ?? this.weight,
-      periodReturnAbs: periodReturnAbs ?? this.periodReturnAbs,
-      periodReturnPct: periodReturnPct is double?
-          ? periodReturnPct
-          : this.periodReturnPct,
+      unrealizedPL: unrealizedPL ?? this.unrealizedPL,
+      unrealizedPLPct: unrealizedPLPct is double?
+          ? unrealizedPLPct
+          : this.unrealizedPLPct,
+      realizedPL: realizedPL ?? this.realizedPL,
       mwr: mwr ?? this.mwr,
       twr: twr is double? ? twr : this.twr,
+      totalReturn: totalReturn is double? ? totalReturn : this.totalReturn,
       sleeveId: sleeveId is String? ? sleeveId : this.sleeveId,
       sleeveName: sleeveName is String? ? sleeveName : this.sleeveName,
       orders: orders ?? this.orders.map((e0) => e0.copyWith()).toList(),

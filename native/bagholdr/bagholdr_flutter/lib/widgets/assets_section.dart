@@ -400,9 +400,8 @@ class _AssetRow extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final financialColors = context.financialColors;
 
-    final isPositive = holding.pl >= 0;
+    final isPositive = holding.unrealizedPL >= 0;
     final plColor = isPositive ? financialColors.positive : financialColors.negative;
-    final mwrColor = holding.mwr >= 0 ? financialColors.positive : financialColors.negative;
 
     return InkWell(
       onTap: onTap,
@@ -473,7 +472,7 @@ class _AssetRow extends StatelessWidget {
               ),
             ),
 
-            // Column 2: Performance (P/L, MWR, TWR)
+            // Column 2: Unrealized P/L (currency + percentage)
             SizedBox(
               width: _AssetTable._perfColWidth,
               child: Column(
@@ -482,39 +481,22 @@ class _AssetRow extends StatelessWidget {
                   Text(
                     hideBalances
                         ? '•••••'
-                        : Formatters.formatSignedCurrency(holding.pl),
+                        : Formatters.formatSignedCurrency(holding.unrealizedPL),
                     style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
                       color: hideBalances ? colorScheme.onSurfaceVariant : plColor,
                     ),
                   ),
-                  const SizedBox(height: 2),
-                  Text(
-                    Formatters.formatPercent(holding.mwr / 100, showSign: true),
-                    style: TextStyle(
-                      fontSize: 10,
-                      color: mwrColor,
+                  if (holding.unrealizedPLPct != null) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      Formatters.formatPercent(holding.unrealizedPLPct! / 100, showSign: true),
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: plColor,
+                      ),
                     ),
-                  ),
-                  if (holding.twr != null || holding.totalReturn != null) ...[
-                    const SizedBox(height: 1),
-                    if (holding.twr != null)
-                      Text(
-                        'TWR ${Formatters.formatPercent(holding.twr! / 100, showSign: true)}',
-                        style: TextStyle(
-                          fontSize: 10,
-                          color: colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                    if (holding.totalReturn != null)
-                      Text(
-                        'TR ${Formatters.formatPercent(holding.totalReturn! / 100, showSign: true)}',
-                        style: TextStyle(
-                          fontSize: 10,
-                          color: colorScheme.onSurfaceVariant,
-                        ),
-                      ),
                   ],
                 ],
               ),

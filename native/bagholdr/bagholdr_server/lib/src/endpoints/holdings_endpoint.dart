@@ -2,7 +2,7 @@ import 'dart:math' as math;
 import 'package:serverpod/serverpod.dart' hide Order;
 
 import '../generated/protocol.dart';
-import '../utils/returns.dart';
+import '../services/asset_returns_calculator.dart';
 
 /// Endpoint for holdings/assets list data.
 ///
@@ -243,69 +243,35 @@ class HoldingsEndpoint extends Endpoint {
         }
       }
 
-      // Calculate values
+      // Calculate all return metrics using the centralized calculator
+      final assetOrders = ordersByAssetId[assetIdStr] ?? [];
+      final returnsResult = AssetReturnsCalculator.calculate(
+        asset: asset,
+        orders: assetOrders,
+        holding: holding,
+        period: period,
+        comparisonDate: comparisonDate,
+        todayStr: todayStr,
+        priceMap: priceMap,
+        priceByTickerDate: priceByTickerDate,
+        derivedFxRateMap: derivedFxRateMap,
+        fxRateMap: fxRateMap,
+      );
+
+      // Use pre-calculated values for weight (need portfolio-level value)
       final valueEur = holdingValues[assetIdStr] ?? holding.totalCostEur;
-      final costBasisEur = costBasisByAssetId[assetIdStr] ?? holding.totalCostEur;
-      final pl = valueEur - costBasisEur;
       final weight =
           totalPortfolioValue > 0 ? (valueEur / totalPortfolioValue) * 100 : 0.0;
-
-      // Calculate MWR for this asset
-      final assetOrders = ordersByAssetId[assetIdStr] ?? [];
-      final mwrResult = _calculateAssetMWR(
-        assetId: assetIdStr,
-        asset: asset,
-        orders: assetOrders,
-        holding: holding,
-        period: period,
-        comparisonDate: comparisonDate,
-        todayStr: todayStr,
-        priceMap: priceMap,
-        priceByTickerDate: priceByTickerDate,
-        derivedFxRateMap: derivedFxRateMap,
-        fxRateMap: fxRateMap,
-      );
-
-      // Calculate TWR for this asset
-      final twrResult = _calculateAssetTWR(
-        assetId: assetIdStr,
-        asset: asset,
-        orders: assetOrders,
-        holding: holding,
-        period: period,
-        comparisonDate: comparisonDate,
-        todayStr: todayStr,
-        priceMap: priceMap,
-        priceByTickerDate: priceByTickerDate,
-        derivedFxRateMap: derivedFxRateMap,
-        fxRateMap: fxRateMap,
-      );
-
-      // Calculate Total Return for this asset
-      final totalReturnResult = _calculateAssetTotalReturn(
-        asset: asset,
-        orders: assetOrders,
-        holding: holding,
-        period: period,
-        comparisonDate: comparisonDate,
-        todayStr: todayStr,
-        priceMap: priceMap,
-        priceByTickerDate: priceByTickerDate,
-        derivedFxRateMap: derivedFxRateMap,
-        fxRateMap: fxRateMap,
-      );
 
       holdingsData.add(_HoldingData(
         symbol: asset.yahooSymbol ?? asset.ticker,
         name: asset.name,
         isin: asset.isin,
-        value: valueEur,
-        costBasis: costBasisEur,
-        pl: pl,
+        value: returnsResult.value,
+        costBasis: returnsResult.costBasis,
+        unrealizedPL: returnsResult.unrealizedPL,
+        unrealizedPLPct: returnsResult.unrealizedPLPct,
         weight: weight,
-        mwr: mwrResult,
-        twr: twrResult,
-        totalReturn: totalReturnResult,
         sleeveId: matchingSleeveId,
         sleeveName: sleeve?.name,
         assetId: assetIdStr,
@@ -329,13 +295,11 @@ class HoldingsEndpoint extends Endpoint {
               isin: h.isin,
               value: (h.value * 100).round() / 100,
               costBasis: (h.costBasis * 100).round() / 100,
-              pl: (h.pl * 100).round() / 100,
-              weight: (h.weight * 100).round() / 100,
-              mwr: (h.mwr * 10000).round() / 100,
-              twr: h.twr != null ? (h.twr! * 10000).round() / 100 : null,
-              totalReturn: h.totalReturn != null
-                  ? (h.totalReturn! * 10000).round() / 100
+              unrealizedPL: (h.unrealizedPL * 100).round() / 100,
+              unrealizedPLPct: h.unrealizedPLPct != null
+                  ? (h.unrealizedPLPct! * 10000).round() / 100
                   : null,
+              weight: (h.weight * 100).round() / 100,
               sleeveId: h.sleeveId,
               sleeveName: h.sleeveName,
               assetId: h.assetId,
@@ -394,401 +358,11 @@ class HoldingsEndpoint extends Endpoint {
     }
   }
 
-  /// Calculate MWR for a single asset
-  double _calculateAssetMWR({
-    required String assetId,
-    required Asset asset,
-    required List<Order> orders,
-    required Holding holding,
-    required ReturnPeriod period,
-    required String comparisonDate,
-    required String todayStr,
-    required Map<String, double> priceMap,
-    required Map<String, Map<String, double>> priceByTickerDate,
-    required Map<String, double> derivedFxRateMap,
-    required Map<String, double> fxRateMap,
-  }) {
-    // Get current value
-    final lookupKey = asset.yahooSymbol ?? asset.ticker;
-    final currentPrice = priceMap[lookupKey];
-    if (currentPrice == null || holding.quantity <= 0) {
-      return 0;
-    }
-    final currentValue = currentPrice * holding.quantity;
-
-    // Sort orders by date
-    final sortedOrders = List<Order>.from(orders)
-      ..sort((a, b) => a.orderDate.compareTo(b.orderDate));
-
-    // Find first buy order (to determine if this is a short holding)
-    final firstBuyOrder = sortedOrders.cast<Order?>().firstWhere(
-          (o) => o != null && o.quantity > 0,
-          orElse: () => null,
-        );
-
-    if (firstBuyOrder == null) {
-      // No buy orders, can't calculate return
-      return 0;
-    }
-
-    final firstOrderDateStr = _formatDate(firstBuyOrder.orderDate);
-
-    // Check if this is a "short holding" - asset acquired after comparison date
-    final isShortHolding = firstOrderDateStr.compareTo(comparisonDate) > 0;
-    final effectiveStartDate =
-        isShortHolding ? firstOrderDateStr : comparisonDate;
-
-    // Get historical price at effective start date
-    final historicalPrice = _getHistoricalPrice(
-        asset, effectiveStartDate, priceByTickerDate, derivedFxRateMap, fxRateMap);
-
-    if (historicalPrice == null || historicalPrice <= 0) {
-      // No historical price - use simple return from cost basis
-      if (holding.totalCostEur > 0) {
-        return (currentValue - holding.totalCostEur) / holding.totalCostEur;
-      }
-      return 0;
-    }
-
-    // Build position at effective start date
-    double positionAtStart = 0;
-    double costAtStart = 0;
-
-    for (final order in sortedOrders) {
-      if (_formatDate(order.orderDate).compareTo(effectiveStartDate) <= 0) {
-        if (order.quantity > 0) {
-          positionAtStart += order.quantity;
-          costAtStart += order.totalEur;
-        } else if (order.quantity < 0) {
-          final soldQty = order.quantity.abs();
-          if (positionAtStart > 0) {
-            final avgCost = costAtStart / positionAtStart;
-            costAtStart = math.max(0, costAtStart - avgCost * soldQty);
-            positionAtStart = math.max(0, positionAtStart - soldQty);
-          }
-        }
-      }
-    }
-
-    final startValue = positionAtStart * historicalPrice;
-
-    // If no starting position, can't calculate MWR
-    if (startValue <= 0) {
-      // If this is a new position acquired during the period, use cost basis return
-      if (holding.totalCostEur > 0) {
-        return (currentValue - holding.totalCostEur) / holding.totalCostEur;
-      }
-      return 0;
-    }
-
-    // Calculate period years using effective start date
-    final startDate = DateTime.parse(effectiveStartDate);
-    final endDate = DateTime.parse(todayStr);
-    final periodMs = endDate.difference(startDate).inMilliseconds;
-    final periodYears = periodMs / (365.25 * 24 * 60 * 60 * 1000);
-
-    // Build cash flows for XIRR (only flows AFTER effective start date)
-    final cashFlows = sortedOrders
-        .where((o) =>
-            o.quantity != 0 &&
-            _formatDate(o.orderDate).compareTo(effectiveStartDate) > 0 &&
-            _formatDate(o.orderDate).compareTo(todayStr) <= 0)
-        .map((o) => CashFlow(
-              date: _formatDate(o.orderDate),
-              amount: o.quantity > 0 ? o.totalEur : -o.totalEur.abs(),
-            ))
-        .toList();
-
-    final mwrResult = calculateMWR(
-      startDate: effectiveStartDate,
-      endDate: todayStr,
-      startValue: startValue,
-      endValue: currentValue,
-      cashFlows: cashFlows,
-    );
-
-    // Return compounded return for periods < 1 year, annualized for longer
-    return periodYears >= 1 ? mwrResult.annualizedReturn : mwrResult.compoundedReturn;
-  }
-
-  /// Calculate TWR for a single asset
-  double? _calculateAssetTWR({
-    required String assetId,
-    required Asset asset,
-    required List<Order> orders,
-    required Holding holding,
-    required ReturnPeriod period,
-    required String comparisonDate,
-    required String todayStr,
-    required Map<String, double> priceMap,
-    required Map<String, Map<String, double>> priceByTickerDate,
-    required Map<String, double> derivedFxRateMap,
-    required Map<String, double> fxRateMap,
-  }) {
-    // Get current price
-    final lookupKey = asset.yahooSymbol ?? asset.ticker;
-    final currentPrice = priceMap[lookupKey];
-    if (currentPrice == null || holding.quantity <= 0) {
-      return null;
-    }
-
-    // Sort orders by date and find first buy order
-    final sortedOrders = List<Order>.from(orders)
-      ..sort((a, b) => a.orderDate.compareTo(b.orderDate));
-
-    final firstBuyOrder = sortedOrders.cast<Order?>().firstWhere(
-          (o) => o != null && o.quantity > 0,
-          orElse: () => null,
-        );
-
-    if (firstBuyOrder == null) {
-      return null;
-    }
-
-    final firstOrderDateStr = _formatDate(firstBuyOrder.orderDate);
-
-    // Check if this is a "short holding" - asset acquired after comparison date
-    final isShortHolding = firstOrderDateStr.compareTo(comparisonDate) > 0;
-    final effectiveStartDate =
-        isShortHolding ? firstOrderDateStr : comparisonDate;
-
-    // Get historical price at effective start date
-    final historicalPrice = _getHistoricalPrice(
-        asset, effectiveStartDate, priceByTickerDate, derivedFxRateMap, fxRateMap);
-
-    if (historicalPrice == null || historicalPrice <= 0) {
-      return null;
-    }
-
-    // Simple price return for TWR (ignores cash flows)
-    return (currentPrice - historicalPrice) / historicalPrice;
-  }
-
-  /// Calculate Total Return for a single asset
-  double? _calculateAssetTotalReturn({
-    required Asset asset,
-    required List<Order> orders,
-    required Holding holding,
-    required ReturnPeriod period,
-    required String comparisonDate,
-    required String todayStr,
-    required Map<String, double> priceMap,
-    required Map<String, Map<String, double>> priceByTickerDate,
-    required Map<String, double> derivedFxRateMap,
-    required Map<String, double> fxRateMap,
-  }) {
-    // Get current value
-    final lookupKey = asset.yahooSymbol ?? asset.ticker;
-    final currentPrice = priceMap[lookupKey];
-    if (currentPrice == null || holding.quantity <= 0) {
-      return null;
-    }
-    final currentValue = currentPrice * holding.quantity;
-
-    // Sort orders by date
-    final sortedOrders = List<Order>.from(orders)
-      ..sort((a, b) => a.orderDate.compareTo(b.orderDate));
-
-    // Find first buy order
-    final firstBuyOrder = sortedOrders.cast<Order?>().firstWhere(
-          (o) => o != null && o.quantity > 0,
-          orElse: () => null,
-        );
-
-    if (firstBuyOrder == null) {
-      return null;
-    }
-
-    final firstOrderDateStr = _formatDate(firstBuyOrder.orderDate);
-    final isAllPeriod = period == ReturnPeriod.all;
-
-    // For ALL period: startValue=0, include all orders from the beginning
-    // For sub-periods: calculate position at start and use historical price
-    double startValue;
-    String periodStartDate;
-
-    if (isAllPeriod) {
-      startValue = 0;
-      periodStartDate = '1900-01-01';
-    } else {
-      final isShortHolding = firstOrderDateStr.compareTo(comparisonDate) > 0;
-      final effectiveStartDate =
-          isShortHolding ? firstOrderDateStr : comparisonDate;
-      periodStartDate = effectiveStartDate;
-
-      // Build position at effective start date
-      double positionAtStart = 0;
-      for (final order in sortedOrders) {
-        if (_formatDate(order.orderDate).compareTo(effectiveStartDate) <= 0) {
-          if (order.quantity > 0) {
-            positionAtStart += order.quantity;
-          } else if (order.quantity < 0) {
-            positionAtStart =
-                (positionAtStart - order.quantity.abs()).clamp(0, double.infinity);
-          }
-        }
-      }
-
-      // Get historical price at start
-      final historicalPrice = _getHistoricalPrice(
-          asset, effectiveStartDate, priceByTickerDate, derivedFxRateMap, fxRateMap);
-
-      if (historicalPrice != null && positionAtStart > 0) {
-        startValue = positionAtStart * historicalPrice;
-      } else {
-        startValue = 0;
-      }
-    }
-
-    // Build order tuples for calculateTotalReturn
-    final orderTuples = sortedOrders
-        .map((o) => (
-              quantity: o.quantity,
-              totalEur: o.totalEur,
-              date: _formatDate(o.orderDate),
-            ))
-        .toList();
-
-    return calculateTotalReturn(
-      startValue: startValue,
-      endValue: currentValue,
-      orders: orderTuples,
-      periodStartDate: periodStartDate,
-      periodEndDate: todayStr,
-    );
-  }
-
-  /// Get historical price for an asset at a given date
-  double? _getHistoricalPrice(
-    Asset asset,
-    String targetDate,
-    Map<String, Map<String, double>> priceByTickerDate,
-    Map<String, double> derivedFxRateMap,
-    Map<String, double> fxRateMap,
-  ) {
-    if (asset.yahooSymbol == null) return null;
-
-    final tickerPrices = priceByTickerDate[asset.yahooSymbol!];
-    if (tickerPrices == null) return null;
-
-    // Try exact date
-    var price = tickerPrices[targetDate];
-
-    // If not found, find nearest prior date
-    if (price == null) {
-      String nearestDate = '';
-      for (final date in tickerPrices.keys) {
-        if (date.compareTo(targetDate) <= 0 && date.compareTo(nearestDate) > 0) {
-          nearestDate = date;
-        }
-      }
-      if (nearestDate.isNotEmpty) {
-        price = tickerPrices[nearestDate];
-      }
-    }
-
-    if (price == null) return null;
-
-    // Apply FX conversion if needed
-    final derivedFxRate = derivedFxRateMap[asset.yahooSymbol!];
-    if (derivedFxRate != null) {
-      return price * derivedFxRate;
-    }
-
-    // Fall back to FX cache rate
-    if (asset.currency != 'EUR') {
-      final fxRate = fxRateMap['${asset.currency}EUR'] ?? 1.0;
-      return price * fxRate;
-    }
-
-    return price;
-  }
-
   /// Format a DateTime to YYYY-MM-DD string
   String _formatDate(DateTime date) {
     return '${date.year.toString().padLeft(4, '0')}-'
         '${date.month.toString().padLeft(2, '0')}-'
         '${date.day.toString().padLeft(2, '0')}';
-  }
-
-  /// Calculate period-specific absolute return for an asset
-  ///
-  /// Returns: currentValue - startValue - netBuys + netSells
-  double _calculatePeriodReturnAbs({
-    required Asset asset,
-    required List<Order> orders,
-    required Holding holding,
-    required double currentValue,
-    required String comparisonDate,
-    required String todayStr,
-    required Map<String, Map<String, double>> priceByTickerDate,
-    required Map<String, double> derivedFxRateMap,
-    required Map<String, double> fxRateMap,
-  }) {
-    // Sort orders by date
-    final sortedOrders = List<Order>.from(orders)
-      ..sort((a, b) => a.orderDate.compareTo(b.orderDate));
-
-    // Find first buy order to determine if this is a short holding
-    final firstBuyOrder = sortedOrders.cast<Order?>().firstWhere(
-          (o) => o != null && o.quantity > 0,
-          orElse: () => null,
-        );
-
-    if (firstBuyOrder == null) {
-      return 0;
-    }
-
-    final firstOrderDateStr = _formatDate(firstBuyOrder.orderDate);
-    final isShortHolding = firstOrderDateStr.compareTo(comparisonDate) > 0;
-    final effectiveStartDate = isShortHolding ? firstOrderDateStr : comparisonDate;
-
-    // Build position at effective start date
-    double positionAtStart = 0;
-    for (final order in sortedOrders) {
-      if (_formatDate(order.orderDate).compareTo(effectiveStartDate) <= 0) {
-        if (order.quantity > 0) {
-          positionAtStart += order.quantity;
-        } else if (order.quantity < 0) {
-          positionAtStart = (positionAtStart - order.quantity.abs()).clamp(0, double.infinity);
-        }
-      }
-    }
-
-    // Get historical price at start
-    final historicalPrice = _getHistoricalPrice(
-      asset,
-      effectiveStartDate,
-      priceByTickerDate,
-      derivedFxRateMap,
-      fxRateMap,
-    );
-
-    double startValue = 0;
-    if (historicalPrice != null && positionAtStart > 0) {
-      startValue = positionAtStart * historicalPrice;
-    }
-
-    // Calculate net cash flows during period (buys are negative, sells are positive)
-    double netCashFlows = 0;
-    for (final order in sortedOrders) {
-      final orderDateStr = _formatDate(order.orderDate);
-      if (orderDateStr.compareTo(effectiveStartDate) > 0 &&
-          orderDateStr.compareTo(todayStr) <= 0) {
-        if (order.quantity > 0) {
-          // Buy: money out (negative for return calculation)
-          netCashFlows -= order.totalEur;
-        } else if (order.quantity < 0) {
-          // Sell: money in (positive for return calculation)
-          netCashFlows += order.totalEur.abs();
-        }
-        // Fees (quantity=0) don't affect absolute return calculation directly
-      }
-    }
-
-    // Period return = current value - start value + net cash flows from sales - cash spent on buys
-    // Which simplifies to: current value - start value + netCashFlows
-    return currentValue - startValue + netCashFlows;
   }
 
   /// Get detailed information for a single asset
@@ -833,40 +407,6 @@ class HoldingsEndpoint extends Endpoint {
     // Get cached price
     final cachedPrices = await PriceCache.db.find(session);
     final priceMap = {for (var p in cachedPrices) p.ticker: p.priceEur};
-    final lookupKey = asset.yahooSymbol ?? asset.ticker;
-    final currentPrice = priceMap[lookupKey];
-
-    // Calculate current value
-    final valueEur = currentPrice != null
-        ? currentPrice * holding.quantity
-        : holding.totalCostEur;
-
-    // Calculate cost basis using average cost method
-    final sortedOrders = List<Order>.from(orders)
-      ..sort((a, b) => a.orderDate.compareTo(b.orderDate));
-
-    double totalQty = 0;
-    double totalCostEur = 0;
-
-    for (final order in sortedOrders) {
-      if (order.quantity > 0) {
-        totalQty += order.quantity;
-        totalCostEur += order.totalEur;
-      } else if (order.quantity < 0) {
-        final soldQty = order.quantity.abs();
-        if (totalQty > 0) {
-          final avgCostEur = totalCostEur / totalQty;
-          totalCostEur = math.max(0, totalCostEur - avgCostEur * soldQty);
-          totalQty = math.max(0, totalQty - soldQty);
-        }
-      } else {
-        // Commission
-        totalCostEur += order.totalEur;
-      }
-    }
-
-    final costBasisEur = totalCostEur;
-    final pl = valueEur - costBasisEur;
 
     // Calculate total portfolio value for weight
     final allHoldings = await Holding.db.find(
@@ -877,20 +417,16 @@ class HoldingsEndpoint extends Endpoint {
       session,
       where: (t) => t.archived.equals(false),
     );
-    final assetMap = {for (var a in allAssets) a.id!.toString(): a};
+    final assetMapLocal = {for (var a in allAssets) a.id!.toString(): a};
 
     double totalPortfolioValue = 0;
     for (final h in allHoldings) {
-      final a = assetMap[h.assetId.toString()];
+      final a = assetMapLocal[h.assetId.toString()];
       if (a == null) continue;
       final key = a.yahooSymbol ?? a.ticker;
       final price = priceMap[key];
       totalPortfolioValue += price != null ? price * h.quantity : h.totalCostEur;
     }
-
-    final weight = totalPortfolioValue > 0
-        ? (valueEur / totalPortfolioValue) * 100
-        : 0.0;
 
     // Get sleeve assignment
     final sleeveAssignments = await SleeveAsset.db.find(
@@ -907,7 +443,7 @@ class HoldingsEndpoint extends Endpoint {
       sleeveName = sleeve?.name;
     }
 
-    // Calculate returns
+    // Calculate returns using centralized calculator
     final comparisonDate = _getComparisonDate(period, orders);
     final lookbackDate =
         DateTime.parse(comparisonDate).subtract(const Duration(days: 5));
@@ -939,11 +475,10 @@ class HoldingsEndpoint extends Endpoint {
       }
     }
 
-    // Calculate MWR
-    final mwrResult = _calculateAssetMWR(
-      assetId: assetId.toString(),
+    // Calculate all return metrics using the centralized calculator
+    final returnsResult = AssetReturnsCalculator.calculate(
       asset: asset,
-      orders: sortedOrders,
+      orders: orders,
       holding: holding,
       period: period,
       comparisonDate: comparisonDate,
@@ -954,37 +489,10 @@ class HoldingsEndpoint extends Endpoint {
       fxRateMap: fxRateMap,
     );
 
-    // Calculate TWR
-    final twrResult = _calculateAssetTWR(
-      assetId: assetId.toString(),
-      asset: asset,
-      orders: sortedOrders,
-      holding: holding,
-      period: period,
-      comparisonDate: comparisonDate,
-      todayStr: todayStr,
-      priceMap: priceMap,
-      priceByTickerDate: priceByTickerDate,
-      derivedFxRateMap: derivedFxRateMap,
-      fxRateMap: fxRateMap,
-    );
-
-    // Calculate Total Return (percentage)
-    final totalReturnResult = _calculateAssetTotalReturn(
-      asset: asset,
-      orders: sortedOrders,
-      holding: holding,
-      period: period,
-      comparisonDate: comparisonDate,
-      todayStr: todayStr,
-      priceMap: priceMap,
-      priceByTickerDate: priceByTickerDate,
-      derivedFxRateMap: derivedFxRateMap,
-      fxRateMap: fxRateMap,
-    );
-
-    // Unrealized P/L = current value - cost basis
-    final unrealizedPL = valueEur - costBasisEur;
+    // Calculate weight
+    final weight = totalPortfolioValue > 0
+        ? (returnsResult.value / totalPortfolioValue) * 100
+        : 0.0;
 
     // Convert orders to OrderSummary list
     final orderSummaries = orders.map((o) {
@@ -1017,15 +525,22 @@ class HoldingsEndpoint extends Endpoint {
       assetType: asset.assetType.name,
       currency: asset.currency,
       quantity: holding.quantity,
-      value: (valueEur * 100).round() / 100,
-      costBasis: (costBasisEur * 100).round() / 100,
+      value: (returnsResult.value * 100).round() / 100,
+      costBasis: (returnsResult.costBasis * 100).round() / 100,
       weight: (weight * 100).round() / 100,
-      periodReturnAbs: (unrealizedPL * 100).round() / 100,
-      periodReturnPct: totalReturnResult != null
-          ? (totalReturnResult * 10000).round() / 100
+      // Unrealized P/L (paper gain on current holdings)
+      unrealizedPL: (returnsResult.unrealizedPL * 100).round() / 100,
+      unrealizedPLPct: returnsResult.unrealizedPLPct != null
+          ? (returnsResult.unrealizedPLPct! * 10000).round() / 100
           : null,
-      mwr: (mwrResult * 10000).round() / 100,
-      twr: twrResult != null ? (twrResult * 10000).round() / 100 : null,
+      // Realized P/L (gains from sales during period)
+      realizedPL: (returnsResult.realizedPL * 100).round() / 100,
+      // Return metrics
+      mwr: (returnsResult.mwr * 10000).round() / 100,
+      twr: returnsResult.twr != null ? (returnsResult.twr! * 10000).round() / 100 : null,
+      totalReturn: returnsResult.totalReturn != null
+          ? (returnsResult.totalReturn! * 10000).round() / 100
+          : null,
       sleeveId: sleeveId,
       sleeveName: sleeveName,
       orders: orderSummaries,
@@ -1040,11 +555,9 @@ class _HoldingData {
   final String isin;
   final double value;
   final double costBasis;
-  final double pl;
+  final double unrealizedPL;
+  final double? unrealizedPLPct;
   final double weight;
-  final double mwr;
-  final double? twr;
-  final double? totalReturn;
   final String? sleeveId;
   final String? sleeveName;
   final String assetId;
@@ -1056,11 +569,9 @@ class _HoldingData {
     required this.isin,
     required this.value,
     required this.costBasis,
-    required this.pl,
+    required this.unrealizedPL,
+    required this.unrealizedPLPct,
     required this.weight,
-    required this.mwr,
-    required this.twr,
-    required this.totalReturn,
     required this.sleeveId,
     required this.sleeveName,
     required this.assetId,

@@ -12,10 +12,9 @@ HoldingResponse createMockHolding({
   String isin = 'IE00B6R52259',
   double value = 42500.0,
   double costBasis = 37845.0,
-  double pl = 4655.0,
+  double unrealizedPL = 4655.0,
+  double? unrealizedPLPct = 12.3,
   double weight = 37.5,
-  double mwr = 12.3,
-  double? twr = 10.5,
   String? sleeveId = 'sleeve-1',
   String? sleeveName = 'Equities',
   String assetId = 'asset-1',
@@ -27,10 +26,9 @@ HoldingResponse createMockHolding({
     isin: isin,
     value: value,
     costBasis: costBasis,
-    pl: pl,
+    unrealizedPL: unrealizedPL,
+    unrealizedPLPct: unrealizedPLPct,
     weight: weight,
-    mwr: mwr,
-    twr: twr,
     sleeveId: sleeveId,
     sleeveName: sleeveName,
     assetId: assetId,
@@ -106,9 +104,8 @@ void main() {
             name: 'iShares MSCI ACWI',
             symbol: 'X.IUSQ',
             value: 42500.0,
-            pl: 4655.0,
-            mwr: 12.3,
-            twr: 10.5,
+            unrealizedPL: 4655.0,
+            unrealizedPLPct: 12.3,
             weight: 37.5,
           ),
         ],
@@ -121,14 +118,11 @@ void main() {
       expect(find.text('X.IUSQ'), findsOneWidget);
       expect(find.text('€42,500.00'), findsOneWidget);
 
-      // P/L
+      // Unrealized P/L (currency)
       expect(find.text('+€4,655.00'), findsOneWidget);
 
-      // MWR
+      // Unrealized P/L (percentage)
       expect(find.text('+12.30%'), findsOneWidget);
-
-      // TWR
-      expect(find.text('TWR +10.50%'), findsOneWidget);
 
       // Weight
       expect(find.text('37.5%'), findsOneWidget);
@@ -136,7 +130,7 @@ void main() {
 
     testWidgets('shows positive P/L in green', (tester) async {
       await tester.pumpWidget(buildWidget(
-        holdings: [createMockHolding(pl: 4655.0)],
+        holdings: [createMockHolding(unrealizedPL: 4655.0)],
       ));
 
       final plFinder = find.text('+€4,655.00');
@@ -149,7 +143,7 @@ void main() {
 
     testWidgets('shows negative P/L in red', (tester) async {
       await tester.pumpWidget(buildWidget(
-        holdings: [createMockHolding(pl: -2000.0)],
+        holdings: [createMockHolding(unrealizedPL: -2000.0)],
       ));
 
       final plFinder = find.text('-€2,000.00');
@@ -160,15 +154,13 @@ void main() {
       expect(textWidget.style?.color, financialColors.negative);
     });
 
-    testWidgets('handles null TWR gracefully', (tester) async {
+    testWidgets('handles null unrealizedPLPct gracefully', (tester) async {
       await tester.pumpWidget(buildWidget(
-        holdings: [createMockHolding(twr: null)],
+        holdings: [createMockHolding(unrealizedPLPct: null)],
       ));
 
-      // TWR should not be displayed
-      expect(find.textContaining('TWR'), findsNothing);
-
-      // Other values should still appear
+      // Percentage should not be displayed when null
+      // But currency value should still appear
       expect(find.text('+€4,655.00'), findsOneWidget);
     });
 

@@ -21,11 +21,9 @@ abstract class HoldingResponse
     required this.isin,
     required this.value,
     required this.costBasis,
-    required this.pl,
+    required this.unrealizedPL,
+    this.unrealizedPLPct,
     required this.weight,
-    required this.mwr,
-    this.twr,
-    this.totalReturn,
     this.sleeveId,
     this.sleeveName,
     required this.assetId,
@@ -38,11 +36,9 @@ abstract class HoldingResponse
     required String isin,
     required double value,
     required double costBasis,
-    required double pl,
+    required double unrealizedPL,
+    double? unrealizedPLPct,
     required double weight,
-    required double mwr,
-    double? twr,
-    double? totalReturn,
     String? sleeveId,
     String? sleeveName,
     required String assetId,
@@ -56,11 +52,10 @@ abstract class HoldingResponse
       isin: jsonSerialization['isin'] as String,
       value: (jsonSerialization['value'] as num).toDouble(),
       costBasis: (jsonSerialization['costBasis'] as num).toDouble(),
-      pl: (jsonSerialization['pl'] as num).toDouble(),
+      unrealizedPL: (jsonSerialization['unrealizedPL'] as num).toDouble(),
+      unrealizedPLPct: (jsonSerialization['unrealizedPLPct'] as num?)
+          ?.toDouble(),
       weight: (jsonSerialization['weight'] as num).toDouble(),
-      mwr: (jsonSerialization['mwr'] as num).toDouble(),
-      twr: (jsonSerialization['twr'] as num?)?.toDouble(),
-      totalReturn: (jsonSerialization['totalReturn'] as num?)?.toDouble(),
       sleeveId: jsonSerialization['sleeveId'] as String?,
       sleeveName: jsonSerialization['sleeveName'] as String?,
       assetId: jsonSerialization['assetId'] as String,
@@ -83,20 +78,16 @@ abstract class HoldingResponse
   /// Total cost basis in EUR
   double costBasis;
 
-  /// Profit/Loss (value - costBasis)
-  double pl;
+  /// Unrealized P/L (paper gain) for the period
+  /// ALL period: value - costBasis
+  /// Sub-periods: value - referenceValue (based on historical price)
+  double unrealizedPL;
+
+  /// Unrealized P/L as percentage (relative to reference value)
+  double? unrealizedPLPct;
 
   /// Portfolio weight % (value / total * 100)
   double weight;
-
-  /// MWR compounded return % for period (big green/red number)
-  double mwr;
-
-  /// TWR return % for period (grey, null if calculation failed)
-  double? twr;
-
-  /// Total return % for period ((endValue + sells) / (startValue + buys + fees) - 1)
-  double? totalReturn;
 
   /// Sleeve ID (UUID string)
   String? sleeveId;
@@ -119,11 +110,9 @@ abstract class HoldingResponse
     String? isin,
     double? value,
     double? costBasis,
-    double? pl,
+    double? unrealizedPL,
+    double? unrealizedPLPct,
     double? weight,
-    double? mwr,
-    double? twr,
-    double? totalReturn,
     String? sleeveId,
     String? sleeveName,
     String? assetId,
@@ -138,11 +127,9 @@ abstract class HoldingResponse
       'isin': isin,
       'value': value,
       'costBasis': costBasis,
-      'pl': pl,
+      'unrealizedPL': unrealizedPL,
+      if (unrealizedPLPct != null) 'unrealizedPLPct': unrealizedPLPct,
       'weight': weight,
-      'mwr': mwr,
-      if (twr != null) 'twr': twr,
-      if (totalReturn != null) 'totalReturn': totalReturn,
       if (sleeveId != null) 'sleeveId': sleeveId,
       if (sleeveName != null) 'sleeveName': sleeveName,
       'assetId': assetId,
@@ -159,11 +146,9 @@ abstract class HoldingResponse
       'isin': isin,
       'value': value,
       'costBasis': costBasis,
-      'pl': pl,
+      'unrealizedPL': unrealizedPL,
+      if (unrealizedPLPct != null) 'unrealizedPLPct': unrealizedPLPct,
       'weight': weight,
-      'mwr': mwr,
-      if (twr != null) 'twr': twr,
-      if (totalReturn != null) 'totalReturn': totalReturn,
       if (sleeveId != null) 'sleeveId': sleeveId,
       if (sleeveName != null) 'sleeveName': sleeveName,
       'assetId': assetId,
@@ -186,11 +171,9 @@ class _HoldingResponseImpl extends HoldingResponse {
     required String isin,
     required double value,
     required double costBasis,
-    required double pl,
+    required double unrealizedPL,
+    double? unrealizedPLPct,
     required double weight,
-    required double mwr,
-    double? twr,
-    double? totalReturn,
     String? sleeveId,
     String? sleeveName,
     required String assetId,
@@ -201,11 +184,9 @@ class _HoldingResponseImpl extends HoldingResponse {
          isin: isin,
          value: value,
          costBasis: costBasis,
-         pl: pl,
+         unrealizedPL: unrealizedPL,
+         unrealizedPLPct: unrealizedPLPct,
          weight: weight,
-         mwr: mwr,
-         twr: twr,
-         totalReturn: totalReturn,
          sleeveId: sleeveId,
          sleeveName: sleeveName,
          assetId: assetId,
@@ -222,11 +203,9 @@ class _HoldingResponseImpl extends HoldingResponse {
     String? isin,
     double? value,
     double? costBasis,
-    double? pl,
+    double? unrealizedPL,
+    Object? unrealizedPLPct = _Undefined,
     double? weight,
-    double? mwr,
-    Object? twr = _Undefined,
-    Object? totalReturn = _Undefined,
     Object? sleeveId = _Undefined,
     Object? sleeveName = _Undefined,
     String? assetId,
@@ -238,11 +217,11 @@ class _HoldingResponseImpl extends HoldingResponse {
       isin: isin ?? this.isin,
       value: value ?? this.value,
       costBasis: costBasis ?? this.costBasis,
-      pl: pl ?? this.pl,
+      unrealizedPL: unrealizedPL ?? this.unrealizedPL,
+      unrealizedPLPct: unrealizedPLPct is double?
+          ? unrealizedPLPct
+          : this.unrealizedPLPct,
       weight: weight ?? this.weight,
-      mwr: mwr ?? this.mwr,
-      twr: twr is double? ? twr : this.twr,
-      totalReturn: totalReturn is double? ? totalReturn : this.totalReturn,
       sleeveId: sleeveId is String? ? sleeveId : this.sleeveId,
       sleeveName: sleeveName is String? ? sleeveName : this.sleeveName,
       assetId: assetId ?? this.assetId,

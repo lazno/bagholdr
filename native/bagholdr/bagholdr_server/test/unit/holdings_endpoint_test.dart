@@ -66,10 +66,12 @@ void main() {
         value: 12345.67,
         costBasis: 10000.0,
         weight: 25.5,
-        periodReturnAbs: 2345.67,
-        periodReturnPct: 18.50,
+        unrealizedPL: 2345.67,
+        unrealizedPLPct: 18.50,
+        realizedPL: 500.0,
         mwr: 23.45,
         twr: 21.30,
+        totalReturn: 25.0,
         sleeveId: '123e4567-e89b-12d3-a456-426614174000',
         sleeveName: 'Equity Core',
         orders: orders,
@@ -82,10 +84,12 @@ void main() {
       expect(response.value, equals(12345.67));
       expect(response.costBasis, equals(10000.0));
       expect(response.weight, equals(25.5));
-      expect(response.periodReturnAbs, equals(2345.67));
-      expect(response.periodReturnPct, equals(18.50));
+      expect(response.unrealizedPL, equals(2345.67));
+      expect(response.unrealizedPLPct, equals(18.50));
+      expect(response.realizedPL, equals(500.0));
       expect(response.mwr, equals(23.45));
       expect(response.twr, equals(21.30));
+      expect(response.totalReturn, equals(25.0));
       expect(response.sleeveName, equals('Equity Core'));
       expect(response.orders.length, equals(1));
     });
@@ -103,10 +107,12 @@ void main() {
         value: 12345.67,
         costBasis: 10000.0,
         weight: 25.5,
-        periodReturnAbs: 2345.67,
-        periodReturnPct: null,
+        unrealizedPL: 2345.67,
+        unrealizedPLPct: null,
+        realizedPL: 0.0,
         mwr: 23.45,
         twr: null,
+        totalReturn: null,
         sleeveId: null,
         sleeveName: null,
         orders: [],
@@ -114,7 +120,8 @@ void main() {
 
       expect(response.yahooSymbol, isNull);
       expect(response.twr, isNull);
-      expect(response.periodReturnPct, isNull);
+      expect(response.unrealizedPLPct, isNull);
+      expect(response.totalReturn, isNull);
       expect(response.sleeveId, isNull);
       expect(response.sleeveName, isNull);
       expect(response.orders, isEmpty);
@@ -133,10 +140,12 @@ void main() {
         value: 12345.67,
         costBasis: 10000.0,
         weight: 25.5,
-        periodReturnAbs: 2345.67,
-        periodReturnPct: 18.50,
+        unrealizedPL: 2345.67,
+        unrealizedPLPct: 18.50,
+        realizedPL: 500.0,
         mwr: 23.45,
         twr: 21.30,
+        totalReturn: 25.0,
         sleeveId: null,
         sleeveName: null,
         orders: [],
@@ -149,8 +158,10 @@ void main() {
       expect(json['assetType'], equals('etf'));
       expect(json['value'], equals(12345.67));
       expect(json['mwr'], equals(23.45));
-      expect(json['periodReturnAbs'], equals(2345.67));
-      expect(json['periodReturnPct'], equals(18.50));
+      expect(json['unrealizedPL'], equals(2345.67));
+      expect(json['unrealizedPLPct'], equals(18.50));
+      expect(json['realizedPL'], equals(500.0));
+      expect(json['totalReturn'], equals(25.0));
     });
   });
 
@@ -162,10 +173,9 @@ void main() {
         isin: 'US0378331005',
         value: 1500.00,
         costBasis: 1200.00,
-        pl: 300.00,
+        unrealizedPL: 300.00,
+        unrealizedPLPct: 25.0,
         weight: 15.5,
-        mwr: 0.25,
-        twr: 0.22,
         sleeveId: '123e4567-e89b-12d3-a456-426614174000',
         sleeveName: 'Core',
         assetId: '123e4567-e89b-12d3-a456-426614174001',
@@ -177,10 +187,9 @@ void main() {
       expect(response.isin, equals('US0378331005'));
       expect(response.value, equals(1500.00));
       expect(response.costBasis, equals(1200.00));
-      expect(response.pl, equals(300.00));
+      expect(response.unrealizedPL, equals(300.00));
+      expect(response.unrealizedPLPct, equals(25.0));
       expect(response.weight, equals(15.5));
-      expect(response.mwr, equals(0.25));
-      expect(response.twr, equals(0.22));
       expect(response.sleeveId, equals('123e4567-e89b-12d3-a456-426614174000'));
       expect(response.sleeveName, equals('Core'));
       expect(response.assetId, equals('123e4567-e89b-12d3-a456-426614174001'));
@@ -194,17 +203,16 @@ void main() {
         isin: 'US0378331005',
         value: 1500.00,
         costBasis: 1200.00,
-        pl: 300.00,
+        unrealizedPL: 300.00,
+        unrealizedPLPct: null,
         weight: 15.5,
-        mwr: 0.25,
-        twr: null,
         sleeveId: null,
         sleeveName: null,
         assetId: '123e4567-e89b-12d3-a456-426614174001',
         quantity: 10.0,
       );
 
-      expect(response.twr, isNull);
+      expect(response.unrealizedPLPct, isNull);
       expect(response.sleeveId, isNull);
       expect(response.sleeveName, isNull);
     });
@@ -216,10 +224,9 @@ void main() {
         isin: 'US5949181045',
         value: 2000.00,
         costBasis: 1800.00,
-        pl: 200.00,
+        unrealizedPL: 200.00,
+        unrealizedPLPct: 11.11,
         weight: 20.0,
-        mwr: 0.111,
-        twr: 0.10,
         sleeveId: '123e4567-e89b-12d3-a456-426614174000',
         sleeveName: 'Tech',
         assetId: '123e4567-e89b-12d3-a456-426614174002',
@@ -230,9 +237,8 @@ void main() {
       expect(json['symbol'], equals('MSFT'));
       expect(json['name'], equals('Microsoft Corp.'));
       expect(json['value'], equals(2000.00));
-      expect(json['pl'], equals(200.00));
-      expect(json['mwr'], equals(0.111));
-      expect(json['twr'], equals(0.10));
+      expect(json['unrealizedPL'], equals(200.00));
+      expect(json['unrealizedPLPct'], equals(11.11));
     });
 
     test('deserializes from JSON correctly', () {
@@ -242,10 +248,9 @@ void main() {
         'isin': 'US02079K3059',
         'value': 3000.0,
         'costBasis': 2500.0,
-        'pl': 500.0,
+        'unrealizedPL': 500.0,
+        'unrealizedPLPct': 20.0,
         'weight': 30.0,
-        'mwr': 0.20,
-        'twr': 0.18,
         'sleeveId': '123e4567-e89b-12d3-a456-426614174000',
         'sleeveName': 'Growth',
         'assetId': '123e4567-e89b-12d3-a456-426614174003',
@@ -256,7 +261,7 @@ void main() {
       expect(response.symbol, equals('GOOGL'));
       expect(response.name, equals('Alphabet Inc.'));
       expect(response.value, equals(3000.0));
-      expect(response.mwr, equals(0.20));
+      expect(response.unrealizedPL, equals(500.0));
     });
   });
 
@@ -269,10 +274,9 @@ void main() {
           isin: 'US0378331005',
           value: 1500.00,
           costBasis: 1200.00,
-          pl: 300.00,
+          unrealizedPL: 300.00,
+          unrealizedPLPct: 25.0,
           weight: 60.0,
-          mwr: 0.25,
-          twr: 0.22,
           assetId: '123e4567-e89b-12d3-a456-426614174001',
           quantity: 10.0,
         ),
@@ -282,10 +286,9 @@ void main() {
           isin: 'US5949181045',
           value: 1000.00,
           costBasis: 900.00,
-          pl: 100.00,
+          unrealizedPL: 100.00,
+          unrealizedPLPct: 11.11,
           weight: 40.0,
-          mwr: 0.111,
-          twr: 0.10,
           assetId: '123e4567-e89b-12d3-a456-426614174002',
           quantity: 5.0,
         ),
@@ -327,10 +330,9 @@ void main() {
             isin: 'US0378331005',
             value: 1500.00,
             costBasis: 1200.00,
-            pl: 300.00,
+            unrealizedPL: 300.00,
+            unrealizedPLPct: 25.0,
             weight: 100.0,
-            mwr: 0.25,
-            twr: 0.22,
             assetId: '123e4567-e89b-12d3-a456-426614174001',
             quantity: 10.0,
           ),

@@ -18,10 +18,16 @@ fields:
   weight: double
 
   ### Returns (period-specific)
-  periodReturnAbs: double
-  periodReturnPct: double?
+  ### Unrealized P/L (paper gain on current holdings)
+  unrealizedPL: double
+  unrealizedPLPct: double?
+  ### Realized P/L (gains from sales during period)
+  realizedPL: double
+  ### TWR and MWR
   mwr: double
   twr: double?
+  ### Total return percentage for the period
+  totalReturn: double?
 
   ### Sleeve assignment
   sleeveId: String?
