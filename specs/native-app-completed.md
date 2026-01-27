@@ -178,6 +178,10 @@ Fixed pie chart tap detection (center X offset when chart shrinks), details pane
 
 Real-time price updates via Serverpod method streaming (WebSocket). PriceSyncService runs every 5 min: syncs current prices, historical candles, intraday data, and FX pair history for non-EUR currencies. PriceStreamEndpoint broadcasts updates to connected clients. Flutter PriceStreamProvider with auto-reconnect (10s delay), ConnectionIndicator widget, asset row highlight animation. Valuation endpoint uses date-specific historical FX rates for accurate TWR/chart calculations.
 
+### NAPP-034: Assign Asset to Sleeve `[implement]` - DONE
+
+Assign/unassign assets to sleeves from asset detail page. Backend: `getSleevesForPicker(portfolioId)` returns flat list with hierarchy depth, `assignAssetToSleeve(assetId, sleeveId)` handles assign/unassign. Frontend: `_SleevePickerDialog` with hierarchical list + "Unassigned" option, loading states, success feedback. 3 unit tests.
+
 ---
 
 ## Research Deliverables

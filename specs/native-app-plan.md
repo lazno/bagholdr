@@ -270,25 +270,25 @@ Allow user to change asset type (ETF, Stock, Bond, etc.).
 
 ### NAPP-034: Assign Asset to Sleeve `[implement]`
 
-**Priority**: Medium | **Status**: `[~]`
+**Priority**: Medium | **Status**: `[x]`
 **Blocked by**: None
 
 Allow user to assign/reassign an asset to a sleeve.
 
 **Backend**:
-- [ ] Add `assignAssetToSleeve(assetId, sleeveId)` endpoint (null sleeveId = unassign)
-- [ ] Update asset record
+- [x] Add `assignAssetToSleeve(assetId, sleeveId)` endpoint (null sleeveId = unassign)
+- [x] Update asset record
 
 **Frontend**:
-- [ ] Wire up edit button in `_EditableFieldsSection`
-- [ ] Fetch available sleeves for picker
-- [ ] Show picker dialog with sleeve options + "Unassigned"
-- [ ] Call endpoint and refresh asset detail on success
+- [x] Wire up edit button in `_EditableFieldsSection`
+- [x] Fetch available sleeves for picker
+- [x] Show picker dialog with sleeve options + "Unassigned"
+- [x] Call endpoint and refresh asset detail on success
 
 **Acceptance Criteria**:
-- [ ] User can assign asset to a sleeve
-- [ ] User can unassign asset from sleeve
-- [ ] Dashboard sleeve grouping updates accordingly
+- [x] User can assign asset to a sleeve
+- [x] User can unassign asset from sleeve
+- [x] Dashboard sleeve grouping updates accordingly
 
 ---
 
