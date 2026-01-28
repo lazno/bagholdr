@@ -279,27 +279,32 @@ Clear all historical price data for an asset (useful when data is corrupted or w
 
 ### NAPP-037: Archive Asset `[implement]`
 
-**Priority**: Low | **Status**: `[ ]`
+**Priority**: Low | **Status**: `[x]`
 **Blocked by**: None
 
 Archive an asset to hide it from the main view (for sold positions or mistakes).
 
 **Backend**:
-- [ ] Add `archived` boolean field to Asset model
-- [ ] Add `archiveAsset(assetId, archived)` endpoint
-- [ ] Filter archived assets from holdings queries by default
-- [ ] Create migration
+- [x] `archived` boolean field already existed in Asset model
+- [x] Add `archiveAsset(assetId, archived)` endpoint
+- [x] Add `getArchivedAssets(portfolioId)` endpoint
+- [x] Add `isArchived` field to `AssetDetailResponse`
+- [x] Archiving removes asset from all sleeves (SleeveAsset records)
+- [x] Filter archived assets from holdings/valuation queries (already in place)
 
 **Frontend**:
-- [ ] Wire up "Archive asset" menu item
-- [ ] Show confirmation dialog
-- [ ] Navigate back to dashboard on success (asset no longer visible)
-- [ ] Consider: settings toggle to show archived assets
+- [x] Create `ManageAssetsScreen` (Settings → Manage Assets)
+- [x] Wire up "Archive asset" / "Unarchive asset" menu item in asset detail
+- [x] Show confirmation dialog
+- [x] Navigate back to dashboard on archive success
+- [x] Archived assets shown dimmed with badge in Manage Assets
+
+**Known Issue**: Dashboard doesn't auto-refresh after archiving (requires Riverpod migration, see NAPP-046)
 
 **Acceptance Criteria**:
-- [ ] User can archive an asset
-- [ ] Archived assets don't appear in dashboard
-- [ ] (Optional) User can view/unarchive from settings or filter
+- [x] User can archive an asset
+- [x] Archived assets don't appear in dashboard
+- [x] User can view/unarchive from Settings → Manage Assets
 
 ---
 
@@ -497,6 +502,119 @@ Remove redundant page titles from the top of the 3 main screens (Dashboard, Stra
 - [x] Asset Detail screen still shows the asset name and action menu
 - [x] Privacy mode toggle in Settings still works
 - [x] Bottom navigation still functions correctly
+
+---
+
+### NAPP-046: Riverpod State Management Migration `[implement]`
+
+**Priority**: Medium | **Status**: `[ ]`
+**Blocked by**: None
+
+Migrate from ValueNotifier/ChangeNotifier to Riverpod for proper reactive state management. This fixes the refresh issue where screens don't update after mutations (e.g., archiving an asset).
+
+**Problem**: Each screen fetches data independently. When one screen mutates data (archive, assign sleeve), other screens don't refresh.
+
+**Identified Sync Bugs to Fix**:
+1. Archive asset → Dashboard doesn't refresh
+2. Unarchive asset → Dashboard doesn't refresh
+3. Assign to sleeve → StrategyScreen tree doesn't refresh
+4. Period change race condition → Price stream update during period change could mix data
+5. Pagination state leak → `_displayedCount`, `_searchQuery` don't reset on portfolio change
+6. StrategyScreen stale → No price stream listener, issues don't auto-refresh
+
+**Solution**: Riverpod providers with invalidation on mutations.
+
+**Phase 1: Setup**
+- [ ] Add `flutter_riverpod: ^2.5.1` to pubspec.yaml
+- [ ] Wrap app with `ProviderScope` in main.dart
+- [ ] Create `lib/providers/` directory structure
+
+**Phase 2: Migrate App State**
+- [ ] Create `app_providers.dart` (themeModeProvider, hideBalancesProvider, selectedPortfolioIdProvider)
+- [ ] Create `price_stream_providers.dart` (wrap existing PriceStreamProvider)
+- [ ] Migrate settings_screen.dart first
+
+**Phase 3: Migrate Data Providers**
+- [ ] Create `portfolio_providers.dart` (portfoliosProvider)
+- [ ] Create `holdings_providers.dart` (holdingsProvider with params)
+- [ ] Create `valuation_providers.dart` (valuationProvider, chartDataProvider)
+- [ ] Create `asset_providers.dart` (assetDetailProvider, archivedAssetsProvider)
+- [ ] Create `strategy_providers.dart` (sleeveTreeProvider, issuesProvider)
+
+**Phase 4: Implement Mutations**
+- [ ] Create `mutations.dart` with invalidation logic
+- [ ] `archiveAsset()` → invalidates holdings, valuation, archivedAssets
+- [ ] `assignAssetToSleeve()` → invalidates sleeveTree, holdings
+- [ ] Update screens to use mutation functions
+
+**Phase 5: Screen Migration**
+- [ ] Convert `portfolio_list_screen.dart` to ConsumerStatefulWidget
+- [ ] Convert `asset_detail_screen.dart` to ConsumerStatefulWidget
+- [ ] Convert `strategy_screen.dart` to ConsumerStatefulWidget
+- [ ] Convert `manage_assets_screen.dart` to ConsumerStatefulWidget
+
+**Phase 6: Cleanup**
+- [ ] Remove legacy global ValueNotifiers from main.dart
+- [ ] Remove manual `_loadXxx()` methods from screens
+- [ ] Update tests
+
+**Key Pattern**:
+```dart
+// Mutation with invalidation
+Future<bool> archiveAsset(WidgetRef ref, String assetId, bool archive) async {
+  final success = await client.holdings.archiveAsset(...);
+  if (success) {
+    ref.invalidate(holdingsProvider);
+    ref.invalidate(portfolioValuationProvider(portfolioId));
+  }
+  return success;
+}
+```
+
+**Files to create**:
+- `lib/providers/app_providers.dart`
+- `lib/providers/price_stream_providers.dart`
+- `lib/providers/portfolio_providers.dart`
+- `lib/providers/holdings_providers.dart`
+- `lib/providers/valuation_providers.dart`
+- `lib/providers/asset_providers.dart`
+- `lib/providers/strategy_providers.dart`
+- `lib/providers/mutations.dart`
+
+**Acceptance Criteria**:
+- [ ] Archive asset from detail → dashboard auto-refreshes (no manual reload)
+- [ ] Assign sleeve → strategy page auto-refreshes
+- [ ] Price stream still works
+- [ ] Theme toggle still works
+- [ ] All existing functionality preserved
+
+---
+
+### NAPP-045: Configurable Server URL `[implement]`
+
+**Priority**: Low | **Status**: `[x]`
+**Blocked by**: None
+
+Make the server URL configurable from the Settings page. Currently hardcoded in main.dart with defaults for web (localhost:8080) and Android emulator (10.0.2.2:8080).
+
+**Tasks**:
+- [x] Add SharedPreferences dependency (if not already added)
+- [x] Store custom server URL in persistent storage
+- [x] Load saved URL on app startup (fallback to defaults if not set)
+- [x] Add edit dialog when tapping server URL in settings
+- [x] Validate URL format before saving
+- [x] Show "restart required" message after changing URL
+- [x] Add "Reset to default" option
+
+**Files to modify**:
+- `lib/main.dart` - Load URL from storage instead of hardcoding
+- `lib/screens/settings_screen.dart` - Add edit functionality to server URL tile
+
+**Acceptance Criteria**:
+- [x] User can change server URL from settings
+- [x] URL persists across app restarts
+- [x] Invalid URLs are rejected with clear error message
+- [x] App connects to custom URL after restart
 
 ---
 

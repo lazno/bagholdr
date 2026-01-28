@@ -1,9 +1,9 @@
 import 'package:bagholdr_client/bagholdr_client.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:serverpod_flutter/serverpod_flutter.dart';
 import 'package:serverpod_auth_idp_flutter/serverpod_auth_idp_flutter.dart';
 
+import 'services/app_settings.dart';
 import 'services/price_stream_provider.dart';
 import 'theme/theme.dart';
 import 'screens/app_shell.dart';
@@ -21,33 +21,20 @@ final themeMode = ValueNotifier<ThemeMode>(ThemeMode.system);
 /// Global privacy mode notifier for hiding/showing balances.
 final hideBalances = ValueNotifier<bool>(false);
 
+/// Global selected portfolio ID for cross-screen access.
+/// Set by PortfolioListScreen when a portfolio is selected.
+final selectedPortfolioId = ValueNotifier<String?>(null);
+
 /// Global price stream provider for real-time price updates.
 final priceStreamProvider = PriceStreamProvider();
-
-/// Returns the server URL based on platform:
-/// - Web: localhost (same machine)
-/// - Android emulator: 10.0.2.2 (host machine from emulator)
-/// - Physical device: requires SERVER_URL dart-define
-String _getServerUrl() {
-  // Allow override via dart-define
-  const overrideUrl = String.fromEnvironment('SERVER_URL');
-  if (overrideUrl.isNotEmpty) {
-    return overrideUrl;
-  }
-
-  // Platform-specific defaults for local development
-  if (kIsWeb) {
-    return 'http://localhost:8080/';
-  } else {
-    // Android emulator uses 10.0.2.2 to reach host
-    return 'http://10.0.2.2:8080/';
-  }
-}
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  final serverUrl = _getServerUrl();
+  // Initialize settings (loads from SharedPreferences)
+  await AppSettings.initialize();
+
+  final serverUrl = AppSettings.getServerUrl();
 
   client = Client(serverUrl)
     ..connectivityMonitor = FlutterConnectivityMonitor()
