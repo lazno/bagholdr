@@ -478,3 +478,14 @@ Clear all historical price data for an asset (useful when data is corrupted or w
 - Returns `ClearPriceHistoryResult` with counts of cleared records
 - "Clear price history" menu item in asset detail screen with confirmation dialog
 - 4 unit tests for result serialization, 3 integration tests for end-to-end verification
+
+### NAPP-045: Configurable Server URL `[implement]` - DONE
+
+Make server URL configurable from Settings page:
+- Added `shared_preferences` dependency for persistent storage
+- Created `AppSettings` service to manage server URL with validation
+- Edit dialog in Settings with URL validation (http/https scheme, valid host)
+- Shows current URL as "(default)" or "(custom)" in subtitle
+- "Reset to default" option when custom URL is set
+- Shows "restart required" message after changes
+- 10 unit tests for URL validation
