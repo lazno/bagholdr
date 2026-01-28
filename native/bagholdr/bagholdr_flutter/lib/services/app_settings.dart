@@ -64,6 +64,17 @@ class AppSettings {
     return url != null && url.isNotEmpty;
   }
 
+  /// Returns true if app is built for production (requires manual server config).
+  static bool get requiresServerConfig {
+    const flag = String.fromEnvironment('REQUIRE_SERVER_CONFIG');
+    return flag == 'true';
+  }
+
+  /// Returns true if setup screen should be shown (production build without configured URL).
+  static bool get needsSetup {
+    return requiresServerConfig && !hasCustomServerUrl;
+  }
+
   /// Validate a server URL format.
   /// Returns null if valid, or an error message if invalid.
   static String? validateServerUrl(String url) {

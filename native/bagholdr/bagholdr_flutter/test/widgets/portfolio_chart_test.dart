@@ -152,16 +152,12 @@ void main() {
       expect(toChartRange(TimePeriod.oneMonth), ChartRange.oneMonth);
     });
 
-    test('maps threeMonths correctly', () {
-      expect(toChartRange(TimePeriod.threeMonths), ChartRange.threeMonths);
-    });
-
     test('maps sixMonths correctly', () {
       expect(toChartRange(TimePeriod.sixMonths), ChartRange.sixMonths);
     });
 
-    test('maps ytd to sixMonths as approximation', () {
-      expect(toChartRange(TimePeriod.ytd), ChartRange.sixMonths);
+    test('maps ytd correctly', () {
+      expect(toChartRange(TimePeriod.ytd), ChartRange.ytd);
     });
 
     test('maps oneYear correctly', () {

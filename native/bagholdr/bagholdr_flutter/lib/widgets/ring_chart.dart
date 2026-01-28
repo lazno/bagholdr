@@ -4,8 +4,6 @@ import 'package:bagholdr_client/bagholdr_client.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
-import '../utils/formatters.dart' show Formatters;
-
 /// A semicircle donut chart showing sleeve allocation hierarchy.
 ///
 /// Renders two concentric semicircle arcs:
@@ -85,12 +83,6 @@ class RingChart extends StatelessWidget {
         }
       }
     }
-
-    // For backward compatibility, also keep childSleeves list
-    final childSleeves = outerRingSections
-        .where((s) => s.sleeve != null)
-        .map((s) => s.sleeve!)
-        .toList();
 
     // Build related sleeve IDs for dimming logic
     final relatedIds = _getRelatedSleeveIds(selectedSleeveId, allSleeves);
@@ -458,72 +450,4 @@ class _OuterRingSection {
     required this.color,
     required this.parentId,
   });
-}
-
-/// The center of the ring chart showing value and label.
-class _RingCenter extends StatelessWidget {
-  const _RingCenter({
-    required this.sleeveTree,
-    required this.selectedSleeveId,
-    required this.allSleeves,
-    required this.hideBalances,
-  });
-
-  final SleeveTreeResponse sleeveTree;
-  final String? selectedSleeveId;
-  final List<SleeveNode> allSleeves;
-  final bool hideBalances;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    // Get display data based on selection
-    final String label;
-    final double value;
-
-    if (selectedSleeveId == null) {
-      label = 'All Sleeves';
-      value = sleeveTree.totalValue;
-    } else {
-      final sleeve =
-          allSleeves.where((s) => s.id == selectedSleeveId).firstOrNull;
-      if (sleeve != null) {
-        label = sleeve.name;
-        value = sleeve.value;
-      } else {
-        label = 'All Sleeves';
-        value = sleeveTree.totalValue;
-      }
-    }
-
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        // Value
-        Text(
-          hideBalances ? '•••••' : Formatters.formatCurrencyCompact(value),
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w700,
-            color: theme.colorScheme.onSurface,
-            height: 1.1,
-          ),
-        ),
-        const SizedBox(height: 2),
-        // Label
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 10,
-            color: theme.colorScheme.onSurfaceVariant,
-            height: 1.1,
-          ),
-          textAlign: TextAlign.center,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
-      ],
-    );
-  }
 }

@@ -61,4 +61,22 @@ void main() {
       expect(AppSettings.validateServerUrl(url), isNull);
     });
   });
+
+  group('AppSettings.requiresServerConfig', () {
+    // Note: This is a compile-time constant (String.fromEnvironment),
+    // so we can only test the default behavior in unit tests
+    test('defaults to false when REQUIRE_SERVER_CONFIG not set', () {
+      // In unit tests, the environment variable is not set,
+      // so requiresServerConfig should be false
+      expect(AppSettings.requiresServerConfig, isFalse);
+    });
+  });
+
+  group('AppSettings.needsSetup', () {
+    // Note: needsSetup = requiresServerConfig && !hasCustomServerUrl
+    // Since requiresServerConfig is false in tests, needsSetup is always false
+    test('is false when requiresServerConfig is false', () {
+      expect(AppSettings.needsSetup, isFalse);
+    });
+  });
 }

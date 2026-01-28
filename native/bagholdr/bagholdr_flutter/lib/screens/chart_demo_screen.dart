@@ -245,8 +245,6 @@ class _ChartDemoScreenState extends State<ChartDemoScreen> {
     switch (period) {
       case TimePeriod.oneMonth:
         return 'oneMonth';
-      case TimePeriod.threeMonths:
-        return 'sixMonths'; // Approximate
       case TimePeriod.sixMonths:
         return 'sixMonths';
       case TimePeriod.ytd:

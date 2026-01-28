@@ -2,6 +2,7 @@ import 'package:bagholdr_client/bagholdr_client.dart';
 import 'package:flutter/material.dart';
 
 import '../main.dart';
+import '../widgets/assets_section.dart' show toReturnPeriod;
 import '../widgets/strategy_section_v2.dart';
 import '../widgets/time_range_bar.dart';
 
@@ -22,7 +23,6 @@ class _StrategyDemoScreenState extends State<StrategyDemoScreen> {
   bool _hideBalances = false;
   bool _isLoading = true;
   SleeveTreeResponse? _sleeveTree;
-  String? _selectedSleeveId;
   String? _error;
 
   @override
@@ -71,16 +71,11 @@ class _StrategyDemoScreenState extends State<StrategyDemoScreen> {
   void _onPeriodChanged(TimePeriod period) {
     setState(() {
       _selectedPeriod = period;
-      _selectedSleeveId = null; // Reset selection on period change
     });
     _loadSleeveTree();
   }
 
   void _onSleeveSelected(String? sleeveId) {
-    setState(() {
-      _selectedSleeveId = sleeveId;
-    });
-
     // Show which sleeve was selected
     final sleeveName = sleeveId == null
         ? 'All Sleeves'

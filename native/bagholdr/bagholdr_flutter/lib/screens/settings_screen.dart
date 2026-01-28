@@ -4,6 +4,7 @@ import '../main.dart';
 import '../services/app_settings.dart';
 import '../services/price_stream_provider.dart';
 import '../theme/colors.dart';
+import 'app_shell.dart';
 import 'manage_assets_screen.dart';
 
 /// Settings screen with app configuration options.
@@ -204,21 +205,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Choose theme'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: ThemeMode.values.map((mode) {
-            return RadioListTile<ThemeMode>(
-              title: Text(_themeModeLabel(mode)),
-              value: mode,
-              groupValue: themeMode.value,
-              onChanged: (value) {
-                if (value != null) {
-                  themeMode.value = value;
-                  Navigator.pop(context);
-                }
-              },
-            );
-          }).toList(),
+        content: RadioGroup<ThemeMode>(
+          groupValue: themeMode.value,
+          onChanged: (value) {
+            if (value != null) {
+              themeMode.value = value;
+              Navigator.pop(context);
+            }
+          },
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: ThemeMode.values.map((mode) {
+              return RadioListTile<ThemeMode>(
+                title: Text(_themeModeLabel(mode)),
+                value: mode,
+              );
+            }).toList(),
+          ),
         ),
       ),
     );
@@ -323,14 +326,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _showServerUrlDialog(BuildContext context) async {
+    final currentUrl = AppSettings.getServerUrl();
     final controller = TextEditingController(
       text: AppSettings.customServerUrl ?? '',
     );
     final formKey = GlobalKey<FormState>();
     String? validationError;
 
-    // Capture scaffold messenger before async gap
+    // Capture context-dependent objects before async gap
     final messenger = ScaffoldMessenger.of(context);
+    final navigator = Navigator.of(context);
 
     final result = await showDialog<String?>(
       context: context,
@@ -344,7 +349,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Default: ${AppSettings.getDefaultServerUrl()}',
+                  'Current: $currentUrl',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
@@ -355,11 +360,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   autofocus: true,
                   keyboardType: TextInputType.url,
                   decoration: InputDecoration(
-                    labelText: 'Custom URL',
-                    hintText: 'http://192.168.1.100:8080/',
+                    labelText: 'Server URL',
+                    hintText: 'https://bagholdr.example.com/',
                     errorText: validationError,
-                    helperText: 'Leave empty to use default',
-                    helperMaxLines: 2,
                   ),
                   onChanged: (value) {
                     if (validationError != null) {
@@ -367,23 +370,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     }
                   },
                 ),
-                const SizedBox(height: 16),
-                Text(
-                  'Restart required after changing the URL.',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Theme.of(context).colorScheme.error,
-                        fontStyle: FontStyle.italic,
-                      ),
-                ),
               ],
             ),
           ),
           actions: [
-            if (AppSettings.hasCustomServerUrl)
-              TextButton(
-                onPressed: () => Navigator.pop(context, ''),
-                child: const Text('Reset to Default'),
-              ),
             TextButton(
               onPressed: () => Navigator.pop(context),
               child: const Text('Cancel'),
@@ -391,12 +381,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
             FilledButton(
               onPressed: () {
                 final url = controller.text.trim();
-
-                // Empty is valid (reset to default)
-                if (url.isEmpty) {
-                  Navigator.pop(context, '');
-                  return;
-                }
 
                 // Validate URL
                 final error = AppSettings.validateServerUrl(url);
@@ -419,35 +403,32 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (result == null) return; // Cancelled
 
     // Save the URL
-    final success = await AppSettings.setCustomServerUrl(
-      result.isEmpty ? null : result,
-    );
+    final success = await AppSettings.setCustomServerUrl(result);
 
     if (!mounted) return;
 
-    if (success) {
-      final message = result.isEmpty
-          ? 'Server URL reset to default. Please restart the app.'
-          : 'Server URL changed. Please restart the app.';
-
-      messenger.showSnackBar(
-        SnackBar(
-          content: Text(message),
-          behavior: SnackBarBehavior.floating,
-          duration: const Duration(seconds: 5),
-        ),
-      );
-
-      // Trigger rebuild to show updated subtitle
-      setState(() {});
-    } else {
+    if (!success) {
       messenger.showSnackBar(
         const SnackBar(
           content: Text('Failed to save server URL'),
           behavior: SnackBarBehavior.floating,
         ),
       );
+      return;
     }
+
+    // Reinitialize the client with the new URL
+    initializeClient(AppSettings.getServerUrl());
+
+    // Reset price stream connection
+    priceStreamProvider.disconnect();
+
+    // Navigate to AppShell, clearing the navigation stack
+    if (!mounted) return;
+    navigator.pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => const AppShell()),
+      (route) => false,
+    );
   }
 
   Widget _buildAboutTile(BuildContext context) {
