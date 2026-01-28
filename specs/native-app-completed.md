@@ -489,3 +489,13 @@ Make server URL configurable from Settings page:
 - "Reset to default" option when custom URL is set
 - Shows "restart required" message after changes
 - 10 unit tests for URL validation
+
+### NAPP-045b: Server URL Setup Screen for Production Builds `[implement]` - DONE
+
+For App Store builds, show setup screen on first launch since there's no sensible default URL:
+- Added `SetupServerUrlScreen` shown when `REQUIRE_SERVER_CONFIG=true` and no URL configured
+- `initializeClient()` helper allows client recreation without app restart
+- Settings dialog now shows current URL, reinitializes client and resets app on save
+- Removed confusing "default URL" concept from user-facing UI
+- 7 widget tests for setup screen, 2 unit tests for new AppSettings properties
+- Build with `flutter build apk --dart-define=REQUIRE_SERVER_CONFIG=true` for production
