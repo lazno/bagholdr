@@ -544,6 +544,7 @@ class HoldingsEndpoint extends Endpoint {
           : null,
       sleeveId: sleeveId,
       sleeveName: sleeveName,
+      isArchived: asset.archived,
       orders: orderSummaries,
     );
   }
@@ -820,6 +821,103 @@ class HoldingsEndpoint extends Endpoint {
       success: true,
       newType: newType,
     );
+  }
+
+  /// Archive or unarchive an asset
+  ///
+  /// Archived assets are hidden from the dashboard and excluded from all
+  /// calculations (valuations, returns, charts, etc).
+  ///
+  /// When archiving:
+  /// - Sets archived=true on the asset
+  /// - Removes the asset from all sleeves (deletes SleeveAsset records)
+  ///
+  /// When unarchiving:
+  /// - Sets archived=false on the asset
+  /// - User must manually reassign to sleeves if needed
+  ///
+  /// [assetId] - UUID of the asset to archive/unarchive
+  /// [archived] - True to archive, false to unarchive
+  Future<bool> archiveAsset(
+    Session session, {
+    required UuidValue assetId,
+    required bool archived,
+  }) async {
+    final asset = await Asset.db.findById(session, assetId);
+    if (asset == null) return false;
+
+    // Update the archived status
+    await Asset.db.updateRow(session, asset.copyWith(archived: archived));
+
+    // When archiving, remove from all sleeves
+    if (archived) {
+      await SleeveAsset.db.deleteWhere(
+        session,
+        where: (t) => t.assetId.equals(assetId),
+      );
+    }
+
+    return true;
+  }
+
+  /// Get all archived assets for a portfolio
+  ///
+  /// Returns a list of archived assets with basic info for the Manage Assets screen.
+  /// Note: Assets are global, but we filter by those that have holdings in the portfolio.
+  ///
+  /// [portfolioId] - Portfolio to filter by (assets with holdings in this portfolio)
+  Future<List<ArchivedAssetResponse>> getArchivedAssets(
+    Session session, {
+    required UuidValue portfolioId,
+  }) async {
+    // Get all archived assets
+    final archivedAssets = await Asset.db.find(
+      session,
+      where: (t) => t.archived.equals(true),
+    );
+
+    if (archivedAssets.isEmpty) {
+      return [];
+    }
+
+    // Get holdings for these assets to calculate last known value
+    final holdings = await Holding.db.find(session);
+    final holdingsByAssetId = <String, Holding>{};
+    for (final h in holdings) {
+      holdingsByAssetId[h.assetId.toString()] = h;
+    }
+
+    // Get cached prices for value calculation
+    final cachedPrices = await PriceCache.db.find(session);
+    final priceMap = {for (var p in cachedPrices) p.ticker: p.priceEur};
+
+    // Build response list
+    final result = <ArchivedAssetResponse>[];
+    for (final asset in archivedAssets) {
+      final holding = holdingsByAssetId[asset.id!.toString()];
+      double? lastKnownValue;
+
+      if (holding != null && holding.quantity > 0) {
+        final lookupKey = asset.yahooSymbol ?? asset.ticker;
+        final cachedPrice = priceMap[lookupKey];
+        lastKnownValue = cachedPrice != null
+            ? cachedPrice * holding.quantity
+            : holding.totalCostEur;
+      }
+
+      result.add(ArchivedAssetResponse(
+        id: asset.id!.toString(),
+        name: asset.name,
+        isin: asset.isin,
+        yahooSymbol: asset.yahooSymbol,
+        lastKnownValue: lastKnownValue,
+      ));
+    }
+
+    // Sort by name
+    result.sort((a, b) => a.name.compareTo(b.name));
+
+    return result;
   }
 
   /// Refresh prices for a single asset

@@ -1,0 +1,19 @@
+### ArchivedAssetResponse - Summary of an archived asset
+### Used by the Manage Assets screen to display archived assets
+class: ArchivedAssetResponse
+
+fields:
+  ### Asset ID (UUID string)
+  id: String
+
+  ### Asset name
+  name: String
+
+  ### ISIN
+  isin: String
+
+  ### Yahoo symbol (if set)
+  yahooSymbol: String?
+
+  ### Last known value in EUR (if holding exists)
+  lastKnownValue: double?

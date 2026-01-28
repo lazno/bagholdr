@@ -103,6 +103,8 @@ class _PortfolioListScreenState extends State<PortfolioListScreen> {
       setState(() {
         _selectedPortfolio = portfolios.first;
       });
+      // Update global portfolio ID for cross-screen access
+      selectedPortfolioId.value = portfolios.first.id!.toString();
       // Load all data for the first portfolio
       _loadHoldings(portfolios.first.id!);
       _loadChartData(portfolios.first.id!);
@@ -222,6 +224,8 @@ class _PortfolioListScreenState extends State<PortfolioListScreen> {
       _searchQuery = '';
       _displayedCount = 8;
     });
+    // Update global portfolio ID for cross-screen access
+    selectedPortfolioId.value = portfolio.id!.toString();
     _loadHoldings(portfolio.id!);
     _loadChartData(portfolio.id!);
     _loadValuation(portfolio.id!);

@@ -477,6 +477,50 @@ class Endpoints extends _i1.EndpointDispatch {
                     newType: params['newType'],
                   ),
         ),
+        'archiveAsset': _i1.MethodConnector(
+          name: 'archiveAsset',
+          params: {
+            'assetId': _i1.ParameterDescription(
+              name: 'assetId',
+              type: _i1.getType<_i1.UuidValue>(),
+              nullable: false,
+            ),
+            'archived': _i1.ParameterDescription(
+              name: 'archived',
+              type: _i1.getType<bool>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['holdings'] as _i4.HoldingsEndpoint).archiveAsset(
+                    session,
+                    assetId: params['assetId'],
+                    archived: params['archived'],
+                  ),
+        ),
+        'getArchivedAssets': _i1.MethodConnector(
+          name: 'getArchivedAssets',
+          params: {
+            'portfolioId': _i1.ParameterDescription(
+              name: 'portfolioId',
+              type: _i1.getType<_i1.UuidValue>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['holdings'] as _i4.HoldingsEndpoint)
+                  .getArchivedAssets(
+                    session,
+                    portfolioId: params['portfolioId'],
+                  ),
+        ),
         'refreshAssetPrices': _i1.MethodConnector(
           name: 'refreshAssetPrices',
           params: {

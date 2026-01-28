@@ -16,6 +16,8 @@ holdings:
   - getSleevesForPicker:
   - assignAssetToSleeve:
   - updateAssetType:
+  - archiveAsset:
+  - getArchivedAssets:
   - refreshAssetPrices:
 import:
   - importDirectaCsv:

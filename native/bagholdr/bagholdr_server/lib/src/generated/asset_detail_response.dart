@@ -38,6 +38,7 @@ abstract class AssetDetailResponse
     this.totalReturn,
     this.sleeveId,
     this.sleeveName,
+    required this.isArchived,
     required this.orders,
   });
 
@@ -61,6 +62,7 @@ abstract class AssetDetailResponse
     double? totalReturn,
     String? sleeveId,
     String? sleeveName,
+    required bool isArchived,
     required List<_i2.OrderSummary> orders,
   }) = _AssetDetailResponseImpl;
 
@@ -86,6 +88,7 @@ abstract class AssetDetailResponse
       totalReturn: (jsonSerialization['totalReturn'] as num?)?.toDouble(),
       sleeveId: jsonSerialization['sleeveId'] as String?,
       sleeveName: jsonSerialization['sleeveName'] as String?,
+      isArchived: jsonSerialization['isArchived'] as bool,
       orders: _i3.Protocol().deserialize<List<_i2.OrderSummary>>(
         jsonSerialization['orders'],
       ),
@@ -138,6 +141,9 @@ abstract class AssetDetailResponse
 
   String? sleeveName;
 
+  /// Whether asset is archived
+  bool isArchived;
+
   /// Order history (most recent first)
   List<_i2.OrderSummary> orders;
 
@@ -164,6 +170,7 @@ abstract class AssetDetailResponse
     double? totalReturn,
     String? sleeveId,
     String? sleeveName,
+    bool? isArchived,
     List<_i2.OrderSummary>? orders,
   });
   @override
@@ -189,6 +196,7 @@ abstract class AssetDetailResponse
       if (totalReturn != null) 'totalReturn': totalReturn,
       if (sleeveId != null) 'sleeveId': sleeveId,
       if (sleeveName != null) 'sleeveName': sleeveName,
+      'isArchived': isArchived,
       'orders': orders.toJson(valueToJson: (v) => v.toJson()),
     };
   }
@@ -216,6 +224,7 @@ abstract class AssetDetailResponse
       if (totalReturn != null) 'totalReturn': totalReturn,
       if (sleeveId != null) 'sleeveId': sleeveId,
       if (sleeveName != null) 'sleeveName': sleeveName,
+      'isArchived': isArchived,
       'orders': orders.toJson(valueToJson: (v) => v.toJsonForProtocol()),
     };
   }
@@ -249,6 +258,7 @@ class _AssetDetailResponseImpl extends AssetDetailResponse {
     double? totalReturn,
     String? sleeveId,
     String? sleeveName,
+    required bool isArchived,
     required List<_i2.OrderSummary> orders,
   }) : super._(
          assetId: assetId,
@@ -270,6 +280,7 @@ class _AssetDetailResponseImpl extends AssetDetailResponse {
          totalReturn: totalReturn,
          sleeveId: sleeveId,
          sleeveName: sleeveName,
+         isArchived: isArchived,
          orders: orders,
        );
 
@@ -297,6 +308,7 @@ class _AssetDetailResponseImpl extends AssetDetailResponse {
     Object? totalReturn = _Undefined,
     Object? sleeveId = _Undefined,
     Object? sleeveName = _Undefined,
+    bool? isArchived,
     List<_i2.OrderSummary>? orders,
   }) {
     return AssetDetailResponse(
@@ -321,6 +333,7 @@ class _AssetDetailResponseImpl extends AssetDetailResponse {
       totalReturn: totalReturn is double? ? totalReturn : this.totalReturn,
       sleeveId: sleeveId is String? ? sleeveId : this.sleeveId,
       sleeveName: sleeveName is String? ? sleeveName : this.sleeveName,
+      isArchived: isArchived ?? this.isArchived,
       orders: orders ?? this.orders.map((e0) => e0.copyWith()).toList(),
     );
   }

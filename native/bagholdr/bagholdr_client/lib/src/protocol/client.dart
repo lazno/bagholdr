@@ -28,19 +28,21 @@ import 'package:bagholdr_client/src/protocol/sleeve_option.dart' as _i10;
 import 'package:bagholdr_client/src/protocol/assign_sleeve_result.dart' as _i11;
 import 'package:bagholdr_client/src/protocol/update_asset_type_result.dart'
     as _i12;
-import 'package:bagholdr_client/src/protocol/refresh_price_result.dart' as _i13;
-import 'package:bagholdr_client/src/protocol/import_result.dart' as _i14;
-import 'package:bagholdr_client/src/protocol/issues_response.dart' as _i15;
-import 'package:bagholdr_client/src/protocol/portfolio.dart' as _i16;
-import 'package:bagholdr_client/src/protocol/price_update.dart' as _i17;
-import 'package:bagholdr_client/src/protocol/sync_status.dart' as _i18;
-import 'package:bagholdr_client/src/protocol/sleeve_tree_response.dart' as _i19;
-import 'package:bagholdr_client/src/protocol/portfolio_valuation.dart' as _i20;
-import 'package:bagholdr_client/src/protocol/chart_data_result.dart' as _i21;
-import 'package:bagholdr_client/src/protocol/chart_range.dart' as _i22;
+import 'package:bagholdr_client/src/protocol/archived_asset_response.dart'
+    as _i13;
+import 'package:bagholdr_client/src/protocol/refresh_price_result.dart' as _i14;
+import 'package:bagholdr_client/src/protocol/import_result.dart' as _i15;
+import 'package:bagholdr_client/src/protocol/issues_response.dart' as _i16;
+import 'package:bagholdr_client/src/protocol/portfolio.dart' as _i17;
+import 'package:bagholdr_client/src/protocol/price_update.dart' as _i18;
+import 'package:bagholdr_client/src/protocol/sync_status.dart' as _i19;
+import 'package:bagholdr_client/src/protocol/sleeve_tree_response.dart' as _i20;
+import 'package:bagholdr_client/src/protocol/portfolio_valuation.dart' as _i21;
+import 'package:bagholdr_client/src/protocol/chart_data_result.dart' as _i22;
+import 'package:bagholdr_client/src/protocol/chart_range.dart' as _i23;
 import 'package:bagholdr_client/src/protocol/historical_returns_result.dart'
-    as _i23;
-import 'protocol.dart' as _i24;
+    as _i24;
+import 'protocol.dart' as _i25;
 
 /// By extending [EmailIdpBaseEndpoint], the email identity provider endpoints
 /// are made available on the server and enable the corresponding sign-in widget
@@ -395,13 +397,54 @@ class EndpointHoldings extends _i2.EndpointRef {
     },
   );
 
+  /// Archive or unarchive an asset
+  ///
+  /// Archived assets are hidden from the dashboard and excluded from all
+  /// calculations (valuations, returns, charts, etc).
+  ///
+  /// When archiving:
+  /// - Sets archived=true on the asset
+  /// - Removes the asset from all sleeves (deletes SleeveAsset records)
+  ///
+  /// When unarchiving:
+  /// - Sets archived=false on the asset
+  /// - User must manually reassign to sleeves if needed
+  ///
+  /// [assetId] - UUID of the asset to archive/unarchive
+  /// [archived] - True to archive, false to unarchive
+  _i3.Future<bool> archiveAsset({
+    required _i2.UuidValue assetId,
+    required bool archived,
+  }) => caller.callServerEndpoint<bool>(
+    'holdings',
+    'archiveAsset',
+    {
+      'assetId': assetId,
+      'archived': archived,
+    },
+  );
+
+  /// Get all archived assets for a portfolio
+  ///
+  /// Returns a list of archived assets with basic info for the Manage Assets screen.
+  /// Note: Assets are global, but we filter by those that have holdings in the portfolio.
+  ///
+  /// [portfolioId] - Portfolio to filter by (assets with holdings in this portfolio)
+  _i3.Future<List<_i13.ArchivedAssetResponse>> getArchivedAssets({
+    required _i2.UuidValue portfolioId,
+  }) => caller.callServerEndpoint<List<_i13.ArchivedAssetResponse>>(
+    'holdings',
+    'getArchivedAssets',
+    {'portfolioId': portfolioId},
+  );
+
   /// Refresh prices for a single asset
   ///
   /// Fetches fresh price data from Yahoo Finance, bypassing cache.
   /// [assetId] - UUID of the asset to refresh
-  _i3.Future<_i13.RefreshPriceResult> refreshAssetPrices({
+  _i3.Future<_i14.RefreshPriceResult> refreshAssetPrices({
     required _i2.UuidValue assetId,
-  }) => caller.callServerEndpoint<_i13.RefreshPriceResult>(
+  }) => caller.callServerEndpoint<_i14.RefreshPriceResult>(
     'holdings',
     'refreshAssetPrices',
     {'assetId': assetId},
@@ -423,9 +466,9 @@ class EndpointImport extends _i2.EndpointRef {
   /// [csvContent] - The raw CSV content from Directa export
   ///
   /// Returns an [ImportResult] with counts and any errors encountered.
-  _i3.Future<_i14.ImportResult> importDirectaCsv({
+  _i3.Future<_i15.ImportResult> importDirectaCsv({
     required String csvContent,
-  }) => caller.callServerEndpoint<_i14.ImportResult>(
+  }) => caller.callServerEndpoint<_i15.ImportResult>(
     'import',
     'importDirectaCsv',
     {'csvContent': csvContent},
@@ -445,9 +488,9 @@ class EndpointIssues extends _i2.EndpointRef {
   /// Get portfolio issues
   ///
   /// [portfolioId] - Portfolio to check issues for
-  _i3.Future<_i15.IssuesResponse> getIssues({
+  _i3.Future<_i16.IssuesResponse> getIssues({
     required _i2.UuidValue portfolioId,
-  }) => caller.callServerEndpoint<_i15.IssuesResponse>(
+  }) => caller.callServerEndpoint<_i16.IssuesResponse>(
     'issues',
     'getIssues',
     {'portfolioId': portfolioId},
@@ -463,8 +506,8 @@ class EndpointPortfolio extends _i2.EndpointRef {
   String get name => 'portfolio';
 
   /// Returns all portfolios.
-  _i3.Future<List<_i16.Portfolio>> getPortfolios() =>
-      caller.callServerEndpoint<List<_i16.Portfolio>>(
+  _i3.Future<List<_i17.Portfolio>> getPortfolios() =>
+      caller.callServerEndpoint<List<_i17.Portfolio>>(
         'portfolio',
         'getPortfolios',
         {},
@@ -482,10 +525,10 @@ class EndpointPriceStream extends _i2.EndpointRef {
   /// Stream of real-time price updates.
   /// Client subscribes to receive price updates as they happen.
   /// The stream stays open until the client disconnects.
-  _i3.Stream<_i17.PriceUpdate> streamPriceUpdates() =>
+  _i3.Stream<_i18.PriceUpdate> streamPriceUpdates() =>
       caller.callStreamingServerEndpoint<
-        _i3.Stream<_i17.PriceUpdate>,
-        _i17.PriceUpdate
+        _i3.Stream<_i18.PriceUpdate>,
+        _i18.PriceUpdate
       >(
         'priceStream',
         'streamPriceUpdates',
@@ -494,16 +537,16 @@ class EndpointPriceStream extends _i2.EndpointRef {
       );
 
   /// Get the current sync status.
-  _i3.Future<_i18.SyncStatus> getSyncStatus() =>
-      caller.callServerEndpoint<_i18.SyncStatus>(
+  _i3.Future<_i19.SyncStatus> getSyncStatus() =>
+      caller.callServerEndpoint<_i19.SyncStatus>(
         'priceStream',
         'getSyncStatus',
         {},
       );
 
   /// Trigger a manual price sync. Returns immediately, sync runs in background.
-  _i3.Future<_i18.SyncStatus> triggerSync() =>
-      caller.callServerEndpoint<_i18.SyncStatus>(
+  _i3.Future<_i19.SyncStatus> triggerSync() =>
+      caller.callServerEndpoint<_i19.SyncStatus>(
         'priceStream',
         'triggerSync',
         {},
@@ -525,10 +568,10 @@ class EndpointSleeves extends _i2.EndpointRef {
   ///
   /// [portfolioId] - Portfolio to fetch sleeves for
   /// [period] - Time period for return calculations
-  _i3.Future<_i19.SleeveTreeResponse> getSleeveTree({
+  _i3.Future<_i20.SleeveTreeResponse> getSleeveTree({
     required _i2.UuidValue portfolioId,
     required _i6.ReturnPeriod period,
-  }) => caller.callServerEndpoint<_i19.SleeveTreeResponse>(
+  }) => caller.callServerEndpoint<_i20.SleeveTreeResponse>(
     'sleeves',
     'getSleeveTree',
     {
@@ -558,9 +601,9 @@ class EndpointValuation extends _i2.EndpointRef {
   String get name => 'valuation';
 
   /// Get full portfolio valuation with allocation breakdown
-  _i3.Future<_i20.PortfolioValuation> getPortfolioValuation(
+  _i3.Future<_i21.PortfolioValuation> getPortfolioValuation(
     _i2.UuidValue portfolioId,
-  ) => caller.callServerEndpoint<_i20.PortfolioValuation>(
+  ) => caller.callServerEndpoint<_i21.PortfolioValuation>(
     'valuation',
     'getPortfolioValuation',
     {'portfolioId': portfolioId},
@@ -568,10 +611,10 @@ class EndpointValuation extends _i2.EndpointRef {
 
   /// Get historical chart data for portfolio value visualization.
   /// Returns daily data points with portfolio value and cost basis over time.
-  _i3.Future<_i21.ChartDataResult> getChartData(
+  _i3.Future<_i22.ChartDataResult> getChartData(
     _i2.UuidValue portfolioId,
-    _i22.ChartRange range,
-  ) => caller.callServerEndpoint<_i21.ChartDataResult>(
+    _i23.ChartRange range,
+  ) => caller.callServerEndpoint<_i22.ChartDataResult>(
     'valuation',
     'getChartData',
     {
@@ -582,9 +625,9 @@ class EndpointValuation extends _i2.EndpointRef {
 
   /// Get historical returns for different time periods.
   /// Calculates portfolio value at historical dates and compares to current value.
-  _i3.Future<_i23.HistoricalReturnsResult> getHistoricalReturns(
+  _i3.Future<_i24.HistoricalReturnsResult> getHistoricalReturns(
     _i2.UuidValue portfolioId,
-  ) => caller.callServerEndpoint<_i23.HistoricalReturnsResult>(
+  ) => caller.callServerEndpoint<_i24.HistoricalReturnsResult>(
     'valuation',
     'getHistoricalReturns',
     {'portfolioId': portfolioId},
@@ -622,7 +665,7 @@ class Client extends _i2.ServerpodClientShared {
     bool? disconnectStreamsOnLostInternetConnection,
   }) : super(
          host,
-         _i24.Protocol(),
+         _i25.Protocol(),
          securityContext: securityContext,
          streamingConnectionTimeout: streamingConnectionTimeout,
          connectionTimeout: connectionTimeout,

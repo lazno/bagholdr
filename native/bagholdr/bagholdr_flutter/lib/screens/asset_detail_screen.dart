@@ -44,6 +44,7 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
   bool _isUpdatingSleeve = false;
   bool _isRefreshingPrices = false;
   bool _isClearingHistory = false;
+  bool _isArchiving = false;
 
   // Track the last price to detect changes
   double? _lastKnownPrice;
@@ -383,8 +384,73 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
     }
   }
 
+  Future<void> _archiveAsset(bool archive) async {
+    // Show confirmation dialog
+    final actionText = archive ? 'Archive' : 'Unarchive';
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('$actionText Asset'),
+        content: Text(
+          archive
+              ? 'This asset will be hidden from your dashboard. You can unarchive it later from Settings > Manage Assets.'
+              : 'This asset will be restored to your dashboard.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(actionText),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    setState(() => _isArchiving = true);
+    try {
+      final success = await client.holdings.archiveAsset(
+        assetId: UuidValue.fromString(widget.assetId),
+        archived: archive,
+      );
+      if (!mounted) return;
+
+      if (success) {
+        if (archive) {
+          // Asset was archived - navigate back to dashboard
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Asset archived')),
+          );
+          Navigator.of(context).pop();
+        } else {
+          // Asset was unarchived - refresh detail view
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Asset unarchived')),
+          );
+          _loadAssetDetail();
+        }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to update asset')),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e')),
+      );
+    } finally {
+      if (mounted) setState(() => _isArchiving = false);
+    }
+  }
+
   void _showActionMenu() {
     final colorScheme = Theme.of(context).colorScheme;
+    final isArchived = _assetDetail?.isArchived ?? false;
 
     showModalBottomSheet(
       context: context,
@@ -411,13 +477,15 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
               },
             ),
             ListTile(
-              leading: Icon(Icons.archive_outlined, color: colorScheme.onSurface),
-              title: const Text('Archive asset'),
+              leading: Icon(
+                isArchived ? Icons.unarchive_outlined : Icons.archive_outlined,
+                color: colorScheme.onSurface,
+              ),
+              title: Text(isArchived ? 'Unarchive asset' : 'Archive asset'),
+              enabled: !_isArchiving,
               onTap: () {
                 Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Not implemented yet')),
-                );
+                _archiveAsset(!isArchived);
               },
             ),
           ],
