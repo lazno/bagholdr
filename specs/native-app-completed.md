@@ -499,3 +499,22 @@ For App Store builds, show setup screen on first launch since there's no sensibl
 - Removed confusing "default URL" concept from user-facing UI
 - 7 widget tests for setup screen, 2 unit tests for new AppSettings properties
 - Build with `flutter build apk --dart-define=REQUIRE_SERVER_CONFIG=true` for production
+
+### NAPP-046: Riverpod State Management Migration `[implement]` - DONE
+
+Migrated from ValueNotifier/ChangeNotifier to Riverpod for reactive state management:
+- Added `flutter_riverpod: ^2.5.1` dependency, wrapped app with `ProviderScope`
+- Created `lib/providers/` directory with provider files:
+  - `client_provider.dart` - Serverpod client provider
+  - `app_providers.dart` - Theme, privacy mode, selected portfolio state
+  - `price_stream_adapter.dart` - Wraps existing PriceStreamProvider
+  - `portfolio_providers.dart` - Portfolio list fetching
+  - `holdings_providers.dart` - Holdings with pagination/search params
+  - `valuation_providers.dart` - Portfolio valuation, chart data, historical returns
+  - `sleeve_providers.dart` - Sleeve tree hierarchy
+  - `issues_providers.dart` - Portfolio issues
+  - `asset_providers.dart` - Asset detail and archived assets
+  - `mutations.dart` - Mutation functions with provider invalidation
+- Migrated all screens to ConsumerWidget/ConsumerStatefulWidget
+- **Key pattern**: Mutations accept `portfolioId` and invalidate all affected providers to trigger UI refresh
+- Fixed sync bugs: archive/unarchive asset → dashboard refreshes, assign sleeve → strategy refreshes, yahoo symbol change → all related providers refresh

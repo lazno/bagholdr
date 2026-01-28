@@ -507,7 +507,7 @@ Remove redundant page titles from the top of the 3 main screens (Dashboard, Stra
 
 ### NAPP-046: Riverpod State Management Migration `[implement]`
 
-**Priority**: Medium | **Status**: `[ ]`
+**Priority**: Medium | **Status**: `[x]`
 **Blocked by**: None
 
 Migrate from ValueNotifier/ChangeNotifier to Riverpod for proper reactive state management. This fixes the refresh issue where screens don't update after mutations (e.g., archiving an asset).

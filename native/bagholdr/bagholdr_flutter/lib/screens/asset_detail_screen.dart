@@ -1,8 +1,10 @@
 import 'package:bagholdr_client/bagholdr_client.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
-import '../main.dart';
+import '../main.dart' show client;
+import '../providers/providers.dart';
 import '../theme/colors.dart';
 import '../utils/formatters.dart';
 import '../widgets/assets_section.dart';
@@ -11,9 +13,9 @@ import '../widgets/time_range_bar.dart';
 /// Full-screen asset detail view.
 ///
 /// Shows complete asset information, position stats, returns for the selected
-/// period, and order history. Includes placeholder edit controls for future
-/// editing functionality.
-class AssetDetailScreen extends StatefulWidget {
+/// period, and order history. Includes edit controls for Yahoo symbol, asset
+/// type, and sleeve assignment.
+class AssetDetailScreen extends ConsumerStatefulWidget {
   const AssetDetailScreen({
     super.key,
     required this.assetId,
@@ -31,14 +33,11 @@ class AssetDetailScreen extends StatefulWidget {
   final TimePeriod initialPeriod;
 
   @override
-  State<AssetDetailScreen> createState() => _AssetDetailScreenState();
+  ConsumerState<AssetDetailScreen> createState() => _AssetDetailScreenState();
 }
 
-class _AssetDetailScreenState extends State<AssetDetailScreen> {
+class _AssetDetailScreenState extends ConsumerState<AssetDetailScreen> {
   late TimePeriod _selectedPeriod;
-  AssetDetailResponse? _assetDetail;
-  bool _isInitialLoading = true;
-  String? _error;
   bool _isUpdatingSymbol = false;
   bool _isUpdatingType = false;
   bool _isUpdatingSleeve = false;
@@ -46,72 +45,22 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
   bool _isClearingHistory = false;
   bool _isArchiving = false;
 
-  // Track the last price to detect changes
-  double? _lastKnownPrice;
-
   @override
   void initState() {
     super.initState();
     _selectedPeriod = widget.initialPeriod;
-    _loadAssetDetail(isInitial: true);
-    priceStreamProvider.addListener(_onPriceStreamUpdate);
-  }
-
-  @override
-  void dispose() {
-    priceStreamProvider.removeListener(_onPriceStreamUpdate);
-    super.dispose();
-  }
-
-  void _onPriceStreamUpdate() {
-    if (!mounted || _assetDetail == null) return;
-
-    final update = priceStreamProvider.getPrice(_assetDetail!.isin);
-    if (update != null) {
-      // Only refresh if price has meaningfully changed
-      if (_lastKnownPrice == null ||
-          (update.priceEur - _lastKnownPrice!).abs() > 0.001) {
-        _lastKnownPrice = update.priceEur;
-        // Re-fetch from server - all calculations done centrally
-        _loadAssetDetail();
-      }
-    }
-  }
-
-  Future<void> _loadAssetDetail({bool isInitial = false}) async {
-    // Only show full loading state on initial load
-    // For subsequent loads (period changes), keep showing existing data
-    if (isInitial) {
-      setState(() {
-        _isInitialLoading = true;
-        _error = null;
-      });
-    }
-
-    try {
-      final response = await client.holdings.getAssetDetail(
-        assetId: UuidValue.fromString(widget.assetId),
-        portfolioId: UuidValue.fromString(widget.portfolioId),
-        period: toReturnPeriod(_selectedPeriod),
-      );
-
-      setState(() {
-        _assetDetail = response;
-        _isInitialLoading = false;
-      });
-    } catch (e) {
-      setState(() {
-        _error = e.toString();
-        _isInitialLoading = false;
-      });
-    }
   }
 
   void _onPeriodChanged(TimePeriod period) {
     if (period == _selectedPeriod) return;
     setState(() => _selectedPeriod = period);
-    _loadAssetDetail();
   }
+
+  AssetDetailParams get _params => AssetDetailParams(
+        assetId: widget.assetId,
+        portfolioId: widget.portfolioId,
+        period: toReturnPeriod(_selectedPeriod),
+      );
 
   Future<void> _showEditYahooSymbolDialog(String? currentSymbol) async {
     final controller = TextEditingController(text: currentSymbol ?? '');
@@ -150,10 +99,7 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
   Future<void> _updateYahooSymbol(String? newSymbol) async {
     setState(() => _isUpdatingSymbol = true);
     try {
-      await client.holdings.updateYahooSymbol(
-        assetId: UuidValue.fromString(widget.assetId),
-        newSymbol: newSymbol,
-      );
+      await updateYahooSymbol(ref, widget.assetId, widget.portfolioId, newSymbol);
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -162,7 +108,6 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
               : 'Symbol cleared'),
         ),
       );
-      _loadAssetDetail();
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -187,15 +132,13 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
   Future<void> _updateAssetType(String newType) async {
     setState(() => _isUpdatingType = true);
     try {
-      await client.holdings.updateAssetType(
-        assetId: UuidValue.fromString(widget.assetId),
-        newType: newType,
-      );
+      await updateAssetType(ref, widget.assetId, widget.portfolioId, newType);
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Asset type updated to ${_formatAssetTypeLabel(newType)}')),
+        SnackBar(
+            content:
+                Text('Asset type updated to ${_formatAssetTypeLabel(newType)}')),
       );
-      _loadAssetDetail();
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -268,10 +211,7 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
   Future<void> _updateSleeve(String? sleeveId) async {
     setState(() => _isUpdatingSleeve = true);
     try {
-      final result = await client.holdings.assignAssetToSleeve(
-        assetId: UuidValue.fromString(widget.assetId),
-        sleeveId: sleeveId != null ? UuidValue.fromString(sleeveId) : null,
-      );
+      final result = await assignAssetToSleeve(ref, widget.assetId, widget.portfolioId, sleeveId);
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -280,7 +220,6 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
               : 'Unassigned from sleeve'),
         ),
       );
-      _loadAssetDetail();
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -294,19 +233,16 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
   Future<void> _refreshAssetPrices() async {
     setState(() => _isRefreshingPrices = true);
     try {
-      final result = await client.holdings.refreshAssetPrices(
-        assetId: UuidValue.fromString(widget.assetId),
-      );
+      final result = await refreshAssetPrices(ref, widget.assetId, widget.portfolioId);
       if (!mounted) return;
 
       if (result.success) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-                'Price updated: €${result.priceEur?.toStringAsFixed(2) ?? "N/A"}'),
+                'Price updated: \u20ac${result.priceEur?.toStringAsFixed(2) ?? "N/A"}'),
           ),
         );
-        _loadAssetDetail();
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -355,9 +291,7 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
 
     setState(() => _isClearingHistory = true);
     try {
-      final result = await client.holdings.clearPriceHistory(
-        assetId: UuidValue.fromString(widget.assetId),
-      );
+      final result = await clearPriceHistory(ref, widget.assetId, widget.portfolioId);
       if (!mounted) return;
 
       final total = result.dailyPricesCleared +
@@ -373,7 +307,6 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
           ),
         ),
       );
-      _loadAssetDetail();
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -413,10 +346,7 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
 
     setState(() => _isArchiving = true);
     try {
-      final success = await client.holdings.archiveAsset(
-        assetId: UuidValue.fromString(widget.assetId),
-        archived: archive,
-      );
+      final success = await archiveAsset(ref, widget.assetId, widget.portfolioId, archive);
       if (!mounted) return;
 
       if (success) {
@@ -427,11 +357,10 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
           );
           Navigator.of(context).pop();
         } else {
-          // Asset was unarchived - refresh detail view
+          // Asset was unarchived - the detail view will auto-refresh
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Asset unarchived')),
           );
-          _loadAssetDetail();
         }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -448,9 +377,8 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
     }
   }
 
-  void _showActionMenu() {
+  void _showActionMenu(bool isArchived) {
     final colorScheme = Theme.of(context).colorScheme;
-    final isArchived = _assetDetail?.isArchived ?? false;
 
     showModalBottomSheet(
       context: context,
@@ -498,62 +426,67 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
+    // Watch the asset detail provider
+    final assetDetailAsync = ref.watch(assetDetailProvider(_params));
+
+    // Watch price stream for real-time updates
+    ref.watch(priceStreamAdapterProvider);
+
     return Scaffold(
       backgroundColor: colorScheme.surfaceContainerLow,
       appBar: AppBar(
-        title: Text(_assetDetail?.name ?? 'Asset Detail'),
+        title: Text(assetDetailAsync.valueOrNull?.name ?? 'Asset Detail'),
         actions: [
           IconButton(
             icon: const Icon(Icons.more_vert),
-            onPressed: _showActionMenu,
+            onPressed: () =>
+                _showActionMenu(assetDetailAsync.valueOrNull?.isArchived ?? false),
           ),
         ],
       ),
-      body: _buildBody(),
+      body: assetDetailAsync.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (error, stack) => _buildErrorState(error.toString()),
+        data: (detail) => _buildContent(detail),
+      ),
     );
   }
 
-  Widget _buildBody() {
-    // Only show full-screen loading on initial load
-    if (_isInitialLoading) {
-      return const Center(child: CircularProgressIndicator());
-    }
-
-    if (_error != null && _assetDetail == null) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(32),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.error_outline,
-                size: 48,
-                color: Theme.of(context).colorScheme.error,
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'Failed to load asset',
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                _error!,
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
-              const SizedBox(height: 16),
-              FilledButton(
-                onPressed: _loadAssetDetail,
-                child: const Text('Retry'),
-              ),
-            ],
-          ),
+  Widget _buildErrorState(String error) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.error_outline,
+              size: 48,
+              color: Theme.of(context).colorScheme.error,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Failed to load asset',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              error,
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+            const SizedBox(height: 16),
+            FilledButton(
+              onPressed: () => ref.invalidate(assetDetailProvider(_params)),
+              child: const Text('Retry'),
+            ),
+          ],
         ),
-      );
-    }
+      ),
+    );
+  }
 
-    final detail = _assetDetail!;
+  Widget _buildContent(AssetDetailResponse detail) {
     final colorScheme = Theme.of(context).colorScheme;
 
     return SingleChildScrollView(
@@ -677,10 +610,13 @@ class _PositionSummary extends StatelessWidget {
     final displayUnrealizedPL = detail.unrealizedPL;
     final displayUnrealizedPLPct = detail.unrealizedPLPct != null
         ? detail.unrealizedPLPct! / 100
-        : (detail.costBasis > 0 ? displayUnrealizedPL / detail.costBasis : null);
+        : (detail.costBasis > 0
+            ? displayUnrealizedPL / detail.costBasis
+            : null);
 
     final isPositive = displayUnrealizedPL >= 0;
-    final unrealizedColor = isPositive ? financialColors.positive : financialColors.negative;
+    final unrealizedColor =
+        isPositive ? financialColors.positive : financialColors.negative;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -703,7 +639,7 @@ class _PositionSummary extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '${detail.quantity.toStringAsFixed(detail.quantity == detail.quantity.roundToDouble() ? 0 : 2)} shares · ${Formatters.formatPercent(detail.weight / 100)} of portfolio',
+                    '${detail.quantity.toStringAsFixed(detail.quantity == detail.quantity.roundToDouble() ? 0 : 2)} shares \u00b7 ${Formatters.formatPercent(detail.weight / 100)} of portfolio',
                     style: TextStyle(
                       fontSize: 14,
                       color: colorScheme.onSurfaceVariant,
@@ -720,7 +656,8 @@ class _PositionSummary extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     _InfoTooltip(
-                      message: 'Unrealized P/L (paper gain) on your current holdings. '
+                      message:
+                          'Unrealized P/L (paper gain) on your current holdings. '
                           'For the selected period, this shows how much the price has moved '
                           'since the start of that period. Updates live with price changes.',
                     ),
@@ -757,25 +694,31 @@ class _PositionSummary extends StatelessWidget {
           valueColor: detail.realizedPL >= 0
               ? financialColors.positive
               : financialColors.negative,
-          tooltip: 'Profit or loss from shares sold during the selected period. '
+          tooltip:
+              'Profit or loss from shares sold during the selected period. '
               'Calculated as sale proceeds minus average cost of sold shares.',
         ),
         _StatRow(
           label: 'TWR',
           value: detail.twr != null
               ? Formatters.formatPercent(detail.twr! / 100, showSign: true)
-              : '—',
+              : '\u2014',
           valueColor: detail.twr != null
-              ? (detail.twr! >= 0 ? financialColors.positive : financialColors.negative)
+              ? (detail.twr! >= 0
+                  ? financialColors.positive
+                  : financialColors.negative)
               : null,
-          tooltip: 'Time-Weighted Return measures pure investment performance, '
+          tooltip:
+              'Time-Weighted Return measures pure investment performance, '
               'ignoring when you added or removed money. Use this to compare against benchmarks.',
         ),
         _StatRow(
           label: 'MWR',
           value: Formatters.formatPercent(detail.mwr / 100, showSign: true),
-          valueColor: detail.mwr >= 0 ? financialColors.positive : financialColors.negative,
-          tooltip: 'Money-Weighted Return (XIRR) measures your actual rate of return, '
+          valueColor:
+              detail.mwr >= 0 ? financialColors.positive : financialColors.negative,
+          tooltip:
+              'Money-Weighted Return (XIRR) measures your actual rate of return, '
               'accounting for when you invested. This is your personal performance.',
         ),
         _StatRow(
@@ -788,9 +731,11 @@ class _PositionSummary extends StatelessWidget {
           label: 'Total return',
           value: detail.totalReturn != null
               ? Formatters.formatPercent(detail.totalReturn! / 100, showSign: true)
-              : '—',
+              : '\u2014',
           valueColor: detail.totalReturn != null
-              ? (detail.totalReturn! >= 0 ? financialColors.positive : financialColors.negative)
+              ? (detail.totalReturn! >= 0
+                  ? financialColors.positive
+                  : financialColors.negative)
               : null,
           tooltip: 'Combined realized and unrealized return as a percentage. '
               'Includes both paper gains and locked-in profits from sales.',
@@ -916,7 +861,7 @@ class _EditableFieldsSection extends StatelessWidget {
       children: [
         _EditableField(
           label: 'Yahoo Symbol',
-          value: detail.yahooSymbol ?? '—',
+          value: detail.yahooSymbol ?? '\u2014',
           onEdit: onEditYahooSymbol ?? () {},
           isLoading: isUpdatingSymbol,
         ),
@@ -1083,12 +1028,14 @@ class _OrderRow extends StatelessWidget {
       case 'buy':
         typeColor = financialColors.positive;
         typeLabel = 'BUY';
-        quantityText = '+${order.quantity.abs().toStringAsFixed(order.quantity == order.quantity.roundToDouble() ? 0 : 2)}';
+        quantityText =
+            '+${order.quantity.abs().toStringAsFixed(order.quantity == order.quantity.roundToDouble() ? 0 : 2)}';
         break;
       case 'sell':
         typeColor = financialColors.negative;
         typeLabel = 'SELL';
-        quantityText = '-${order.quantity.abs().toStringAsFixed(order.quantity == order.quantity.roundToDouble() ? 0 : 2)}';
+        quantityText =
+            '-${order.quantity.abs().toStringAsFixed(order.quantity == order.quantity.roundToDouble() ? 0 : 2)}';
         break;
       case 'fee':
         typeColor = colorScheme.onSurfaceVariant;
@@ -1185,7 +1132,9 @@ class _OrderRow extends StatelessWidget {
   }
 
   String _formatPrice(double price, String currency) {
-    final symbol = currency == 'EUR' ? '\u20ac' : (currency == 'USD' ? '\$' : currency);
+    final symbol = currency == 'EUR'
+        ? '\u20ac'
+        : (currency == 'USD' ? '\$' : currency);
     return '$symbol${price.toStringAsFixed(2)}';
   }
 }

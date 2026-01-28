@@ -1,7 +1,8 @@
 import 'package:bagholdr_client/bagholdr_client.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../main.dart';
+import '../providers/providers.dart';
 import '../utils/formatters.dart';
 import 'asset_detail_screen.dart';
 import '../widgets/time_range_bar.dart';
@@ -11,7 +12,7 @@ import '../widgets/time_range_bar.dart';
 /// Accessible from Settings. Shows a list of archived assets with dimmed
 /// styling and "Archived" badges. Tapping an asset navigates to its detail
 /// screen where the user can unarchive it.
-class ManageAssetsScreen extends StatefulWidget {
+class ManageAssetsScreen extends ConsumerWidget {
   const ManageAssetsScreen({
     super.key,
     required this.portfolioId,
@@ -21,133 +22,117 @@ class ManageAssetsScreen extends StatefulWidget {
   final String portfolioId;
 
   @override
-  State<ManageAssetsScreen> createState() => _ManageAssetsScreenState();
-}
-
-class _ManageAssetsScreenState extends State<ManageAssetsScreen> {
-  List<ArchivedAssetResponse>? _archivedAssets;
-  bool _isLoading = true;
-  String? _error;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadArchivedAssets();
-  }
-
-  Future<void> _loadArchivedAssets() async {
-    setState(() {
-      _isLoading = true;
-      _error = null;
-    });
-
-    try {
-      final assets = await client.holdings.getArchivedAssets(
-        portfolioId: UuidValue.fromString(widget.portfolioId),
-      );
-      if (!mounted) return;
-      setState(() {
-        _archivedAssets = assets;
-        _isLoading = false;
-      });
-    } catch (e) {
-      if (!mounted) return;
-      setState(() {
-        _error = e.toString();
-        _isLoading = false;
-      });
-    }
-  }
-
-  void _navigateToAssetDetail(ArchivedAssetResponse asset) async {
-    await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => AssetDetailScreen(
-          assetId: asset.id,
-          portfolioId: widget.portfolioId,
-          initialPeriod: TimePeriod.all,
-        ),
-      ),
-    );
-    // Refresh list when returning (asset may have been unarchived)
-    _loadArchivedAssets();
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final colorScheme = Theme.of(context).colorScheme;
+    final archivedAssetsAsync = ref.watch(archivedAssetsProvider(portfolioId));
 
     return Scaffold(
       backgroundColor: colorScheme.surfaceContainerLow,
       appBar: AppBar(
         title: const Text('Manage Assets'),
       ),
-      body: _buildBody(),
-    );
-  }
-
-  Widget _buildBody() {
-    if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
-    }
-
-    if (_error != null) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(32),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.error_outline,
-                size: 48,
-                color: Theme.of(context).colorScheme.error,
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'Failed to load assets',
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                _error!,
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
-              const SizedBox(height: 16),
-              FilledButton(
-                onPressed: _loadArchivedAssets,
-                child: const Text('Retry'),
-              ),
-            ],
-          ),
+      body: archivedAssetsAsync.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (error, stack) => _ErrorState(
+          error: error.toString(),
+          onRetry: () => ref.invalidate(archivedAssetsProvider(portfolioId)),
         ),
-      );
-    }
+        data: (assets) {
+          if (assets.isEmpty) {
+            return const _EmptyState();
+          }
 
-    final assets = _archivedAssets ?? [];
-
-    if (assets.isEmpty) {
-      return _buildEmptyState();
-    }
-
-    return RefreshIndicator(
-      onRefresh: _loadArchivedAssets,
-      child: ListView.builder(
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        itemCount: assets.length,
-        itemBuilder: (context, index) {
-          return _ArchivedAssetTile(
-            asset: assets[index],
-            onTap: () => _navigateToAssetDetail(assets[index]),
+          return RefreshIndicator(
+            onRefresh: () async {
+              ref.invalidate(archivedAssetsProvider(portfolioId));
+              // Wait for the new data to load
+              await ref.read(archivedAssetsProvider(portfolioId).future);
+            },
+            child: ListView.builder(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              itemCount: assets.length,
+              itemBuilder: (context, index) {
+                final asset = assets[index];
+                return _ArchivedAssetTile(
+                  asset: asset,
+                  onTap: () => _navigateToAssetDetail(context, ref, asset),
+                );
+              },
+            ),
           );
         },
       ),
     );
   }
 
-  Widget _buildEmptyState() {
+  void _navigateToAssetDetail(
+    BuildContext context,
+    WidgetRef ref,
+    ArchivedAssetResponse asset,
+  ) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AssetDetailScreen(
+          assetId: asset.id,
+          portfolioId: portfolioId,
+          initialPeriod: TimePeriod.all,
+        ),
+      ),
+    ).then((_) {
+      // Refresh list when returning (asset may have been unarchived)
+      ref.invalidate(archivedAssetsProvider(portfolioId));
+    });
+  }
+}
+
+class _ErrorState extends StatelessWidget {
+  const _ErrorState({required this.error, required this.onRetry});
+
+  final String error;
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.error_outline,
+              size: 48,
+              color: Theme.of(context).colorScheme.error,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Failed to load assets',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              error,
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+            const SizedBox(height: 16),
+            FilledButton(
+              onPressed: onRetry,
+              child: const Text('Retry'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _EmptyState extends StatelessWidget {
+  const _EmptyState();
+
+  @override
+  Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Center(

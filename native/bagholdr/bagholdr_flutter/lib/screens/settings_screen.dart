@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../main.dart';
+import '../main.dart' show client, initializeClient, priceStreamProvider;
+import '../providers/providers.dart';
 import '../services/app_settings.dart';
 import '../services/price_stream_provider.dart';
 import '../theme/colors.dart';
@@ -15,72 +17,54 @@ import 'manage_assets_screen.dart';
 /// - Server URL configuration (for dev)
 /// - Connection status indicator
 /// - About/version info
-class SettingsScreen extends StatefulWidget {
+class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
 
   @override
-  State<SettingsScreen> createState() => _SettingsScreenState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Watch providers to rebuild on changes
+    final priceStream = ref.watch(priceStreamAdapterProvider);
+    final hideBalancesValue = ref.watch(hideBalancesProvider);
+    final currentThemeMode = ref.watch(themeModeProvider);
+    final portfolioId = ref.watch(selectedPortfolioIdProvider);
 
-class _SettingsScreenState extends State<SettingsScreen> {
-  @override
-  void initState() {
-    super.initState();
-    // Listen for connection status changes
-    priceStreamProvider.addListener(_onStateChanged);
-    hideBalances.addListener(_onStateChanged);
-  }
-
-  @override
-  void dispose() {
-    priceStreamProvider.removeListener(_onStateChanged);
-    hideBalances.removeListener(_onStateChanged);
-    super.dispose();
-  }
-
-  void _onStateChanged() {
-    if (mounted) setState(() {});
-  }
-
-  @override
-  Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
       backgroundColor: colorScheme.surfaceContainerLow,
       body: SafeArea(
         child: ListView(
-        children: [
-          const SizedBox(height: 8),
-          // Connection Status Section
-          _buildSectionHeader(context, 'Connection'),
-          _buildConnectionStatusTile(context),
+          children: [
+            const SizedBox(height: 8),
+            // Connection Status Section
+            _buildSectionHeader(context, 'Connection'),
+            _ConnectionStatusTile(priceStream: priceStream),
 
-          const SizedBox(height: 16),
+            const SizedBox(height: 16),
 
-          // Appearance Section
-          _buildSectionHeader(context, 'Appearance'),
-          _buildThemeTile(context),
-          _buildPrivacyModeTile(context),
+            // Appearance Section
+            _buildSectionHeader(context, 'Appearance'),
+            _ThemeTile(currentMode: currentThemeMode, ref: ref),
+            _PrivacyModeTile(isHidden: hideBalancesValue, ref: ref),
 
-          const SizedBox(height: 16),
+            const SizedBox(height: 16),
 
-          // Portfolio Section
-          _buildSectionHeader(context, 'Portfolio'),
-          _buildManageAssetsTile(context),
+            // Portfolio Section
+            _buildSectionHeader(context, 'Portfolio'),
+            _ManageAssetsTile(portfolioId: portfolioId),
 
-          const SizedBox(height: 16),
+            const SizedBox(height: 16),
 
-          // Developer Section
-          _buildSectionHeader(context, 'Developer'),
-          _buildServerUrlTile(context),
+            // Developer Section
+            _buildSectionHeader(context, 'Developer'),
+            const _ServerUrlTile(),
 
-          const SizedBox(height: 16),
+            const SizedBox(height: 16),
 
-          // About Section
-          _buildSectionHeader(context, 'About'),
-          _buildAboutTile(context),
-        ],
+            // About Section
+            _buildSectionHeader(context, 'About'),
+            const _AboutTile(),
+          ],
         ),
       ),
     );
@@ -99,12 +83,27 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
     );
   }
+}
 
-  Widget _buildConnectionStatusTile(BuildContext context) {
+class _ConnectionStatusTile extends StatelessWidget {
+  const _ConnectionStatusTile({required this.priceStream});
+
+  final PriceStreamProvider priceStream;
+
+  String _formatLastUpdate(DateTime? lastUpdateAt) {
+    if (lastUpdateAt == null) return '';
+    final diff = DateTime.now().difference(lastUpdateAt);
+    if (diff.inSeconds < 60) return ' - just now';
+    if (diff.inMinutes < 60) return ' - ${diff.inMinutes}m ago';
+    return ' - ${diff.inHours}h ago';
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final financialColors = Theme.of(context).extension<FinancialColors>()!;
-    final status = priceStreamProvider.connectionStatus;
-    final lastUpdate = priceStreamProvider.lastUpdateAt;
+    final status = priceStream.connectionStatus;
+    final lastUpdate = priceStream.lastUpdateAt;
 
     final (Color statusColor, IconData icon, String statusText, String subtitle) =
         switch (status) {
@@ -151,18 +150,52 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
     );
   }
+}
 
-  String _formatLastUpdate(DateTime? lastUpdateAt) {
-    if (lastUpdateAt == null) return '';
-    final diff = DateTime.now().difference(lastUpdateAt);
-    if (diff.inSeconds < 60) return ' - just now';
-    if (diff.inMinutes < 60) return ' - ${diff.inMinutes}m ago';
-    return ' - ${diff.inHours}h ago';
+class _ThemeTile extends StatelessWidget {
+  const _ThemeTile({required this.currentMode, required this.ref});
+
+  final ThemeMode currentMode;
+  final WidgetRef ref;
+
+  String _themeModeLabel(ThemeMode mode) {
+    return switch (mode) {
+      ThemeMode.system => 'System default',
+      ThemeMode.light => 'Light',
+      ThemeMode.dark => 'Dark',
+    };
   }
 
-  Widget _buildThemeTile(BuildContext context) {
+  void _showThemeDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Choose theme'),
+        content: RadioGroup<ThemeMode>(
+          groupValue: currentMode,
+          onChanged: (value) {
+            if (value != null) {
+              ref.read(themeModeProvider.notifier).state = value;
+              Navigator.pop(dialogContext);
+            }
+          },
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: ThemeMode.values.map((mode) {
+              return RadioListTile<ThemeMode>(
+                title: Text(_themeModeLabel(mode)),
+                value: mode,
+              );
+            }).toList(),
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final currentMode = themeMode.value;
 
     return Container(
       color: colorScheme.surface,
@@ -191,45 +224,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
     );
   }
+}
 
-  String _themeModeLabel(ThemeMode mode) {
-    return switch (mode) {
-      ThemeMode.system => 'System default',
-      ThemeMode.light => 'Light',
-      ThemeMode.dark => 'Dark',
-    };
-  }
+class _PrivacyModeTile extends StatelessWidget {
+  const _PrivacyModeTile({required this.isHidden, required this.ref});
 
-  void _showThemeDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Choose theme'),
-        content: RadioGroup<ThemeMode>(
-          groupValue: themeMode.value,
-          onChanged: (value) {
-            if (value != null) {
-              themeMode.value = value;
-              Navigator.pop(context);
-            }
-          },
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: ThemeMode.values.map((mode) {
-              return RadioListTile<ThemeMode>(
-                title: Text(_themeModeLabel(mode)),
-                value: mode,
-              );
-            }).toList(),
-          ),
-        ),
-      ),
-    );
-  }
+  final bool isHidden;
+  final WidgetRef ref;
 
-  Widget _buildPrivacyModeTile(BuildContext context) {
+  @override
+  Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final isHidden = hideBalances.value;
 
     return Container(
       color: colorScheme.surface,
@@ -251,15 +256,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
         subtitle: const Text('Hide currency values'),
         value: isHidden,
         onChanged: (value) {
-          hideBalances.value = value;
+          ref.read(hideBalancesProvider.notifier).state = value;
         },
       ),
     );
   }
+}
 
-  Widget _buildManageAssetsTile(BuildContext context) {
+class _ManageAssetsTile extends StatelessWidget {
+  const _ManageAssetsTile({required this.portfolioId});
+
+  final String? portfolioId;
+
+  @override
+  Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final portfolioId = selectedPortfolioId.value;
 
     return Container(
       color: colorScheme.surface,
@@ -286,7 +297,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (_) => ManageAssetsScreen(portfolioId: portfolioId),
+                    builder: (_) => ManageAssetsScreen(portfolioId: portfolioId!),
                   ),
                 );
               }
@@ -294,36 +305,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
     );
   }
+}
 
-  Widget _buildServerUrlTile(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final isCustom = AppSettings.hasCustomServerUrl;
-
-    return Container(
-      color: colorScheme.surface,
-      child: ListTile(
-        leading: Container(
-          width: 40,
-          height: 40,
-          decoration: BoxDecoration(
-            color: colorScheme.tertiaryContainer,
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Icon(
-            Icons.dns_outlined,
-            color: colorScheme.onTertiaryContainer,
-            size: 20,
-          ),
-        ),
-        title: const Text('Server URL'),
-        subtitle: Text(
-          isCustom ? '${client.host} (custom)' : '${client.host} (default)',
-        ),
-        trailing: const Icon(Icons.chevron_right),
-        onTap: () => _showServerUrlDialog(context),
-      ),
-    );
-  }
+class _ServerUrlTile extends StatelessWidget {
+  const _ServerUrlTile();
 
   Future<void> _showServerUrlDialog(BuildContext context) async {
     final currentUrl = AppSettings.getServerUrl();
@@ -405,8 +390,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     // Save the URL
     final success = await AppSettings.setCustomServerUrl(result);
 
-    if (!mounted) return;
-
     if (!success) {
       messenger.showSnackBar(
         const SnackBar(
@@ -424,14 +407,49 @@ class _SettingsScreenState extends State<SettingsScreen> {
     priceStreamProvider.disconnect();
 
     // Navigate to AppShell, clearing the navigation stack
-    if (!mounted) return;
     navigator.pushAndRemoveUntil(
       MaterialPageRoute(builder: (_) => const AppShell()),
       (route) => false,
     );
   }
 
-  Widget _buildAboutTile(BuildContext context) {
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final isCustom = AppSettings.hasCustomServerUrl;
+
+    return Container(
+      color: colorScheme.surface,
+      child: ListTile(
+        leading: Container(
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            color: colorScheme.tertiaryContainer,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(
+            Icons.dns_outlined,
+            color: colorScheme.onTertiaryContainer,
+            size: 20,
+          ),
+        ),
+        title: const Text('Server URL'),
+        subtitle: Text(
+          isCustom ? '${client.host} (custom)' : '${client.host} (default)',
+        ),
+        trailing: const Icon(Icons.chevron_right),
+        onTap: () => _showServerUrlDialog(context),
+      ),
+    );
+  }
+}
+
+class _AboutTile extends StatelessWidget {
+  const _AboutTile();
+
+  @override
+  Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Container(

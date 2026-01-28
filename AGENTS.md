@@ -233,29 +233,61 @@ class PortfolioEndpoint extends Endpoint {
 }
 ```
 
-### Flutter Screen
+### Flutter Screen (with Riverpod)
+
+Screens use Riverpod for state management. Use `ConsumerWidget` for stateless screens or `ConsumerStatefulWidget` when you need local state (e.g., scroll controllers, focus nodes).
 
 ```dart
-class PortfolioListScreen extends StatefulWidget {
+class PortfolioListScreen extends ConsumerStatefulWidget {
   @override
-  State<PortfolioListScreen> createState() => _PortfolioListScreenState();
+  ConsumerState<PortfolioListScreen> createState() => _PortfolioListScreenState();
 }
 
-class _PortfolioListScreenState extends State<PortfolioListScreen> {
-  late Future<List<Portfolio>> _portfoliosFuture;
-
-  @override
-  void initState() {
-    super.initState();
-    _portfoliosFuture = client.portfolio.getPortfolios();
-  }
-
+class _PortfolioListScreenState extends ConsumerState<PortfolioListScreen> {
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(...);
+    // Watch providers - UI rebuilds when data changes
+    final holdings = ref.watch(holdingsProvider(HoldingsParams(...)));
+    final valuation = ref.watch(portfolioValuationProvider(portfolioId));
+
+    return holdings.when(
+      data: (data) => ListView(...),
+      loading: () => CircularProgressIndicator(),
+      error: (e, st) => Text('Error: $e'),
+    );
   }
 }
 ```
+
+### Riverpod Mutations with Invalidation
+
+When mutating data, use functions from `lib/providers/mutations.dart` that invalidate all affected providers:
+
+```dart
+// In a screen/widget:
+final success = await archiveAsset(ref, assetId, portfolioId, true);
+// All related providers are automatically invalidated:
+// - holdingsProvider, portfolioValuationProvider, archivedAssetsProvider, etc.
+
+// Or for sleeve assignment:
+await assignAssetToSleeve(ref, assetId, portfolioId, sleeveId);
+// Invalidates: assetDetailProvider, sleeveTreeProvider, holdingsProvider, etc.
+```
+
+**Key principle**: Always pass `portfolioId` to mutations and invalidate specific provider instances. Invalidating the whole family (e.g., `ref.invalidate(holdingsProvider)`) clears ALL cached instances, but invalidating with a param (e.g., `ref.invalidate(portfolioValuationProvider(portfolioId))`) only refreshes that specific instance.
+
+### Provider Files
+
+| File | Providers |
+|------|-----------|
+| `client_provider.dart` | `clientProvider` - Serverpod client |
+| `app_providers.dart` | `themeModeProvider`, `hideBalancesProvider`, `selectedPortfolioIdProvider` |
+| `holdings_providers.dart` | `holdingsProvider(HoldingsParams)` |
+| `valuation_providers.dart` | `portfolioValuationProvider(portfolioId)`, `chartDataProvider(ChartDataParams)`, `historicalReturnsProvider(portfolioId)` |
+| `sleeve_providers.dart` | `sleeveTreeProvider(SleeveTreeParams)` |
+| `asset_providers.dart` | `assetDetailProvider(AssetDetailParams)`, `archivedAssetsProvider(portfolioId)` |
+| `issues_providers.dart` | `issuesProvider(portfolioId)` |
+| `mutations.dart` | `archiveAsset()`, `assignAssetToSleeve()`, `updateYahooSymbol()`, `updateAssetType()`, `refreshAssetPrices()`, `clearPriceHistory()` |
 
 ### tRPC Procedure
 
