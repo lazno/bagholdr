@@ -1,0 +1,24 @@
+info:
+  name: get portfolios
+  type: http
+  seq: 5
+
+http:
+  method: POST
+  url: "{{host}}/holdings/getHoldings"
+  body:
+    type: json
+    data: |-
+      {
+          "portfolioId": "019bdcfd-1e5f-7f1f-9d59-452213735f3a",
+          "period": "all",
+          "offset": 0,
+          "limit": 100
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

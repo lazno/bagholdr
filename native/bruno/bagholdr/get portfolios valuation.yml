@@ -1,0 +1,21 @@
+info:
+  name: get portfolios valuation
+  type: http
+  seq: 6
+
+http:
+  method: POST
+  url: "{{host}}/portfolio/getPortfolios"
+  body:
+    type: json
+    data: |-
+      {
+
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

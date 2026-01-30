@@ -124,53 +124,6 @@ Add an interactive TWR chart to the asset detail page, with buy/sell order marke
 
 ---
 
-### NAPP-041: Dashboard Asset Filter `[implement]`
-
-**Priority**: Medium | **Status**: `[x]`
-**Blocked by**: None
-
-Add a compact, extensible filter to the dashboard for filtering the assets list. Initial implementation filters by sleeve, but design should accommodate future filter types.
-
-**NOT pills** - need a more scalable UX pattern.
-
-**Design ideas to explore**:
-- Filter bar with dropdown/popover for each filter type
-- Single "Filter" button that opens a sheet with all filter options
-- Inline chips that appear when filters are active (showing active state)
-- Segmented control or tab-style for primary filter (sleeve)
-
-**Potential future filter extensions**:
-- Asset type (ETF, Stock, Bond, etc.)
-- Geographic exposure (if tracked)
-- Sector/industry
-- Performance (gainers/losers)
-- Holding period (short-term vs long-term)
-
-**Requirements**:
-- [ ] Compact - minimal vertical space when no filter active
-- [ ] Extensible - architecture allows adding new filter types
-- [ ] Clear active state - obvious what filters are applied
-- [ ] Quick to use - minimal taps to filter
-- [ ] Easy to clear - one tap to reset all filters
-
-**Tasks**:
-- [ ] Design filter UX (mockup or prototype)
-- [ ] Implement sleeve filter as first filter type
-- [ ] Show active filter indicator
-- [ ] Wire up to holdings query (sleeveId parameter already exists)
-
-**Related files**:
-- `lib/screens/portfolio_list_screen.dart` - dashboard layout
-- `lib/widgets/assets_section.dart` - assets list that will be filtered
-
-**Acceptance Criteria**:
-- [ ] Dashboard has compact filter UI
-- [ ] Can filter assets by sleeve
-- [ ] Filter state is visually clear
-- [ ] Design accommodates future filter types
-
----
-
 ### NAPP-042: Strategy Page Redesign `[exploration]`
 
 **Priority**: Low | **Status**: `[ ]`

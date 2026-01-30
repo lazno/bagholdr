@@ -65,7 +65,7 @@ git commit -m "NAPP-XXX: Brief description"
 ```
 
 Then:
-1. Move the completed task from the plan to the completed tasks file (one-line summary)
+1. **Move** the completed task: CUT the entire task block from the plan file and PASTE it into the completed tasks file. The task should exist in only ONE place (completed file) after this step.
 2. For `[research]` tasks: add deliverables (summaries, porting guides) to the completed file
 3. **STOP** - do not start the next task
 
