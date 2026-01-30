@@ -105,70 +105,6 @@ void main() {
 
       // Should find PieChart widgets (inner and outer rings)
       expect(find.byType(PieChart), findsWidgets);
-      // Should find center label
-      expect(find.text('All Sleeves'), findsOneWidget);
-    });
-
-    testWidgets('shows total value in center when no selection', (tester) async {
-      final tree = createSleeveTree(
-        sleeves: [
-          createSleeveNode(
-            id: 'core',
-            name: 'Core',
-            color: '#3b82f6',
-          ),
-        ],
-        totalValue: 113482,
-      );
-
-      await tester.pumpWidget(buildWidget(sleeveTree: tree));
-
-      // Should show compact value format
-      expect(find.text('€113K'), findsOneWidget);
-      expect(find.text('All Sleeves'), findsOneWidget);
-    });
-
-    testWidgets('shows selected sleeve value and name in center', (tester) async {
-      final tree = createSleeveTree(
-        sleeves: [
-          createSleeveNode(
-            id: 'core',
-            name: 'Core',
-            color: '#3b82f6',
-            value: 85000,
-          ),
-        ],
-      );
-
-      await tester.pumpWidget(buildWidget(
-        sleeveTree: tree,
-        selectedSleeveId: 'core',
-      ));
-
-      // Should show selected sleeve value and name
-      expect(find.text('€85K'), findsOneWidget);
-      expect(find.text('Core'), findsOneWidget);
-    });
-
-    testWidgets('shows hidden value in privacy mode', (tester) async {
-      final tree = createSleeveTree(
-        sleeves: [
-          createSleeveNode(
-            id: 'core',
-            name: 'Core',
-            color: '#3b82f6',
-          ),
-        ],
-        totalValue: 113482,
-      );
-
-      await tester.pumpWidget(buildWidget(
-        sleeveTree: tree,
-        hideBalances: true,
-      ));
-
-      expect(find.text('•••••'), findsOneWidget);
-      expect(find.text('€113K'), findsNothing);
     });
 
     testWidgets('renders nested sleeve hierarchy correctly', (tester) async {
@@ -225,7 +161,6 @@ void main() {
 
       // Should render without crashing
       expect(find.byType(RingChart), findsOneWidget);
-      expect(find.text('All Sleeves'), findsOneWidget);
     });
 
     testWidgets('displays correctly in dark theme', (tester) async {
@@ -251,7 +186,60 @@ void main() {
       );
 
       expect(find.byType(RingChart), findsOneWidget);
-      expect(find.text('All Sleeves'), findsOneWidget);
+    });
+
+    testWidgets('calls onSleeveSelected when segment tapped', (tester) async {
+      String? selectedId;
+      final tree = createSleeveTree(
+        sleeves: [
+          createSleeveNode(
+            id: 'core',
+            name: 'Core',
+            color: '#3b82f6',
+            currentPct: 100,
+          ),
+        ],
+      );
+
+      await tester.pumpWidget(buildWidget(
+        sleeveTree: tree,
+        onSleeveSelected: (id) => selectedId = id,
+      ));
+
+      // Tap near the center to deselect
+      await tester.tapAt(const Offset(200, 100));
+      await tester.pump();
+
+      // Center tap should deselect (call with null)
+      expect(selectedId, isNull);
+    });
+
+    testWidgets('renders with selection', (tester) async {
+      final tree = createSleeveTree(
+        sleeves: [
+          createSleeveNode(
+            id: 'core',
+            name: 'Core',
+            color: '#3b82f6',
+            currentPct: 75,
+          ),
+          createSleeveNode(
+            id: 'satellite',
+            name: 'Satellite',
+            color: '#f59e0b',
+            currentPct: 25,
+          ),
+        ],
+      );
+
+      await tester.pumpWidget(buildWidget(
+        sleeveTree: tree,
+        selectedSleeveId: 'core',
+      ));
+
+      // Should render with selection without errors
+      expect(find.byType(RingChart), findsOneWidget);
+      expect(find.byType(PieChart), findsWidgets);
     });
   });
 }

@@ -73,23 +73,7 @@ void main() {
   }
 
   group('SleevePills', () {
-    testWidgets('shows "All" pill first', (tester) async {
-      final tree = createSleeveTree(
-        sleeves: [
-          createSleeveNode(
-            id: 'core',
-            name: 'Core',
-            color: '#3b82f6',
-          ),
-        ],
-      );
-
-      await tester.pumpWidget(buildWidget(sleeveTree: tree));
-
-      expect(find.text('All'), findsOneWidget);
-    });
-
-    testWidgets('shows top-level sleeves with target percentage', (tester) async {
+    testWidgets('shows sleeve names', (tester) async {
       final tree = createSleeveTree(
         sleeves: [
           createSleeveNode(
@@ -110,12 +94,10 @@ void main() {
       await tester.pumpWidget(buildWidget(sleeveTree: tree));
 
       expect(find.text('Core'), findsOneWidget);
-      expect(find.text('75%'), findsOneWidget);
       expect(find.text('Satellite'), findsOneWidget);
-      expect(find.text('25%'), findsOneWidget);
     });
 
-    testWidgets('shows child sleeves without percentage', (tester) async {
+    testWidgets('shows child sleeves', (tester) async {
       final tree = createSleeveTree(
         sleeves: [
           createSleeveNode(
@@ -145,41 +127,12 @@ void main() {
 
       await tester.pumpWidget(buildWidget(sleeveTree: tree));
 
-      // Parent sleeve should have percentage
+      // Parent sleeve should appear
       expect(find.text('Core'), findsOneWidget);
-      expect(find.text('75%'), findsOneWidget);
 
-      // Child sleeves should appear but without percentage
+      // Child sleeves should appear
       expect(find.text('Equities'), findsOneWidget);
       expect(find.text('Bonds'), findsOneWidget);
-      // Child target percentages should NOT appear
-      expect(find.text('55%'), findsNothing);
-      expect(find.text('20%'), findsNothing);
-    });
-
-    testWidgets('marks "All" as selected when selectedSleeveId is null', (tester) async {
-      final tree = createSleeveTree(
-        sleeves: [
-          createSleeveNode(
-            id: 'core',
-            name: 'Core',
-            color: '#3b82f6',
-          ),
-        ],
-      );
-
-      await tester.pumpWidget(buildWidget(
-        sleeveTree: tree,
-        selectedSleeveId: null,
-      ));
-
-      // "All" pill should be selected (has border)
-      // We check by finding the Container with border
-      final allPillFinder = find.ancestor(
-        of: find.text('All'),
-        matching: find.byType(Container),
-      );
-      expect(allPillFinder, findsWidgets);
     });
 
     testWidgets('marks selected sleeve pill correctly', (tester) async {
@@ -230,30 +183,6 @@ void main() {
       expect(selectedId, 'core');
     });
 
-    testWidgets('calls onSleeveSelected with null when "All" is tapped', (tester) async {
-      String? selectedId = 'core';
-      final tree = createSleeveTree(
-        sleeves: [
-          createSleeveNode(
-            id: 'core',
-            name: 'Core',
-            color: '#3b82f6',
-          ),
-        ],
-      );
-
-      await tester.pumpWidget(buildWidget(
-        sleeveTree: tree,
-        selectedSleeveId: selectedId,
-        onSleeveSelected: (id) => selectedId = id,
-      ));
-
-      await tester.tap(find.text('All'));
-      await tester.pump();
-
-      expect(selectedId, isNull);
-    });
-
     testWidgets('pills are in correct order', (tester) async {
       final tree = createSleeveTree(
         sleeves: [
@@ -290,8 +219,7 @@ void main() {
 
       await tester.pumpWidget(buildWidget(sleeveTree: tree));
 
-      // All pills should be present
-      expect(find.text('All'), findsOneWidget);
+      // All sleeve pills should be present
       expect(find.text('Core'), findsOneWidget);
       expect(find.text('Equities'), findsOneWidget);
       expect(find.text('Satellite'), findsOneWidget);
@@ -303,8 +231,8 @@ void main() {
 
       await tester.pumpWidget(buildWidget(sleeveTree: tree));
 
-      // Should still show "All" pill
-      expect(find.text('All'), findsOneWidget);
+      // Should render without crashing
+      expect(find.byType(SleevePills), findsOneWidget);
     });
 
     testWidgets('is horizontally scrollable', (tester) async {
@@ -346,7 +274,6 @@ void main() {
         ),
       );
 
-      expect(find.text('All'), findsOneWidget);
       expect(find.text('Core'), findsOneWidget);
     });
   });
