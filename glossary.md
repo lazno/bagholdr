@@ -84,6 +84,20 @@ When you encounter a keyword or concept and need more context, look it up here t
 | OTP | One-Time Password sent via email for Directa login authentication | [specs/directa-sync-plan.md](specs/directa-sync-plan.md) |
 | Directa parser | CSV parser for Directa order export format | server/src/import/directa-parser.ts |
 
+### Account-Portfolio Architecture
+
+| Keyword | Description | Spec File |
+|---------|-------------|-----------|
+| account | Data source / import target (broker account or virtual). Orders and holdings belong to accounts. | [specs/native-app-plan.md](specs/native-app-plan.md#napp-050) |
+| virtual account | Account with manually entered positions for paper trading / hypothetical testing | [specs/native-app-plan.md](specs/native-app-plan.md#napp-051) |
+| portfolio-account relationship | Portfolios aggregate one or more accounts. Enables multi-broker views and strategy comparison. | [specs/native-app-plan.md](specs/native-app-plan.md#napp-050) |
+| XIRR benchmark | Compare portfolio XIRR to benchmark using same cash flows | [specs/native-app-plan.md](specs/native-app-plan.md#napp-053) |
+| TWR benchmark | Compare portfolio TWR to benchmark (neutralizes cash flow timing) | [specs/native-app-plan.md](specs/native-app-plan.md#napp-054) |
+| Monte Carlo projection | Forward-looking simulation showing range of possible outcomes based on volatility | [specs/native-app-plan.md](specs/native-app-plan.md#napp-055) |
+| fat tails | Extreme market events happen more often than normal distribution predicts; use t-distribution to model | [specs/native-app-plan.md](specs/native-app-plan.md#napp-055) |
+| fan chart | Visualization showing percentile bands expanding over time (uncertainty grows) | [specs/native-app-plan.md](specs/native-app-plan.md#napp-055) |
+| asset class parameters | Published historical return/volatility/correlation data for broad asset categories | [specs/native-app-plan.md](specs/native-app-plan.md#napp-056) |
+
 ### Native App / Mobile
 
 | Keyword | Description | Spec File |

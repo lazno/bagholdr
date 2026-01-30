@@ -413,6 +413,17 @@ Trigger price refresh for single asset from asset detail action menu:
 - Success snackbar shows new price, error snackbar on failure
 - 7 unit tests for `RefreshPriceResult` serialization
 
+### NAPP-037: Archive Asset `[implement]` - DONE
+
+Archive an asset to hide it from the main view (for sold positions or mistakes):
+- `archiveAsset(assetId, archived)` endpoint - toggles archived status
+- `getArchivedAssets(portfolioId)` endpoint - lists archived assets
+- Archiving removes asset from all sleeves (SleeveAsset records)
+- Added `isArchived` field to `AssetDetailResponse`
+- Created `ManageAssetsScreen` (Settings → Manage Assets) showing all assets with archive status
+- Archive/unarchive menu item in asset detail with confirmation dialog
+- Archived assets don't appear in dashboard, can be viewed/unarchived from Manage Assets
+
 ### NAPP-040: Move Strategy Section to Dedicated Page `[implement]` - DONE
 
 Moved Strategy section from Dashboard to dedicated page with bottom navigation:
@@ -518,3 +529,13 @@ Migrated from ValueNotifier/ChangeNotifier to Riverpod for reactive state manage
 - Migrated all screens to ConsumerWidget/ConsumerStatefulWidget
 - **Key pattern**: Mutations accept `portfolioId` and invalidate all affected providers to trigger UI refresh
 - Fixed sync bugs: archive/unarchive asset → dashboard refreshes, assign sleeve → strategy refreshes, yahoo symbol change → all related providers refresh
+
+### NAPP-041: Dashboard Asset Filter `[implement]` - DONE
+
+Added sleeve filter to dashboard assets section:
+- `_SleeveFilterChip` - compact chip showing "Filter" (inactive) or sleeve name + X (active)
+- `_SleeveFilterBottomSheet` - modal picker with hierarchical sleeve list
+- Filter chips appear next to search bar when sleeves are available
+- Uses existing `sleeveId` parameter on `holdingsProvider` for efficient backend filtering
+- `selectedSleeveId` and `selectedSleeveName` state tracked in `portfolio_list_screen.dart`
+- Extensible architecture: filter chip row can accommodate additional filter types

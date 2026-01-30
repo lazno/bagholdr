@@ -37,6 +37,39 @@ HoldingResponse createMockHolding({
 }
 
 void main() {
+  /// Creates mock SleeveNode for testing.
+  SleeveNode createMockSleeveNode({
+    String id = 'sleeve-1',
+    String name = 'Core',
+    String? parentId,
+    String color = '#3b82f6',
+    double targetPct = 75.0,
+    double currentPct = 70.0,
+    double driftPp = -5.0,
+    String driftStatus = 'under',
+    double value = 75000.0,
+    double mwr = 8.5,
+    int assetCount = 5,
+    int childSleeveCount = 2,
+    List<SleeveNode>? children,
+  }) {
+    return SleeveNode(
+      id: id,
+      name: name,
+      parentId: parentId,
+      color: color,
+      targetPct: targetPct,
+      currentPct: currentPct,
+      driftPp: driftPp,
+      driftStatus: driftStatus,
+      value: value,
+      mwr: mwr,
+      assetCount: assetCount,
+      childSleeveCount: childSleeveCount,
+      children: children,
+    );
+  }
+
   Widget buildWidget({
     List<HoldingResponse>? holdings,
     int totalCount = 32,
@@ -48,6 +81,9 @@ void main() {
     bool hasMore = false,
     ValueChanged<HoldingResponse>? onAssetTap,
     bool isLoading = false,
+    String? selectedSleeveId,
+    List<SleeveNode>? sleeves,
+    void Function(String?, String?)? onSleeveFilterChanged,
   }) {
     return MaterialApp(
       theme: BagholdrTheme.light,
@@ -64,6 +100,9 @@ void main() {
             hasMore: hasMore,
             onAssetTap: onAssetTap ?? (_) {},
             isLoading: isLoading,
+            selectedSleeveId: selectedSleeveId,
+            sleeves: sleeves ?? [],
+            onSleeveFilterChanged: onSleeveFilterChanged,
           ),
         ),
       ),
@@ -276,6 +315,146 @@ void main() {
       // Values should display
       expect(find.text('Assets'), findsOneWidget);
       expect(find.text('iShares MSCI ACWI UCITS'), findsOneWidget);
+    });
+
+    testWidgets('shows filter chip when sleeves and callback provided',
+        (tester) async {
+      await tester.pumpWidget(buildWidget(
+        sleeves: [createMockSleeveNode()],
+        onSleeveFilterChanged: (a, b) {},
+      ));
+
+      expect(find.text('Filter'), findsOneWidget);
+      expect(find.byIcon(Icons.filter_list), findsOneWidget);
+    });
+
+    testWidgets('hides filter chip when no sleeves provided', (tester) async {
+      await tester.pumpWidget(buildWidget(
+        sleeves: [],
+        onSleeveFilterChanged: (a, b) {},
+      ));
+
+      expect(find.text('Filter'), findsNothing);
+    });
+
+    testWidgets('shows sleeve name in chip when filter active', (tester) async {
+      await tester.pumpWidget(buildWidget(
+        selectedSleeveId: 'sleeve-1',
+        selectedSleeveName: 'Core',
+        sleeves: [createMockSleeveNode()],
+        onSleeveFilterChanged: (a, b) {},
+      ));
+
+      expect(find.text('Core'), findsOneWidget);
+      expect(find.byIcon(Icons.close), findsOneWidget);
+      expect(find.text('Filter'), findsNothing);
+    });
+
+    testWidgets('calls onSleeveFilterChanged with null when X tapped',
+        (tester) async {
+      String? lastSleeveId = 'sleeve-1';
+      String? lastSleeveName = 'Core';
+
+      await tester.pumpWidget(buildWidget(
+        selectedSleeveId: 'sleeve-1',
+        selectedSleeveName: 'Core',
+        sleeves: [createMockSleeveNode()],
+        onSleeveFilterChanged: (id, name) {
+          lastSleeveId = id;
+          lastSleeveName = name;
+        },
+      ));
+
+      await tester.tap(find.byIcon(Icons.close));
+      await tester.pumpAndSettle();
+
+      expect(lastSleeveId, isNull);
+      expect(lastSleeveName, isNull);
+    });
+
+    testWidgets('opens bottom sheet when filter chip tapped', (tester) async {
+      await tester.pumpWidget(buildWidget(
+        sleeves: [createMockSleeveNode(name: 'Core')],
+        onSleeveFilterChanged: (a, b) {},
+      ));
+
+      await tester.tap(find.text('Filter'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Filter by Sleeve'), findsOneWidget);
+      expect(find.text('All assets'), findsOneWidget);
+      expect(find.text('Core'), findsOneWidget);
+    });
+
+    testWidgets('bottom sheet shows hierarchical sleeves', (tester) async {
+      final childSleeve = createMockSleeveNode(
+        id: 'sleeve-2',
+        name: 'Equities',
+        parentId: 'sleeve-1',
+      );
+      final parentSleeve = createMockSleeveNode(
+        id: 'sleeve-1',
+        name: 'Core',
+        children: [childSleeve],
+      );
+
+      await tester.pumpWidget(buildWidget(
+        sleeves: [parentSleeve],
+        onSleeveFilterChanged: (a, b) {},
+      ));
+
+      await tester.tap(find.text('Filter'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('All assets'), findsOneWidget);
+      expect(find.text('Core'), findsOneWidget);
+      expect(find.text('Equities'), findsOneWidget);
+    });
+
+    testWidgets('selects sleeve when tapped in bottom sheet', (tester) async {
+      String? selectedId;
+      String? selectedName;
+
+      await tester.pumpWidget(buildWidget(
+        sleeves: [createMockSleeveNode(id: 'sleeve-1', name: 'Core')],
+        onSleeveFilterChanged: (id, name) {
+          selectedId = id;
+          selectedName = name;
+        },
+      ));
+
+      await tester.tap(find.text('Filter'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Core'));
+      await tester.pumpAndSettle();
+
+      expect(selectedId, 'sleeve-1');
+      expect(selectedName, 'Core');
+    });
+
+    testWidgets('clears filter when All assets selected', (tester) async {
+      String? selectedId = 'sleeve-1';
+      String? selectedName = 'Core';
+
+      await tester.pumpWidget(buildWidget(
+        selectedSleeveId: 'sleeve-1',
+        selectedSleeveName: 'Core',
+        sleeves: [createMockSleeveNode()],
+        onSleeveFilterChanged: (id, name) {
+          selectedId = id;
+          selectedName = name;
+        },
+      ));
+
+      await tester.tap(find.text('Core'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('All assets'));
+      await tester.pumpAndSettle();
+
+      expect(selectedId, isNull);
+      expect(selectedName, isNull);
     });
   });
 }

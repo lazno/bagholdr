@@ -26,6 +26,8 @@ class _PortfolioListScreenState extends ConsumerState<PortfolioListScreen> {
   TimePeriod _selectedPeriod = TimePeriod.oneYear;
   String _searchQuery = '';
   int _displayedCount = 8;
+  String? _selectedSleeveId;
+  String? _selectedSleeveName;
 
   @override
   void initState() {
@@ -99,6 +101,15 @@ class _PortfolioListScreenState extends ConsumerState<PortfolioListScreen> {
                       searchFocusNode: _searchFocusNode,
                       onSearchChanged: _onSearchChanged,
                       onLoadMore: _onLoadMore,
+                      selectedSleeveId: _selectedSleeveId,
+                      selectedSleeveName: _selectedSleeveName,
+                      onSleeveFilterChanged: (sleeveId, sleeveName) {
+                        setState(() {
+                          _selectedSleeveId = sleeveId;
+                          _selectedSleeveName = sleeveName;
+                          _displayedCount = 8;
+                        });
+                      },
                     ),
                   ),
                 ],
@@ -126,6 +137,8 @@ class _PortfolioListScreenState extends ConsumerState<PortfolioListScreen> {
       _selectedPortfolio = portfolio;
       _searchQuery = '';
       _displayedCount = 8;
+      _selectedSleeveId = null;
+      _selectedSleeveName = null;
     });
     // Update global portfolio ID for cross-screen access
     ref.read(selectedPortfolioIdProvider.notifier).state =
@@ -262,6 +275,9 @@ class _DashboardContent extends ConsumerWidget {
     required this.searchFocusNode,
     required this.onSearchChanged,
     required this.onLoadMore,
+    required this.selectedSleeveId,
+    required this.selectedSleeveName,
+    required this.onSleeveFilterChanged,
   });
 
   final Portfolio portfolio;
@@ -273,6 +289,9 @@ class _DashboardContent extends ConsumerWidget {
   final FocusNode searchFocusNode;
   final ValueChanged<String> onSearchChanged;
   final VoidCallback onLoadMore;
+  final String? selectedSleeveId;
+  final String? selectedSleeveName;
+  final void Function(String? sleeveId, String? sleeveName) onSleeveFilterChanged;
 
   /// Maps TimePeriod to the return period key used in historical returns
   String _getReturnPeriodKey(TimePeriod period) {
@@ -304,11 +323,15 @@ class _DashboardContent extends ConsumerWidget {
     final chartDataAsync = ref.watch(chartDataProvider(
       ChartDataParams(portfolioId: portfolioId, range: chartRange),
     ));
+    final sleeveTreeAsync = ref.watch(sleeveTreeProvider(
+      SleeveTreeParams(portfolioId: portfolioId, period: period),
+    ));
     final holdingsAsync = ref.watch(holdingsProvider(
       HoldingsParams(
         portfolioId: portfolioId,
         period: period,
         search: searchQuery.isEmpty ? null : searchQuery,
+        sleeveId: selectedSleeveId,
         offset: 0,
         limit: displayedCount,
       ),
@@ -403,7 +426,7 @@ class _DashboardContent extends ConsumerWidget {
               holdings: holdings,
               totalCount: totalCount,
               filteredCount: filteredCount,
-              selectedSleeveName: 'All',
+              selectedSleeveName: selectedSleeveName ?? 'All',
               searchQuery: searchQuery,
               onSearchChanged: onSearchChanged,
               onLoadMore: onLoadMore,
@@ -426,6 +449,9 @@ class _DashboardContent extends ConsumerWidget {
               hideBalances: hideBalances,
               isRecentlyUpdated: (isin) =>
                   priceStreamProvider.isRecentlyUpdated(isin),
+              selectedSleeveId: selectedSleeveId,
+              sleeves: sleeveTreeAsync.valueOrNull?.sleeves ?? [],
+              onSleeveFilterChanged: onSleeveFilterChanged,
             ),
           ),
         ],

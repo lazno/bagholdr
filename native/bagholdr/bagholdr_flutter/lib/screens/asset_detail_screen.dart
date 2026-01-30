@@ -7,7 +7,6 @@ import '../main.dart' show client;
 import '../providers/providers.dart';
 import '../theme/colors.dart';
 import '../utils/formatters.dart';
-import '../widgets/assets_section.dart';
 import '../widgets/time_range_bar.dart';
 
 /// Full-screen asset detail view.

@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../providers/providers.dart';
-import '../widgets/assets_section.dart' show toReturnPeriod;
 import '../widgets/issues_bar.dart';
 import '../widgets/portfolio_selector.dart';
 import '../widgets/strategy_section_v2.dart';

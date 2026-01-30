@@ -3,23 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../theme/colors.dart';
 import '../utils/formatters.dart';
-import 'time_range_bar.dart';
 
-/// Maps UI TimePeriod to API ReturnPeriod.
-ReturnPeriod toReturnPeriod(TimePeriod period) {
-  switch (period) {
-    case TimePeriod.oneMonth:
-      return ReturnPeriod.oneMonth;
-    case TimePeriod.sixMonths:
-      return ReturnPeriod.sixMonths;
-    case TimePeriod.ytd:
-      return ReturnPeriod.ytd;
-    case TimePeriod.oneYear:
-      return ReturnPeriod.oneYear;
-    case TimePeriod.all:
-      return ReturnPeriod.all;
-  }
-}
 
 /// Assets section displaying a filterable, paginated list of holdings.
 ///
@@ -57,6 +41,9 @@ class AssetsSection extends StatelessWidget {
     this.hideBalances = false,
     this.isRecentlyUpdated,
     this.searchFocusNode,
+    this.selectedSleeveId,
+    this.sleeves = const [],
+    this.onSleeveFilterChanged,
   });
 
   /// List of holdings to display.
@@ -98,8 +85,19 @@ class AssetsSection extends StatelessWidget {
   /// Optional focus node for the search bar, allowing external control.
   final FocusNode? searchFocusNode;
 
+  /// Currently selected sleeve ID for filtering (null = all assets).
+  final String? selectedSleeveId;
+
+  /// Available sleeves for filter picker (hierarchical tree).
+  final List<SleeveNode> sleeves;
+
+  /// Callback when sleeve filter changes.
+  final void Function(String? sleeveId, String? sleeveName)? onSleeveFilterChanged;
+
   @override
   Widget build(BuildContext context) {
+    final hasFilter = onSleeveFilterChanged != null && sleeves.isNotEmpty;
+
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -112,11 +110,26 @@ class AssetsSection extends StatelessWidget {
           ),
           const SizedBox(height: 12),
 
-          // Search bar
-          _SearchBar(
-            value: searchQuery,
-            onChanged: onSearchChanged,
-            focusNode: searchFocusNode,
+          // Search bar + filter chip row
+          Row(
+            children: [
+              Expanded(
+                child: _SearchBar(
+                  value: searchQuery,
+                  onChanged: onSearchChanged,
+                  focusNode: searchFocusNode,
+                ),
+              ),
+              if (hasFilter) ...[
+                const SizedBox(width: 8),
+                _SleeveFilterChip(
+                  selectedSleeveId: selectedSleeveId,
+                  selectedSleeveName: selectedSleeveName,
+                  sleeves: sleeves,
+                  onSleeveFilterChanged: onSleeveFilterChanged!,
+                ),
+              ],
+            ],
           ),
           const SizedBox(height: 12),
 
@@ -595,4 +608,223 @@ class _NoResultsMessage extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Compact filter chip for sleeve filtering.
+///
+/// When no filter is active, shows "Filter" as outlined chip.
+/// When a filter is active, shows the sleeve name with an X to clear.
+class _SleeveFilterChip extends StatelessWidget {
+  const _SleeveFilterChip({
+    required this.selectedSleeveId,
+    required this.selectedSleeveName,
+    required this.sleeves,
+    required this.onSleeveFilterChanged,
+  });
+
+  final String? selectedSleeveId;
+  final String selectedSleeveName;
+  final List<SleeveNode> sleeves;
+  final void Function(String? sleeveId, String? sleeveName) onSleeveFilterChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final isActive = selectedSleeveId != null;
+
+    return GestureDetector(
+      onTap: () => _showSleeveFilterSheet(context),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        padding: EdgeInsets.symmetric(
+          horizontal: isActive ? 8 : 12,
+          vertical: 10,
+        ),
+        decoration: BoxDecoration(
+          color: isActive ? colorScheme.primaryContainer : colorScheme.surfaceContainerHighest,
+          borderRadius: BorderRadius.circular(8),
+          border: isActive
+              ? null
+              : Border.all(
+                  color: colorScheme.outlineVariant,
+                  width: 1,
+                ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (!isActive)
+              Icon(
+                Icons.filter_list,
+                size: 16,
+                color: colorScheme.onSurfaceVariant,
+              ),
+            if (!isActive) const SizedBox(width: 4),
+            Text(
+              isActive ? selectedSleeveName : 'Filter',
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: isActive ? FontWeight.w500 : FontWeight.normal,
+                color: isActive
+                    ? colorScheme.onPrimaryContainer
+                    : colorScheme.onSurfaceVariant,
+              ),
+            ),
+            if (isActive) ...[
+              const SizedBox(width: 4),
+              GestureDetector(
+                onTap: () => onSleeveFilterChanged(null, null),
+                child: Icon(
+                  Icons.close,
+                  size: 16,
+                  color: colorScheme.onPrimaryContainer,
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showSleeveFilterSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) => _SleeveFilterBottomSheet(
+        sleeves: sleeves,
+        selectedSleeveId: selectedSleeveId,
+        onSelect: (sleeveId, sleeveName) {
+          Navigator.pop(context);
+          onSleeveFilterChanged(sleeveId, sleeveName);
+        },
+      ),
+    );
+  }
+}
+
+/// Bottom sheet for selecting a sleeve filter.
+///
+/// Shows "All assets" option at top, followed by hierarchical sleeve list.
+class _SleeveFilterBottomSheet extends StatelessWidget {
+  const _SleeveFilterBottomSheet({
+    required this.sleeves,
+    required this.selectedSleeveId,
+    required this.onSelect,
+  });
+
+  final List<SleeveNode> sleeves;
+  final String? selectedSleeveId;
+  final void Function(String? sleeveId, String? sleeveName) onSelect;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    // Build flat list with depth info for indentation
+    final items = <_SleeveFilterItem>[];
+    items.add(_SleeveFilterItem(id: null, name: 'All assets', depth: 0));
+
+    void addSleeveWithChildren(SleeveNode node, int depth) {
+      items.add(_SleeveFilterItem(id: node.id, name: node.name, depth: depth));
+      if (node.children != null) {
+        for (final child in node.children!) {
+          addSleeveWithChildren(child, depth + 1);
+        }
+      }
+    }
+
+    for (final sleeve in sleeves) {
+      addSleeveWithChildren(sleeve, 0);
+    }
+
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.only(top: 16, bottom: 8),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Text(
+                'Filter by Sleeve',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: colorScheme.onSurface,
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Flexible(
+              child: ListView.builder(
+                shrinkWrap: true,
+                itemCount: items.length,
+                itemBuilder: (context, index) {
+                  final item = items[index];
+                  final isSelected = item.id == selectedSleeveId;
+
+                  return InkWell(
+                    onTap: () => onSelect(item.id, item.id != null ? item.name : null),
+                    child: Padding(
+                      padding: EdgeInsets.only(
+                        left: 16.0 + (item.depth * 16.0),
+                        right: 16.0,
+                        top: 12.0,
+                        bottom: 12.0,
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            isSelected
+                                ? Icons.radio_button_checked
+                                : Icons.radio_button_off,
+                            size: 20,
+                            color: isSelected
+                                ? colorScheme.primary
+                                : colorScheme.onSurfaceVariant,
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              item.name,
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight:
+                                    isSelected ? FontWeight.w500 : FontWeight.normal,
+                                color: isSelected
+                                    ? colorScheme.onSurface
+                                    : colorScheme.onSurfaceVariant,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Internal item for the sleeve filter list.
+class _SleeveFilterItem {
+  const _SleeveFilterItem({
+    required this.id,
+    required this.name,
+    required this.depth,
+  });
+
+  final String? id;
+  final String name;
+  final int depth;
 }

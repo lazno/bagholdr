@@ -2,7 +2,6 @@ import 'package:bagholdr_client/bagholdr_client.dart';
 import 'package:flutter/material.dart';
 
 import '../main.dart';
-import '../widgets/assets_section.dart' show toReturnPeriod;
 import '../widgets/strategy_section_v2.dart';
 import '../widgets/time_range_bar.dart';
 

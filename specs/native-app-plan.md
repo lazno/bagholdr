@@ -86,249 +86,6 @@ backholdr/
 
 ## Active Tasks
 
-### NAPP-024: Port Price Oracle `[port]`
-
-**Priority**: Medium | **Status**: `[x]`
-**Blocked by**: None (NAPP-023b research complete)
-
-**Tasks**:
-- [x] Create price oracle service in Dart
-- [x] Port Yahoo price fetching
-- [x] Port rate limiting logic
-- [x] Test: fetches correct prices
-
-**Implementation note**: When updating an asset's `yahooSymbol`, auto-clear historical data for the old ticker (`DailyPrice`, `IntradayPrice`, `DividendEvent`, `TickerMetadata`). This prevents orphaned data accumulating in the database.
-
-**Acceptance Criteria**:
-- [x] Can fetch prices for known symbols
-- [x] Rate limiting works
-
----
-
----
-
-### NAPP-026: Research Directa Parser `[research]`
-
-**Priority**: Medium | **Status**: `[x]`
-**Blocked by**: None
-
-Understand existing import logic. **No code changes.**
-
-**Files to read**:
-- `server/src/import/directa-parser.ts`
-- `server/src/import/derive-holdings.ts`
-
-**Tasks**:
-- [ ] Read directa-parser.ts
-- [ ] Read derive-holdings.ts
-- [ ] Document:
-  - CSV format expected
-  - Field mapping
-  - How holdings are derived from orders
-- [ ] List functions to port
-
-**Deliverable**: Add "Directa Parser Summary" section to `native-app-completed.md`.
-
-**Acceptance Criteria**:
-- [ ] Parser logic documented
-
----
-
-### NAPP-027: Port Directa Parser `[port]`
-
-**Priority**: Medium | **Status**: `[x]`
-**Blocked by**: None (NAPP-026 complete)
-
-**Tasks**:
-- [x] Create directa_parser.dart
-- [x] Port CSV parsing logic
-- [x] Port derive-holdings logic
-- [x] Verify against TypeScript implementation (see below)
-
-**Verification Strategy** (golden-source testing):
-1. Dump all rows from the TypeScript SQLite `orders` table as JSON fixture
-2. Dump the `holdings` table as expected output
-3. Feed the same orders into the Dart `deriveHoldings()` and assert output matches exactly
-4. Pay special attention to:
-   - Commissions (quantity=0, adds to cost basis without changing position size)
-   - Dual-currency: `totalNative = currencyAmount != 0 ? currencyAmount : amountEur`
-   - Average cost proportional reduction on sells (both EUR and native tracks)
-
-**Acceptance Criteria**:
-- [x] Parses Directa CSV correctly
-- [x] Holdings derived correctly
-- [x] Dart `deriveHoldings()` output matches TypeScript SQLite `holdings` table exactly when fed the same orders
-
----
-
-### NAPP-028: Import Endpoint `[implement]`
-
-**Priority**: Medium | **Status**: `[x]`
-**Blocked by**: None (NAPP-027 complete)
-
-Backend-only. UI/automation TBD later.
-
-**Tasks**:
-- [x] Create ImportEndpoint with `importDirectaCsv(csvContent)`
-- [x] Parse CSV using directa_parser.dart
-- [x] Upsert orders to database (skips duplicates by orderReference)
-- [x] Derive holdings using derive_holdings.dart
-- [x] Return import result (orders imported, errors)
-- [x] Write integration tests
-
-**Acceptance Criteria**:
-- [x] Endpoint accepts CSV string
-- [x] Orders are persisted to database
-- [x] Holdings are recalculated after import
-- [x] Returns meaningful result (count, errors)
-
----
-
-### NAPP-029: Settings `[implement]`
-
-**Priority**: Low | **Status**: `[x]`
-**Blocked by**: None (NAPP-004 complete)
-
-**Tasks**:
-- [x] Create settings_screen.dart
-- [x] Theme toggle (light/dark/system)
-- [x] Privacy mode toggle (blur values)
-- [x] Server URL configuration (for dev)
-- [x] About/version info
-- [x] Bottom navigation (Dashboard, Settings)
-- [x] Move connection indicator to settings
-- [x] Move portfolio selector next to time range bar
-
-**Acceptance Criteria**:
-- [ ] Settings persist across app restarts
-- [x] Theme changes apply immediately
-
----
-
-### NAPP-032: Edit Yahoo Symbol `[implement]`
-
-**Priority**: Medium | **Status**: `[x]`
-**Blocked by**: None
-
-Allow user to edit the Yahoo symbol for an asset. Changing the symbol should clear historical price data for the old ticker.
-
-**Backend**:
-- [x] Add `updateYahooSymbol(assetId, newSymbol)` endpoint
-- [x] Clear `DailyPrice`, `IntradayPrice`, `DividendEvent`, `TickerMetadata` for old symbol
-- [x] Update asset record with new symbol
-
-**Frontend**:
-- [x] Wire up edit button in `_EditableFieldsSection`
-- [x] Show text input dialog for new symbol
-- [x] Call endpoint and refresh asset detail on success
-
-**Acceptance Criteria**:
-- [x] User can change Yahoo symbol from asset detail page
-- [x] Old price data is cleared when symbol changes
-- [x] New prices are fetched on next price refresh
-
----
-
-### NAPP-034: Assign Asset to Sleeve `[implement]`
-
-**Priority**: Medium | **Status**: `[x]`
-**Blocked by**: None
-
-Allow user to assign/reassign an asset to a sleeve.
-
-**Backend**:
-- [x] Add `assignAssetToSleeve(assetId, sleeveId)` endpoint (null sleeveId = unassign)
-- [x] Update asset record
-
-**Frontend**:
-- [x] Wire up edit button in `_EditableFieldsSection`
-- [x] Fetch available sleeves for picker
-- [x] Show picker dialog with sleeve options + "Unassigned"
-- [x] Call endpoint and refresh asset detail on success
-
-**Acceptance Criteria**:
-- [x] User can assign asset to a sleeve
-- [x] User can unassign asset from sleeve
-- [x] Dashboard sleeve grouping updates accordingly
-
----
-
-### NAPP-036: Clear Price History `[implement]`
-
-**Priority**: Low | **Status**: `[x]`
-**Blocked by**: None
-
-Clear all historical price data for an asset (useful when data is corrupted or wrong symbol was used).
-
-**Backend**:
-- [x] Add `clearPriceHistory(assetId)` endpoint
-- [x] Delete `DailyPrice`, `IntradayPrice` records for asset
-- [x] Optionally clear `DividendEvent`, `TickerMetadata`
-
-**Frontend**:
-- [x] Wire up "Clear price history" menu item
-- [x] Show confirmation dialog (destructive action)
-- [x] Call endpoint and show result
-
-**Acceptance Criteria**:
-- [x] User can clear price history with confirmation
-- [x] Price data is removed from database
-- [x] Asset shows "no price data" state until next refresh
-
----
-
-### NAPP-037: Archive Asset `[implement]`
-
-**Priority**: Low | **Status**: `[x]`
-**Blocked by**: None
-
-Archive an asset to hide it from the main view (for sold positions or mistakes).
-
-**Backend**:
-- [x] `archived` boolean field already existed in Asset model
-- [x] Add `archiveAsset(assetId, archived)` endpoint
-- [x] Add `getArchivedAssets(portfolioId)` endpoint
-- [x] Add `isArchived` field to `AssetDetailResponse`
-- [x] Archiving removes asset from all sleeves (SleeveAsset records)
-- [x] Filter archived assets from holdings/valuation queries (already in place)
-
-**Frontend**:
-- [x] Create `ManageAssetsScreen` (Settings → Manage Assets)
-- [x] Wire up "Archive asset" / "Unarchive asset" menu item in asset detail
-- [x] Show confirmation dialog
-- [x] Navigate back to dashboard on archive success
-- [x] Archived assets shown dimmed with badge in Manage Assets
-
-**Known Issue**: Dashboard doesn't auto-refresh after archiving (requires Riverpod migration, see NAPP-046)
-
-**Acceptance Criteria**:
-- [x] User can archive an asset
-- [x] Archived assets don't appear in dashboard
-- [x] User can view/unarchive from Settings → Manage Assets
-
----
-
-### NAPP-038: Add Portfolio Weight to Asset Detail `[implement]`
-
-**Priority**: Low | **Status**: `[x]`
-**Blocked by**: None
-
-Display the asset's weight as a percentage of the total portfolio value.
-
-**Backend**:
-- [x] Add `weight` field to `AssetDetailResponse` (already existed)
-- [x] Calculate: `(asset value / portfolio total value) * 100`
-
-**Frontend**:
-- [x] Display weight in position summary section
-- [x] Format as percentage (e.g., "12.5%")
-
-**Acceptance Criteria**:
-- [x] Asset detail shows weight relative to total portfolio
-- [x] Weight updates when value changes
-
----
-
 ### NAPP-039: Asset Performance Chart with Order Events `[implement]`
 
 **Priority**: Medium | **Status**: `[ ]`
@@ -367,44 +124,10 @@ Add an interactive TWR chart to the asset detail page, with buy/sell order marke
 
 ---
 
-### NAPP-040: Move Strategy Section to Dedicated Page `[implement]`
+### NAPP-041: Dashboard Asset Filter `[implement]`
 
 **Priority**: Medium | **Status**: `[x]`
 **Blocked by**: None
-
-Move the Strategy section to a dedicated page AS-IS. Preserve all current functionality but remove the asset filtering behavior. This is a stepping stone before future redesign.
-
-**What to preserve**:
-- Two-ring pie chart with animations
-- Sleeve selection → shows stats panel (slide animation)
-- Sleeve pills for quick selection
-- Time range selector (same as dashboard)
-- Portfolio picker (same as dashboard)
-
-**What to remove/change**:
-- Clicking a sleeve NO LONGER filters assets on dashboard
-- No assets displayed on this page (pure strategy visualization)
-
-**Tasks**:
-- [x] Create `strategy_screen.dart`
-- [x] Move `StrategySectionV2` content to new screen
-- [x] Add TimeRangeBar and portfolio selector
-- [x] Add navigation to Strategy page (bottom nav tab)
-- [x] Remove `StrategySectionV2` from `portfolio_list_screen.dart`
-- [x] Remove `onSleeveSelected` callback that was filtering dashboard assets
-
-**Acceptance Criteria**:
-- [x] Strategy page shows pie chart with full current functionality
-- [x] Time period and portfolio can be selected on Strategy page
-- [x] Dashboard no longer shows the pie chart
-- [x] Sleeve selection on Strategy page does NOT affect dashboard
-
----
-
-### NAPP-041: Dashboard Asset Filter `[implement]`
-
-**Priority**: Medium | **Status**: `[ ]`
-**Blocked by**: NAPP-040
 
 Add a compact, extensible filter to the dashboard for filtering the assets list. Initial implementation filters by sleeve, but design should accommodate future filter types.
 
@@ -451,7 +174,7 @@ Add a compact, extensible filter to the dashboard for filtering the assets list.
 ### NAPP-042: Strategy Page Redesign `[exploration]`
 
 **Priority**: Low | **Status**: `[ ]`
-**Blocked by**: NAPP-040
+**Blocked by**: None
 
 **This is an exploratory task.** The Strategy page (created in NAPP-040) needs a complete redesign. Everything is open for reconsideration.
 
@@ -480,141 +203,536 @@ Add a compact, extensible filter to the dashboard for filtering the assets list.
 
 ---
 
+## Architecture: Account-Portfolio Model
+
+These tasks implement the new data architecture where Accounts are import targets and Portfolios are analytical views that aggregate one or more accounts.
+
 ---
 
-### NAPP-043: Remove Page Titles from Main Screens `[implement]`
+### NAPP-050: Account-Portfolio Data Model `[implement]`
 
-**Priority**: Low | **Status**: `[x]`
+**Priority**: High | **Status**: `[ ]`
 **Blocked by**: None
 
-Remove redundant page titles from the top of the 3 main screens (Dashboard, Strategy, Settings) since they're already displayed in the bottom navigation menu. Also remove the privacy mode buttons from Dashboard and Strategy (accessible via Settings).
+Implement the Account entity and refactor Portfolio to reference Accounts instead of directly owning holdings.
 
-**Files to modify**:
-- `lib/screens/portfolio_list_screen.dart` - Remove AppBar (title + privacy button)
-- `lib/screens/strategy_screen.dart` - Remove AppBar (title + privacy button)
-- `lib/screens/settings_screen.dart` - Remove AppBar (title only)
+**Data Model Changes**:
+- [ ] Create `Account` model (id, name, type: real|virtual, createdAt)
+- [ ] Add `accountId` foreign key to `Order` model
+- [ ] Add `accountId` foreign key to `Holding` model (derived from orders)
+- [ ] Create `PortfolioAccount` junction table (portfolioId, accountId)
+- [ ] Migration: Create default "Main Account", assign all existing orders/holdings to it
+- [ ] Migration: Link existing portfolios to the default account
 
-**NOT modified**:
-- `lib/screens/asset_detail_screen.dart` - Keep the title bar (shows dynamic asset name + action menu)
+**Backend Changes**:
+- [ ] Update holdings derivation to be per-account
+- [ ] Update valuation endpoints to aggregate across portfolio's accounts
+- [ ] Update holdings endpoint to filter by portfolio's accounts
+- [ ] Create CRUD endpoints for accounts
 
 **Acceptance Criteria**:
-- [x] Dashboard, Strategy, Settings screens have no AppBar/title bar
-- [x] Asset Detail screen still shows the asset name and action menu
-- [x] Privacy mode toggle in Settings still works
-- [x] Bottom navigation still functions correctly
+- [ ] Accounts can be created/listed/updated
+- [ ] Orders belong to an account
+- [ ] Portfolios reference one or more accounts
+- [ ] Existing data migrates cleanly
+- [ ] Dashboard shows holdings from portfolio's accounts only
 
 ---
 
-### NAPP-046: Riverpod State Management Migration `[implement]`
+### NAPP-051: Virtual Accounts `[implement]`
 
-**Priority**: Medium | **Status**: `[x]`
+**Priority**: Medium | **Status**: `[ ]`
+**Blocked by**: NAPP-050
+
+Virtual accounts for paper trading and hypothetical portfolio testing.
+
+**Backend**:
+- [ ] Account type enum: `real` | `virtual`
+- [ ] Endpoint to add manual position to virtual account (asset, quantity, costBasis, date)
+- [ ] Endpoint to edit/remove positions in virtual account
+- [ ] Virtual accounts don't sync with any broker
+
+**Frontend**:
+- [ ] Create virtual account flow
+- [ ] Add position form (search asset, enter quantity, cost, date)
+- [ ] Edit/delete positions
+- [ ] Virtual accounts clearly labeled in UI
+
+**Acceptance Criteria**:
+- [ ] User can create a virtual account
+- [ ] User can add hypothetical positions manually
+- [ ] Virtual account can be added to a portfolio
+- [ ] Dashboard works with virtual accounts same as real
+
+---
+
+### NAPP-052: Account & Portfolio Management UI `[exploration]`
+
+**Priority**: Medium | **Status**: `[ ]`
+**Blocked by**: NAPP-050
+
+Exploratory task to design where and how users manage accounts, portfolios, and sleeves.
+
+**Questions to Answer**:
+- Where does this live? (Settings, dedicated tab, portfolio selector dropdown?)
+- Single management screen or separate screens per entity type?
+- How to assign accounts to portfolios?
+- How to manage sleeves within a portfolio?
+- How to handle the "select portfolio" flow when creating new portfolio?
+
+**Possible Approaches**:
+1. Settings → Accounts, Settings → Portfolios (separate sections)
+2. Dedicated "Manage" bottom nav tab
+3. Portfolio selector → "Manage Portfolios..." option
+4. Expand Strategy screen to include portfolio configuration
+
+**Deliverable**: Mockups for 2-3 approaches, user decision, then implementation spec.
+
+**Acceptance Criteria**:
+- [ ] User research / mockups created
+- [ ] Approach selected
+- [ ] Implementation tasks created
+
+---
+
+### NAPP-053: XIRR Benchmark Comparison `[implement]`
+
+**Priority**: Medium | **Status**: `[ ]`
 **Blocked by**: None
 
-Migrate from ValueNotifier/ChangeNotifier to Riverpod for proper reactive state management. This fixes the refresh issue where screens don't update after mutations (e.g., archiving an asset).
+Compare portfolio XIRR against benchmark using same cash flows.
 
-**Problem**: Each screen fetches data independently. When one screen mutates data (archive, assign sleeve), other screens don't refresh.
+**Concept**: "What if I had put the same money into SPY at the same times?"
 
-**Identified Sync Bugs to Fix**:
-1. Archive asset → Dashboard doesn't refresh
-2. Unarchive asset → Dashboard doesn't refresh
-3. Assign to sleeve → StrategyScreen tree doesn't refresh
-4. Period change race condition → Price stream update during period change could mix data
-5. Pagination state leak → `_displayedCount`, `_searchQuery` don't reset on portfolio change
-6. StrategyScreen stale → No price stream listener, issues don't auto-refresh
+**Backend**:
+- [ ] Endpoint: `getBenchmarkComparison(portfolioId, benchmarkSymbol, period)`
+- [ ] Fetch user's actual cash flow history (deposits/withdrawals derived from orders)
+- [ ] Simulate: apply same cash flows to benchmark asset
+- [ ] Calculate XIRR for both
+- [ ] Return comparison result
 
-**Solution**: Riverpod providers with invalidation on mutations.
+**Frontend**:
+- [ ] Decide where this lives (dashboard card? dedicated section? separate screen?)
+- [ ] Benchmark selector (SPY, QQQ, MSCI World, custom)
+- [ ] Show comparison: "Your XIRR: +12%, SPY XIRR: +15%"
+- [ ] Visual: side-by-side or delta display
 
-**Phase 1: Setup**
-- [ ] Add `flutter_riverpod: ^2.5.1` to pubspec.yaml
-- [ ] Wrap app with `ProviderScope` in main.dart
-- [ ] Create `lib/providers/` directory structure
+**Acceptance Criteria**:
+- [ ] User can compare their XIRR to a benchmark
+- [ ] Same cash flow timing applied to benchmark
+- [ ] Clear visualization of outperformance/underperformance
 
-**Phase 2: Migrate App State**
-- [ ] Create `app_providers.dart` (themeModeProvider, hideBalancesProvider, selectedPortfolioIdProvider)
-- [ ] Create `price_stream_providers.dart` (wrap existing PriceStreamProvider)
-- [ ] Migrate settings_screen.dart first
+---
 
-**Phase 3: Migrate Data Providers**
-- [ ] Create `portfolio_providers.dart` (portfoliosProvider)
-- [ ] Create `holdings_providers.dart` (holdingsProvider with params)
-- [ ] Create `valuation_providers.dart` (valuationProvider, chartDataProvider)
-- [ ] Create `asset_providers.dart` (assetDetailProvider, archivedAssetsProvider)
-- [ ] Create `strategy_providers.dart` (sleeveTreeProvider, issuesProvider)
+### NAPP-054: TWR Benchmark Comparison `[implement]`
 
-**Phase 4: Implement Mutations**
-- [ ] Create `mutations.dart` with invalidation logic
-- [ ] `archiveAsset()` → invalidates holdings, valuation, archivedAssets
-- [ ] `assignAssetToSleeve()` → invalidates sleeveTree, holdings
-- [ ] Update screens to use mutation functions
+**Priority**: Low | **Status**: `[ ]`
+**Blocked by**: None
 
-**Phase 5: Screen Migration**
-- [ ] Convert `portfolio_list_screen.dart` to ConsumerStatefulWidget
-- [ ] Convert `asset_detail_screen.dart` to ConsumerStatefulWidget
-- [ ] Convert `strategy_screen.dart` to ConsumerStatefulWidget
-- [ ] Convert `manage_assets_screen.dart` to ConsumerStatefulWidget
+Compare portfolio TWR against benchmark TWR.
 
-**Phase 6: Cleanup**
-- [ ] Remove legacy global ValueNotifiers from main.dart
-- [ ] Remove manual `_loadXxx()` methods from screens
-- [ ] Update tests
+**Concept**: Neutralize cash flows, compare pure investment performance.
 
-**Key Pattern**:
-```dart
-// Mutation with invalidation
-Future<bool> archiveAsset(WidgetRef ref, String assetId, bool archive) async {
-  final success = await client.holdings.archiveAsset(...);
-  if (success) {
-    ref.invalidate(holdingsProvider);
-    ref.invalidate(portfolioValuationProvider(portfolioId));
-  }
-  return success;
-}
+**Backend**:
+- [ ] Calculate portfolio TWR (may already exist)
+- [ ] Fetch benchmark TWR for same period
+- [ ] Return comparison
+
+**Frontend**:
+- [ ] Display alongside or near XIRR benchmark
+- [ ] Explain difference: "TWR removes timing luck, XIRR includes it"
+
+**Acceptance Criteria**:
+- [ ] User can see TWR vs benchmark TWR
+- [ ] Clear explanation of what TWR measures
+
+---
+
+## Monte Carlo Projections
+
+Forward-looking probabilistic simulations that show the range of possible outcomes, not just a single expected value. Useful for risk visualization and goal planning.
+
+---
+
+### NAPP-055: Single Asset Monte Carlo Projection `[implement]`
+
+**Priority**: Low | **Status**: `[ ]`
+**Blocked by**: None
+
+Monte Carlo simulation for individual assets, displayed on the Asset Detail page.
+
+#### Concept
+
+Answer: "What could this asset be worth in 10 years?" with a probability distribution, not a single number.
+
+```
+AAPL - 10 Year Projection
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+Current value: €15,000
+
+              Projected Value
+10th %ile:    €8,200   (-45%)   ← rough scenario
+50th %ile:    €32,000  (+113%)  ← median outcome
+90th %ile:    €98,000  (+553%)  ← optimistic scenario
+
+[Fan chart visualization]
 ```
 
-**Files to create**:
-- `lib/providers/app_providers.dart`
-- `lib/providers/price_stream_providers.dart`
-- `lib/providers/portfolio_providers.dart`
-- `lib/providers/holdings_providers.dart`
-- `lib/providers/valuation_providers.dart`
-- `lib/providers/asset_providers.dart`
-- `lib/providers/strategy_providers.dart`
-- `lib/providers/mutations.dart`
+#### Model Parameters
 
-**Acceptance Criteria**:
-- [ ] Archive asset from detail → dashboard auto-refreshes (no manual reload)
-- [ ] Assign sleeve → strategy page auto-refreshes
-- [ ] Price stream still works
-- [ ] Theme toggle still works
-- [ ] All existing functionality preserved
+| Parameter | Source | Notes |
+|-----------|--------|-------|
+| Expected return | Historical mean from DailyPrice + dividend yield from DividendEvent | Use at least 1 year of data; fallback to asset class average (10%) if insufficient |
+| Volatility | Standard deviation of daily returns × √252 (annualized) | Calculate from DailyPrice history |
+| Distribution | Student's t with df=5 | Captures fat tails - extreme events more likely than normal distribution |
+| Dividend yield | Sum of dividends / current price | Add to expected return for total return |
+
+**Why Student's t-distribution?**
+Normal distribution underestimates crashes. A t-distribution with 5 degrees of freedom has fatter tails, matching empirical stock return distributions. One parameter change, much more realistic.
+
+#### Algorithm
+
+```
+inputs:
+  current_value: float
+  expected_annual_return: float  # e.g., 0.10 for 10%
+  annual_volatility: float       # e.g., 0.28 for 28%
+  years: int                     # e.g., 10
+  num_simulations: int           # e.g., 10,000
+
+for each simulation:
+  value = current_value
+  for each year:
+    # Draw from t-distribution (fatter tails than normal)
+    random_return = t_distribution(df=5) * volatility + expected_return
+    value = value * (1 + random_return)
+  record final_value
+
+output:
+  percentiles: [10th, 25th, 50th, 75th, 90th]
+  fan_chart_data: time series of percentile bands
+```
+
+#### Data Requirements
+
+| Need | Have It? | Table/Source |
+|------|----------|--------------|
+| Current value | ✓ | Holding.quantity × PriceCache.priceEur |
+| Historical prices | ✓ | DailyPrice (need 1+ year) |
+| Dividends | ✓ | DividendEvent table |
+| Calculate volatility | Implement | std dev of ln(price[t]/price[t-1]) |
+
+#### Backend
+
+**Endpoint**: `getAssetProjection(assetId, years, percentiles)`
+
+- [ ] Calculate historical annualized return from DailyPrice
+- [ ] Calculate annualized volatility from daily returns
+- [ ] Add dividend yield to expected return
+- [ ] Run Monte Carlo simulation (10,000 iterations)
+- [ ] Return percentile outcomes + fan chart data points
+
+**Response model**:
+```yaml
+class: AssetProjectionResult
+fields:
+  assetId: UuidValue
+  currentValue: double
+  years: int
+  expectedReturn: double      # annual, used in simulation
+  volatility: double          # annual, used in simulation
+  percentiles: List<ProjectionPercentile>  # 10th, 25th, 50th, 75th, 90th
+  fanChartData: List<FanChartPoint>        # yearly percentile bands for chart
+  dataQuality: String         # 'good' | 'limited' | 'insufficient'
+
+class: ProjectionPercentile
+fields:
+  percentile: int             # 10, 25, 50, 75, 90
+  value: double               # projected value
+  totalReturn: double         # percentage return
+
+class: FanChartPoint
+fields:
+  year: int
+  p10: double
+  p25: double
+  p50: double
+  p75: double
+  p90: double
+```
+
+#### Frontend
+
+**Location**: Asset Detail page, new "Projection" section or tab
+
+- [ ] Projection summary card showing key percentiles
+- [ ] Fan chart visualization (wedge shape expanding over time)
+- [ ] Period selector: 5Y, 10Y, 20Y
+- [ ] Show data quality indicator if limited history
+- [ ] Tooltip explaining what percentiles mean
+
+**Fan chart design**:
+```
+Value
+  ↑
+  │         ╱ 90th
+  │       ╱
+  │     ╱─── 50th (median line)
+  │   ╱
+  │ ╱ 10th
+  └──────────────→ Years
+     0  5  10
+```
+
+#### Edge Cases
+
+- **Insufficient data**: < 1 year of prices → show warning, use asset class defaults
+- **High volatility assets**: Cap volatility at reasonable maximum (e.g., 80%)
+- **Negative expected return**: Allow it (some assets do have negative drift)
+- **Very small positions**: Still show projection, useful for "what if I had more"
+
+#### Acceptance Criteria
+
+- [ ] Asset detail shows Monte Carlo projection
+- [ ] Uses fat-tailed distribution (t-distribution)
+- [ ] Includes dividends in expected return
+- [ ] Fan chart visualizes range of outcomes
+- [ ] Clear explanation of what the percentiles mean
+- [ ] Graceful handling of limited price history
 
 ---
 
-### NAPP-045: Configurable Server URL `[implement]`
+### NAPP-056: Portfolio Monte Carlo Projection `[implement]`
 
-**Priority**: Low | **Status**: `[x]`
-**Blocked by**: None
+**Priority**: Low | **Status**: `[ ]`
+**Blocked by**: NAPP-055
 
-Make the server URL configurable from the Settings page. Currently hardcoded in main.dart with defaults for web (localhost:8080) and Android emulator (10.0.2.2:8080).
+Monte Carlo simulation for the entire portfolio, accounting for correlations between asset classes.
 
-**Tasks**:
-- [x] Add SharedPreferences dependency (if not already added)
-- [x] Store custom server URL in persistent storage
-- [x] Load saved URL on app startup (fallback to defaults if not set)
-- [x] Add edit dialog when tapping server URL in settings
-- [x] Validate URL format before saving
-- [x] Show "restart required" message after changing URL
-- [x] Add "Reset to default" option
+#### Concept
 
-**Files to modify**:
-- `lib/main.dart` - Load URL from storage instead of hardcoding
-- `lib/screens/settings_screen.dart` - Add edit functionality to server URL tile
+Answer: "What could my portfolio be worth in 10 years?" with probability distribution.
 
-**Acceptance Criteria**:
-- [x] User can change server URL from settings
-- [x] URL persists across app restarts
-- [x] Invalid URLs are rejected with clear error message
-- [x] App connects to custom URL after restart
+Key difference from single-asset: Must account for **correlations** between holdings. Diversified portfolios have lower volatility than the weighted average of individual volatilities.
+
+```
+Portfolio - 10 Year Projection
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Current value: €150,000
+Allocation: 60% stocks, 40% bonds
+
+              Projected Value
+10th %ile:    €142,000  (-5%)    ← bad scenario
+50th %ile:    €320,000  (+113%)  ← median outcome
+90th %ile:    €580,000  (+287%)  ← good scenario
+
+Probability of reaching €500k: 38%
+Probability of loss after 10y: 12%
+
+[Fan chart visualization]
+```
+
+#### Why Asset-Class Level (Not Per-Asset)
+
+**Problem with per-asset simulation:**
+- Need correlation between ALL pairs of assets (20 assets = 190 pairs)
+- Individual stock correlations are unstable year-to-year
+- Need 3-5 years of overlapping data for reliable estimates
+- Computationally expensive
+- False precision - looks accurate but isn't
+
+**Asset-class approach:**
+- Group holdings into 4-6 classes
+- Use well-documented historical parameters (decades of data)
+- Stable, reliable, computationally cheap
+- Standard practice in financial planning
+
+#### Asset Class Taxonomy
+
+| Asset Class | Maps From | ETF Proxy |
+|-------------|-----------|-----------|
+| US Stocks | Stock (US), ETF with US equity exposure | VTI, SPY |
+| International Stocks | Stock (non-US), international ETFs | VXUS, VEA |
+| Bonds | Bond, bond ETFs | BND, AGG |
+| Commodities | Commodity ETFs, gold | GLD, GSG |
+| Cash | Money market, cash holdings | - |
+| Other | Anything unclassified | Use balanced params |
+
+**Mapping logic**: Use combination of `Asset.assetType`, sector metadata, and ETF classification.
+
+#### Published Parameters (Hardcoded)
+
+Long-term historical data from academic research (Dimson-Marsh-Staunton, Ibbotson):
+
+```dart
+const assetClassParams = {
+  'us_stocks':    (mean: 0.10, vol: 0.16),  // S&P 500 since 1926
+  'intl_stocks':  (mean: 0.08, vol: 0.18),  // MSCI EAFE
+  'bonds':        (mean: 0.05, vol: 0.06),  // Bloomberg Aggregate
+  'commodities':  (mean: 0.04, vol: 0.18),  // GSCI
+  'cash':         (mean: 0.02, vol: 0.01),  // T-bills
+  'other':        (mean: 0.07, vol: 0.12),  // Balanced assumption
+};
+```
+
+**Correlation matrix** (also hardcoded from research):
+
+```
+                US Stock  Intl    Bonds   Cmdty   Cash
+US Stocks         1.00    0.75   -0.10    0.15    0.00
+Intl Stocks       0.75    1.00   -0.05    0.20    0.00
+Bonds            -0.10   -0.05    1.00   -0.10    0.20
+Commodities       0.15    0.20   -0.10    1.00    0.00
+Cash              0.00    0.00    0.20    0.00    1.00
+```
+
+**Source options for parameters:**
+1. Hardcode from published research (simplest, recommended for MVP)
+2. Calculate from ETF proxy prices (VTI, BND, etc.) using our DailyPrice data
+3. Fetch from external API (Portfolio Visualizer, Quandl)
+
+#### Algorithm
+
+```
+inputs:
+  portfolio_weights: {asset_class: weight}  # e.g., {'us_stocks': 0.6, 'bonds': 0.4}
+  current_value: float
+  years: int
+  num_simulations: int
+
+# Get parameters
+means = [params[class].mean for class in weights]
+vols = [params[class].vol for class in weights]
+corr_matrix = get_correlation_matrix(classes)
+
+# Convert correlation to covariance matrix
+cov_matrix = corr_to_cov(corr_matrix, vols)
+
+for each simulation:
+  value = current_value
+  for each year:
+    # Draw correlated returns for all asset classes
+    class_returns = multivariate_t(means, cov_matrix, df=5)
+
+    # Portfolio return is weighted sum
+    portfolio_return = sum(weight * return for weight, return in zip(weights, class_returns))
+
+    value = value * (1 + portfolio_return)
+
+  record final_value
+
+output:
+  percentiles + fan_chart + goal_probabilities
+```
+
+#### Data Requirements
+
+| Need | Have It? | Source |
+|------|----------|--------|
+| Holdings with values | ✓ | Holding + PriceCache |
+| Asset class per holding | Partial | Need mapping logic from assetType/metadata |
+| Class parameters | Hardcode | Published research |
+| Correlation matrix | Hardcode | Published research |
+
+**New data model addition:**
+- Add `assetClass` field to Asset model, OR
+- Create mapping function: `Asset → AssetClass` based on type/sector/geography
+
+#### Backend
+
+**Endpoint**: `getPortfolioProjection(portfolioId, years, percentiles, goals)`
+
+- [ ] Aggregate holdings into asset class weights
+- [ ] Apply published parameters (hardcoded)
+- [ ] Run correlated Monte Carlo simulation
+- [ ] Calculate goal probabilities (e.g., "chance of reaching €500k")
+- [ ] Return percentiles + fan chart + goal results
+
+**Response model**:
+```yaml
+class: PortfolioProjectionResult
+fields:
+  portfolioId: UuidValue
+  currentValue: double
+  years: int
+  allocation: List<AllocationWeight>       # asset class breakdown used
+  percentiles: List<ProjectionPercentile>
+  fanChartData: List<FanChartPoint>
+  goalProbabilities: List<GoalProbability>
+
+class: AllocationWeight
+fields:
+  assetClass: String          # 'us_stocks', 'bonds', etc.
+  weight: double              # 0.0 to 1.0
+  expectedReturn: double      # used in simulation
+  volatility: double          # used in simulation
+
+class: GoalProbability
+fields:
+  targetValue: double         # e.g., 500000
+  probability: double         # e.g., 0.38 (38% chance)
+```
+
+#### Frontend
+
+**Location**: Dashboard or dedicated "Planning" section
+
+- [ ] Projection summary with key percentiles
+- [ ] Fan chart visualization
+- [ ] Asset class breakdown showing what was used
+- [ ] Goal calculator: "Enter target amount → see probability"
+- [ ] Period selector: 5Y, 10Y, 20Y, 30Y
+- [ ] "What if" mode: adjust allocation sliders, see impact on projection
+
+**Goal calculator UX**:
+```
+┌─────────────────────────────────────┐
+│ GOAL CALCULATOR                     │
+├─────────────────────────────────────┤
+│ Target: €[500,000]  By: [10] years  │
+│                                     │
+│ Probability of success: 38%         │
+│ ████████░░░░░░░░░░░░                │
+│                                     │
+│ To reach 80% probability:           │
+│ • Increase to €620k, OR             │
+│ • Extend to 14 years, OR            │
+│ • Shift to 80% stocks (higher risk) │
+└─────────────────────────────────────┘
+```
+
+#### Simplification for MVP
+
+Start with 3 asset classes only:
+- Stocks (all equities) → 10% return, 16% vol
+- Bonds (all fixed income) → 5% return, 6% vol
+- Other → 7% return, 12% vol
+
+Correlation: Stocks-Bonds = -0.10
+
+Map based on existing `assetType`:
+- Stock, ETF → Stocks
+- Bond → Bonds
+- Everything else → Other
+
+Expand to full taxonomy later if users want granularity.
+
+#### Edge Cases
+
+- **Unclassified assets**: Map to "Other" with balanced parameters
+- **100% single class**: Degrades to single-class simulation (no correlation benefit)
+- **Empty portfolio**: Don't show projection
+- **Very long horizons (30+ years)**: May want mean reversion, but keep simple for MVP
+
+#### Acceptance Criteria
+
+- [ ] Portfolio projection shows Monte Carlo results
+- [ ] Uses asset class approach with published parameters
+- [ ] Correlations reduce portfolio volatility appropriately
+- [ ] Goal probability calculator works
+- [ ] Fan chart visualizes range of outcomes
+- [ ] Clear explanation of methodology and limitations
+- [ ] Graceful handling of unclassified assets
 
 ---
 

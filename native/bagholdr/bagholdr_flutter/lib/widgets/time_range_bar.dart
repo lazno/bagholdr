@@ -1,4 +1,21 @@
+import 'package:bagholdr_client/bagholdr_client.dart';
 import 'package:flutter/material.dart';
+
+/// Maps UI TimePeriod to API ReturnPeriod.
+ReturnPeriod toReturnPeriod(TimePeriod period) {
+  switch (period) {
+    case TimePeriod.oneMonth:
+      return ReturnPeriod.oneMonth;
+    case TimePeriod.sixMonths:
+      return ReturnPeriod.sixMonths;
+    case TimePeriod.ytd:
+      return ReturnPeriod.ytd;
+    case TimePeriod.oneYear:
+      return ReturnPeriod.oneYear;
+    case TimePeriod.all:
+      return ReturnPeriod.all;
+  }
+}
 
 /// Time periods for filtering financial data.
 enum TimePeriod {

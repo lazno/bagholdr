@@ -7,6 +7,7 @@ Technical reference for AI agents working on this codebase.
 | Command | Action |
 |---------|--------|
 | `ralph` | Follow `ralph.md` - pick the next unblocked task and complete it |
+| `done` | Read `ralph.md` sections 5-6 (Verify Completion, Commit and Stop) and execute them |
 
 ---
 
@@ -45,8 +46,9 @@ These rules apply to ALL code changes in the repository.
 ### Testing
 
 - All code changes must have tests
-- Tests must pass before committing
-- Run the appropriate test command for your changes:
+- **ALL tests must pass before committing** - no exceptions, no "it was already broken"
+- If you find broken tests, fix them as part of your task
+- Run the FULL test suite, not just tests for files you modified:
   - TypeScript: `pnpm test` or `vitest`
   - Dart server: `cd native/bagholdr/bagholdr_server && dart test`
   - Flutter: `cd native/bagholdr/bagholdr_flutter && flutter test`
