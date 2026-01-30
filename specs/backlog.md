@@ -204,36 +204,6 @@ Skip orchestration script verification (`native:start`, `native:stop`) as these 
 
 ---
 
-### BACK-006: Fix Broken Flutter Widget Tests
-
-**Category**: Bug/Testing | **Priority**: High | **Added**: 2026-01-30
-
-**Context**: 21 Flutter widget tests are currently failing. These tests broke at some point during development and were not fixed.
-
-**Failing test files**:
-- `test/widgets/sleeve_pills_test.dart` (8 tests)
-- `test/widgets/portfolio_chart_test.dart` (1 test)
-- `test/widgets/ring_chart_test.dart` (6 tests)
-- `test/widgets/strategy_section_test.dart` (6 tests)
-
-**Root cause**: Unknown - likely the widgets were refactored but tests were not updated to match.
-
-**Fix approach**:
-1. Run each test file individually to see specific failures
-2. Compare test expectations with current widget implementation
-3. Either update tests to match new widget behavior, or fix widgets if behavior regressed
-4. Ensure all 21 tests pass before marking complete
-
-**Verification**:
-```bash
-cd native/bagholdr/bagholdr_flutter && flutter test
-```
-Must show 0 failures.
-
-**Note**: This is blocking. No new features should be merged while tests are broken.
-
----
-
 ### BACK-007: Reliable Connection Indicator
 
 **Category**: Bug/UX | **Priority**: Medium | **Added**: 2026-01-27
