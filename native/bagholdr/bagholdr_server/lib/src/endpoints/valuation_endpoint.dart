@@ -4,6 +4,7 @@ import 'package:serverpod/serverpod.dart' hide Order;
 
 import '../generated/protocol.dart';
 import '../utils/bands.dart';
+import '../utils/portfolio_accounts.dart';
 import '../utils/returns.dart';
 
 /// Endpoint for portfolio valuation and allocation calculations.
@@ -37,11 +38,19 @@ class ValuationEndpoint extends Endpoint {
       absoluteCap: portfolio.bandAbsoluteCap,
     );
 
-    // Get all holdings with quantity > 0
-    final allHoldings = await Holding.db.find(
-      session,
-      where: (t) => t.quantity > 0.0,
-    );
+    // Get account IDs for this portfolio
+    final accountIds = await getPortfolioAccountIds(session, portfolioId);
+
+    // Get holdings for portfolio accounts with quantity > 0
+    final portfolioHoldings = accountIds.isNotEmpty
+        ? await Holding.db.find(
+            session,
+            where: (t) => t.accountId.inSet(accountIds) & (t.quantity > 0.0),
+          )
+        : <Holding>[];
+
+    // Aggregate holdings by asset (same asset may exist in multiple accounts)
+    final aggregatedHoldings = aggregateHoldingsByAsset(portfolioHoldings);
 
     // Get all non-archived assets
     final allAssets = await Asset.db.find(
@@ -51,9 +60,15 @@ class ValuationEndpoint extends Endpoint {
     final assetMap = {for (var a in allAssets) a.id!.toString(): a};
     final nonArchivedAssetIds = allAssets.map((a) => a.id!.toString()).toSet();
 
-    // Filter holdings to only include non-archived assets
-    final filteredHoldings = allHoldings
-        .where((h) => nonArchivedAssetIds.contains(h.assetId.toString()))
+    // Convert aggregated holdings to Holding objects for existing code compatibility
+    final filteredHoldings = aggregatedHoldings.entries
+        .where((e) => nonArchivedAssetIds.contains(e.key))
+        .map((e) => Holding(
+              accountId: accountIds.isNotEmpty ? accountIds.first : UuidValue.fromString('00000000-0000-0000-0000-000000000000'),
+              assetId: e.value.assetId,
+              quantity: e.value.quantity,
+              totalCostEur: e.value.totalCostEur,
+            ))
         .toList();
 
     // Get cached prices - use yahooSymbol for lookup
@@ -83,8 +98,13 @@ class ValuationEndpoint extends Endpoint {
     );
     final cashEur = cashRow?.amountEur ?? 0;
 
-    // Get all orders to calculate native currency cost basis
-    final allOrders = await Order.db.find(session);
+    // Get orders for portfolio accounts to calculate native currency cost basis
+    final allOrders = accountIds.isNotEmpty
+        ? await Order.db.find(
+            session,
+            where: (t) => t.accountId.inSet(accountIds),
+          )
+        : <Order>[];
 
     // Calculate native cost basis per asset using Average Cost Method
     final nativeCostByAssetId = <String, double>{};
@@ -465,6 +485,9 @@ class ValuationEndpoint extends Endpoint {
       throw Exception('Portfolio not found');
     }
 
+    // Get account IDs for this portfolio
+    final accountIds = await getPortfolioAccountIds(session, portfolioId);
+
     // Get all non-archived assets
     final allAssets = await Asset.db.find(
       session,
@@ -473,11 +496,14 @@ class ValuationEndpoint extends Endpoint {
     final assetMap = {for (var a in allAssets) a.id!.toString(): a};
     final nonArchivedAssetIds = allAssets.map((a) => a.id!.toString()).toSet();
 
-    // Get all orders for non-archived assets
-    final allOrders = await Order.db.find(
-      session,
-      orderBy: (t) => t.orderDate,
-    );
+    // Get orders for portfolio accounts for non-archived assets
+    final allOrders = accountIds.isNotEmpty
+        ? await Order.db.find(
+            session,
+            where: (t) => t.accountId.inSet(accountIds),
+            orderBy: (t) => t.orderDate,
+          )
+        : <Order>[];
     final filteredOrders = allOrders
         .where((o) => nonArchivedAssetIds.contains(o.assetId.toString()))
         .toList();
@@ -804,6 +830,9 @@ class ValuationEndpoint extends Endpoint {
       throw Exception('Portfolio not found');
     }
 
+    // Get account IDs for this portfolio
+    final accountIds = await getPortfolioAccountIds(session, portfolioId);
+
     // Get all non-archived assets
     final allAssets = await Asset.db.find(
       session,
@@ -812,11 +841,14 @@ class ValuationEndpoint extends Endpoint {
     final assetMap = {for (var a in allAssets) a.id!.toString(): a};
     final nonArchivedAssetIds = allAssets.map((a) => a.id!.toString()).toSet();
 
-    // Get all orders
-    final allOrders = await Order.db.find(
-      session,
-      orderBy: (t) => t.orderDate,
-    );
+    // Get orders for portfolio accounts
+    final allOrders = accountIds.isNotEmpty
+        ? await Order.db.find(
+            session,
+            where: (t) => t.accountId.inSet(accountIds),
+            orderBy: (t) => t.orderDate,
+          )
+        : <Order>[];
     final filteredOrders = allOrders
         .where((o) => nonArchivedAssetIds.contains(o.assetId.toString()))
         .toList();

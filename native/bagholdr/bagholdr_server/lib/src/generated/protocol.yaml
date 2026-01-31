@@ -8,6 +8,13 @@ emailIdp:
   - finishPasswordReset:
 jwtRefresh:
   - refreshAccessToken:
+account:
+  - getAccounts:
+  - createAccount:
+  - updateAccount:
+  - getPortfolioAccounts:
+  - addAccountToPortfolio:
+  - removeAccountFromPortfolio:
 holdings:
   - getHoldings:
   - getAssetDetail:

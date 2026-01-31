@@ -3,6 +3,7 @@ import 'package:serverpod/serverpod.dart' hide Order;
 
 import '../generated/protocol.dart';
 import '../utils/bands.dart';
+import '../utils/portfolio_accounts.dart';
 import '../utils/returns.dart';
 
 /// Endpoint for sleeve hierarchy and allocation data.
@@ -47,6 +48,9 @@ class SleevesEndpoint extends Endpoint {
       absoluteCap: portfolio.bandAbsoluteCap,
     );
 
+    // Get account IDs for this portfolio
+    final accountIds = await getPortfolioAccountIds(session, portfolioId);
+
     // Get all sleeves for this portfolio (excluding cash sleeves)
     final allSleeves = await Sleeve.db.find(
       session,
@@ -56,11 +60,16 @@ class SleevesEndpoint extends Endpoint {
     final nonCashSleeves = allSleeves.where((s) => !s.isCash).toList();
     final sleeveMap = {for (var s in nonCashSleeves) s.id!.toString(): s};
 
-    // Get all holdings with quantity > 0
-    final allHoldings = await Holding.db.find(
-      session,
-      where: (t) => t.quantity > 0.0,
-    );
+    // Get holdings for portfolio accounts with quantity > 0
+    final portfolioHoldings = accountIds.isNotEmpty
+        ? await Holding.db.find(
+            session,
+            where: (t) => t.accountId.inSet(accountIds) & (t.quantity > 0.0),
+          )
+        : <Holding>[];
+
+    // Aggregate holdings by asset (same asset may exist in multiple accounts)
+    final aggregatedHoldings = aggregateHoldingsByAsset(portfolioHoldings);
 
     // Get all non-archived assets
     final allAssets = await Asset.db.find(
@@ -70,9 +79,15 @@ class SleevesEndpoint extends Endpoint {
     final assetMap = {for (var a in allAssets) a.id!.toString(): a};
     final nonArchivedAssetIds = allAssets.map((a) => a.id!.toString()).toSet();
 
-    // Filter holdings to non-archived assets
-    final filteredHoldings = allHoldings
-        .where((h) => nonArchivedAssetIds.contains(h.assetId.toString()))
+    // Convert aggregated holdings to Holding objects for existing code compatibility
+    final filteredHoldings = aggregatedHoldings.entries
+        .where((e) => nonArchivedAssetIds.contains(e.key))
+        .map((e) => Holding(
+              accountId: accountIds.isNotEmpty ? accountIds.first : UuidValue.fromString('00000000-0000-0000-0000-000000000000'),
+              assetId: e.value.assetId,
+              quantity: e.value.quantity,
+              totalCostEur: e.value.totalCostEur,
+            ))
         .toList();
 
     // Get cached prices
@@ -148,11 +163,14 @@ class SleevesEndpoint extends Endpoint {
       childrenMap.putIfAbsent(parentId, () => []).add(sleeve);
     }
 
-    // Get all orders for MWR/TWR calculations
-    final allOrders = await Order.db.find(
-      session,
-      orderBy: (t) => t.orderDate,
-    );
+    // Get orders for portfolio accounts for MWR/TWR calculations
+    final allOrders = accountIds.isNotEmpty
+        ? await Order.db.find(
+            session,
+            where: (t) => t.accountId.inSet(accountIds),
+            orderBy: (t) => t.orderDate,
+          )
+        : <Order>[];
     final filteredOrders = allOrders
         .where((o) => nonArchivedAssetIds.contains(o.assetId.toString()))
         .toList();

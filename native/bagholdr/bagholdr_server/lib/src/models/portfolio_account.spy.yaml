@@ -1,0 +1,20 @@
+### PortfolioAccount - Junction table linking portfolios to accounts
+### Enables portfolios to aggregate multiple accounts for multi-broker views
+class: PortfolioAccount
+table: portfolio_accounts
+
+fields:
+  ### UUID primary key (v7 for lexicographic sorting)
+  id: UuidValue?, defaultPersist=random_v7
+
+  ### Reference to the portfolio (UUID)
+  portfolioId: UuidValue, relation(parent=portfolios)
+
+  ### Reference to the account (UUID)
+  accountId: UuidValue, relation(parent=accounts)
+
+indexes:
+  ### Each portfolio-account pair must be unique
+  portfolio_account_unique_idx:
+    fields: portfolioId, accountId
+    unique: true

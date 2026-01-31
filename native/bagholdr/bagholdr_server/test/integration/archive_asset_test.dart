@@ -331,6 +331,24 @@ void main() {
         );
         await Portfolio.db.insert(session, [portfolio]);
 
+        // Create a test account
+        final accountId = UuidValue.fromString(const Uuid().v7());
+        final account = Account(
+          id: accountId,
+          name: 'Test Account',
+          accountType: 'real',
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+        );
+        await Account.db.insert(session, [account]);
+
+        // Link account to portfolio
+        final portfolioAccount = PortfolioAccount(
+          portfolioId: portfolioId,
+          accountId: accountId,
+        );
+        await PortfolioAccount.db.insert(session, [portfolioAccount]);
+
         // Create an archived asset with holding and price
         final assetId = UuidValue.fromString(const Uuid().v7());
         final testAsset = Asset(
@@ -347,6 +365,7 @@ void main() {
 
         // Create a holding
         final holding = Holding(
+          accountId: accountId,
           assetId: assetId,
           quantity: 10.0,
           totalCostEur: 1000.0,

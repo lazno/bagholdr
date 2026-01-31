@@ -11,11 +11,13 @@ class ImportEndpoint extends Endpoint {
   /// Import orders from Directa CSV content.
   ///
   /// [csvContent] - The raw CSV content from Directa export
+  /// [accountId] - The account to import orders into
   ///
   /// Returns an [ImportResult] with counts and any errors encountered.
   Future<ImportResult> importDirectaCsv(
     Session session, {
     required String csvContent,
+    required UuidValue accountId,
   }) async {
     final warnings = <String>[];
 
@@ -99,6 +101,7 @@ class ImportEndpoint extends Endpoint {
 
       // Create order
       final order = Order(
+        accountId: accountId,
         assetId: asset.id!,
         orderDate: parsedOrder.transactionDate,
         quantity: parsedOrder.quantity,
@@ -114,9 +117,10 @@ class ImportEndpoint extends Endpoint {
       ordersImported++;
     }
 
-    // Derive holdings from ALL orders (not just imported ones)
-    final allOrders = await Order.db.find(
+    // Derive holdings from ALL orders for this account
+    final accountOrders = await Order.db.find(
       session,
+      where: (t) => t.accountId.equals(accountId),
       orderBy: (t) => t.orderDate,
     );
 
@@ -125,7 +129,7 @@ class ImportEndpoint extends Endpoint {
     final assetById = {for (var a in allAssets) a.id!.toString(): a};
 
     // Convert DB orders to OrderForDerivation
-    final ordersForDerivation = allOrders.map((o) {
+    final ordersForDerivation = accountOrders.map((o) {
       final asset = assetById[o.assetId.toString()];
       return OrderForDerivation(
         assetIsin: asset?.isin ?? '',
@@ -136,10 +140,10 @@ class ImportEndpoint extends Endpoint {
       );
     }).toList();
 
-    // Derive holdings
+    // Derive holdings for this account
     final derivedHoldings = deriveHoldings(ordersForDerivation);
 
-    // Upsert holdings
+    // Upsert holdings for this account
     var holdingsUpdated = 0;
     final assetByIsinForHoldings = {for (var a in allAssets) a.isin: a};
 
@@ -150,10 +154,10 @@ class ImportEndpoint extends Endpoint {
         continue;
       }
 
-      // Find existing holding
+      // Find existing holding for this account and asset
       final existingHolding = await Holding.db.findFirstRow(
         session,
-        where: (t) => t.assetId.equals(asset.id!),
+        where: (t) => t.accountId.equals(accountId) & t.assetId.equals(asset.id!),
       );
 
       if (existingHolding != null) {
@@ -162,8 +166,9 @@ class ImportEndpoint extends Endpoint {
         existingHolding.totalCostEur = derived.totalCostEur;
         await Holding.db.updateRow(session, existingHolding);
       } else {
-        // Create new holding
+        // Create new holding for this account
         final holding = Holding(
+          accountId: accountId,
           assetId: asset.id!,
           quantity: derived.quantity,
           totalCostEur: derived.totalCostEur,
@@ -173,9 +178,12 @@ class ImportEndpoint extends Endpoint {
       holdingsUpdated++;
     }
 
-    // Delete holdings for assets that no longer have positions
+    // Delete holdings for this account for assets that no longer have positions
     final derivedIsins = derivedHoldings.map((h) => h.assetIsin).toSet();
-    final existingHoldings = await Holding.db.find(session);
+    final existingHoldings = await Holding.db.find(
+      session,
+      where: (t) => t.accountId.equals(accountId),
+    );
     for (final holding in existingHoldings) {
       final asset = assetById[holding.assetId.toString()];
       if (asset != null && !derivedIsins.contains(asset.isin)) {

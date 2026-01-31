@@ -53,6 +53,20 @@ These rules apply to ALL code changes in the repository.
   - Dart server: `cd native/bagholdr/bagholdr_server && dart test`
   - Flutter: `cd native/bagholdr/bagholdr_flutter && flutter test`
 
+### Integration Tests (MANDATORY)
+
+**There is NO scenario where you skip integration tests.** If tests require a database, you start the database. Period.
+
+- Integration tests use the **test database** (`postgres_test` on port 9090), NOT the development database
+- Before running integration tests: `docker compose up -d`
+- If the test database needs resetting, reset ONLY the test volume:
+  ```bash
+  docker volume rm bagholdr_server_bagholdr_test_data
+  docker compose up -d
+  ```
+- **NEVER run `docker compose down -v`** - this wipes BOTH development and test data
+- **NEVER run destructive commands on the development database without explicit user permission**
+
 ### Endpoint Testing (MANDATORY)
 
 **Unit tests are NOT sufficient for endpoints.** ORM queries, type mismatches, and database issues only surface at runtime.

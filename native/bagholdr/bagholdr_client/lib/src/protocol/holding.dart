@@ -17,6 +17,7 @@ import 'package:serverpod_client/serverpod_client.dart' as _i1;
 abstract class Holding implements _i1.SerializableModel {
   Holding._({
     this.id,
+    required this.accountId,
     required this.assetId,
     required this.quantity,
     required this.totalCostEur,
@@ -24,6 +25,7 @@ abstract class Holding implements _i1.SerializableModel {
 
   factory Holding({
     _i1.UuidValue? id,
+    required _i1.UuidValue accountId,
     required _i1.UuidValue assetId,
     required double quantity,
     required double totalCostEur,
@@ -34,6 +36,9 @@ abstract class Holding implements _i1.SerializableModel {
       id: jsonSerialization['id'] == null
           ? null
           : _i1.UuidValueJsonExtension.fromJson(jsonSerialization['id']),
+      accountId: _i1.UuidValueJsonExtension.fromJson(
+        jsonSerialization['accountId'],
+      ),
       assetId: _i1.UuidValueJsonExtension.fromJson(
         jsonSerialization['assetId'],
       ),
@@ -44,6 +49,9 @@ abstract class Holding implements _i1.SerializableModel {
 
   /// UUID primary key (v7 for lexicographic sorting)
   _i1.UuidValue? id;
+
+  /// Reference to the account this holding belongs to (UUID)
+  _i1.UuidValue accountId;
 
   /// Reference to the asset (UUID)
   _i1.UuidValue assetId;
@@ -59,6 +67,7 @@ abstract class Holding implements _i1.SerializableModel {
   @_i1.useResult
   Holding copyWith({
     _i1.UuidValue? id,
+    _i1.UuidValue? accountId,
     _i1.UuidValue? assetId,
     double? quantity,
     double? totalCostEur,
@@ -68,6 +77,7 @@ abstract class Holding implements _i1.SerializableModel {
     return {
       '__className__': 'Holding',
       if (id != null) 'id': id?.toJson(),
+      'accountId': accountId.toJson(),
       'assetId': assetId.toJson(),
       'quantity': quantity,
       'totalCostEur': totalCostEur,
@@ -85,11 +95,13 @@ class _Undefined {}
 class _HoldingImpl extends Holding {
   _HoldingImpl({
     _i1.UuidValue? id,
+    required _i1.UuidValue accountId,
     required _i1.UuidValue assetId,
     required double quantity,
     required double totalCostEur,
   }) : super._(
          id: id,
+         accountId: accountId,
          assetId: assetId,
          quantity: quantity,
          totalCostEur: totalCostEur,
@@ -101,12 +113,14 @@ class _HoldingImpl extends Holding {
   @override
   Holding copyWith({
     Object? id = _Undefined,
+    _i1.UuidValue? accountId,
     _i1.UuidValue? assetId,
     double? quantity,
     double? totalCostEur,
   }) {
     return Holding(
       id: id is _i1.UuidValue? ? id : this.id,
+      accountId: accountId ?? this.accountId,
       assetId: assetId ?? this.assetId,
       quantity: quantity ?? this.quantity,
       totalCostEur: totalCostEur ?? this.totalCostEur,

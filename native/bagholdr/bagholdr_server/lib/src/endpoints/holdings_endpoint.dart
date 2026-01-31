@@ -4,6 +4,7 @@ import 'package:serverpod/serverpod.dart' hide Order;
 import '../generated/protocol.dart';
 import '../oracle/cache.dart';
 import '../services/asset_returns_calculator.dart';
+import '../utils/portfolio_accounts.dart';
 
 /// Endpoint for holdings/assets list data.
 ///
@@ -31,11 +32,34 @@ class HoldingsEndpoint extends Endpoint {
     final now = DateTime.now();
     final todayStr = _formatDate(now);
 
-    // Get all holdings with quantity > 0
-    final allHoldings = await Holding.db.find(
+    // Get account IDs for this portfolio
+    final accountIds = await getPortfolioAccountIds(session, portfolioId);
+
+    if (accountIds.isEmpty) {
+      return HoldingsListResponse(
+        holdings: [],
+        totalCount: 0,
+        filteredCount: 0,
+        totalValue: 0,
+      );
+    }
+
+    // Get holdings for portfolio accounts with quantity > 0
+    final portfolioHoldings = await Holding.db.find(
       session,
-      where: (t) => t.quantity > 0.0,
+      where: (t) => t.accountId.inSet(accountIds) & (t.quantity > 0.0),
     );
+
+    // Aggregate holdings by asset (same asset may exist in multiple accounts)
+    final aggregatedMap = aggregateHoldingsByAsset(portfolioHoldings);
+    final allHoldings = aggregatedMap.values
+        .map((a) => Holding(
+              accountId: accountIds.first, // Placeholder, not used downstream
+              assetId: a.assetId,
+              quantity: a.quantity,
+              totalCostEur: a.totalCostEur,
+            ))
+        .toList();
 
     // Get all non-archived assets
     final allAssets = await Asset.db.find(
@@ -63,9 +87,10 @@ class HoldingsEndpoint extends Endpoint {
     final cachedPrices = await PriceCache.db.find(session);
     final priceMap = {for (var p in cachedPrices) p.ticker: p.priceEur};
 
-    // Get all orders for cost basis and MWR calculation
+    // Get all orders for portfolio accounts for cost basis and MWR calculation
     final allOrders = await Order.db.find(
       session,
+      where: (t) => t.accountId.inSet(accountIds),
       orderBy: (t) => t.orderDate,
     );
 
@@ -380,40 +405,66 @@ class HoldingsEndpoint extends Endpoint {
     final now = DateTime.now();
     final todayStr = _formatDate(now);
 
+    // Get account IDs for this portfolio
+    final accountIds = await getPortfolioAccountIds(session, portfolioId);
+
     // Fetch the asset
     final asset = await Asset.db.findById(session, assetId);
     if (asset == null) {
       throw Exception('Asset not found: $assetId');
     }
 
-    // Fetch holding for this asset
-    final holdings = await Holding.db.find(
-      session,
-      where: (t) => t.assetId.equals(assetId),
-    );
-    final holding = holdings.isNotEmpty ? holdings.first : null;
+    // Fetch holdings for this asset from portfolio accounts
+    final portfolioHoldings = accountIds.isNotEmpty
+        ? await Holding.db.find(
+            session,
+            where: (t) => t.accountId.inSet(accountIds) & t.assetId.equals(assetId),
+          )
+        : <Holding>[];
 
-    if (holding == null || holding.quantity <= 0) {
+    // Aggregate holdings across accounts
+    double aggregatedQuantity = 0;
+    double aggregatedCostEur = 0;
+    for (final h in portfolioHoldings) {
+      aggregatedQuantity += h.quantity;
+      aggregatedCostEur += h.totalCostEur;
+    }
+
+    if (aggregatedQuantity <= 0) {
       throw Exception('No holding found for asset: $assetId');
     }
 
-    // Fetch all orders for this asset (most recent first)
-    final orders = await Order.db.find(
-      session,
-      where: (t) => t.assetId.equals(assetId),
-      orderBy: (t) => t.orderDate,
-      orderDescending: true,
+    // Create aggregated holding for calculations
+    final holding = Holding(
+      accountId: accountIds.isNotEmpty ? accountIds.first : UuidValue.fromString('00000000-0000-0000-0000-000000000000'),
+      assetId: assetId,
+      quantity: aggregatedQuantity,
+      totalCostEur: aggregatedCostEur,
     );
+
+    // Fetch all orders for this asset from portfolio accounts (most recent first)
+    final orders = accountIds.isNotEmpty
+        ? await Order.db.find(
+            session,
+            where: (t) => t.accountId.inSet(accountIds) & t.assetId.equals(assetId),
+            orderBy: (t) => t.orderDate,
+            orderDescending: true,
+          )
+        : <Order>[];
 
     // Get cached price
     final cachedPrices = await PriceCache.db.find(session);
     final priceMap = {for (var p in cachedPrices) p.ticker: p.priceEur};
 
-    // Calculate total portfolio value for weight
-    final allHoldings = await Holding.db.find(
-      session,
-      where: (t) => t.quantity > 0.0,
-    );
+    // Calculate total portfolio value for weight (from portfolio accounts only)
+    final portfolioAllHoldings = accountIds.isNotEmpty
+        ? await Holding.db.find(
+            session,
+            where: (t) => t.accountId.inSet(accountIds) & (t.quantity > 0.0),
+          )
+        : <Holding>[];
+    final aggregatedPortfolioHoldings = aggregateHoldingsByAsset(portfolioAllHoldings);
+
     final allAssets = await Asset.db.find(
       session,
       where: (t) => t.archived.equals(false),
@@ -421,11 +472,12 @@ class HoldingsEndpoint extends Endpoint {
     final assetMapLocal = {for (var a in allAssets) a.id!.toString(): a};
 
     double totalPortfolioValue = 0;
-    for (final h in allHoldings) {
-      final a = assetMapLocal[h.assetId.toString()];
-      if (a == null) continue;
+    for (final entry in aggregatedPortfolioHoldings.entries) {
+      final a = assetMapLocal[entry.key];
+      if (a == null || a.archived) continue;
       final key = a.yahooSymbol ?? a.ticker;
       final price = priceMap[key];
+      final h = entry.value;
       totalPortfolioValue += price != null ? price * h.quantity : h.totalCostEur;
     }
 

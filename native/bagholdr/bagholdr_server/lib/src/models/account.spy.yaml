@@ -1,0 +1,23 @@
+### Account - Data source for orders/holdings (broker account or virtual)
+### Orders and holdings belong to accounts. Portfolios aggregate one or more accounts.
+class: Account
+table: accounts
+
+fields:
+  ### UUID primary key (v7 for lexicographic sorting)
+  id: UuidValue?, defaultPersist=random_v7
+
+  ### Account display name (e.g., "Directa", "Paper Trading")
+  name: String
+
+  ### Account type: 'real' (actual broker) or 'virtual' (paper trading)
+  accountType: String
+
+  ### Timestamps
+  createdAt: DateTime
+  updatedAt: DateTime
+
+indexes:
+  ### Index for lookup by name
+  account_name_idx:
+    fields: name

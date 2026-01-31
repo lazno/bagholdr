@@ -5,6 +5,7 @@ import 'package:bagholdr_server/src/services/asset_returns_calculator.dart';
 
 void main() {
   final uuid = Uuid();
+  final testAccountId = UuidValue.fromString('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa');
 
   /// Helper to create a test asset
   Asset createAsset({
@@ -32,6 +33,7 @@ void main() {
   }) {
     return Holding(
       id: UuidValue.fromString(uuid.v4()),
+      accountId: testAccountId,
       assetId: assetId,
       quantity: quantity,
       totalCostEur: totalCostEur,
@@ -50,6 +52,7 @@ void main() {
   }) {
     return Order(
       id: UuidValue.fromString(uuid.v4()),
+      accountId: testAccountId,
       assetId: assetId,
       orderDate: orderDate,
       quantity: quantity,
@@ -70,6 +73,7 @@ void main() {
   }) {
     return Order(
       id: UuidValue.fromString(uuid.v4()),
+      accountId: testAccountId,
       assetId: assetId,
       orderDate: orderDate,
       quantity: -quantity, // Sell orders have negative quantity

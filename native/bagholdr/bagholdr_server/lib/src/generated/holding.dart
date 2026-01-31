@@ -18,6 +18,7 @@ abstract class Holding
     implements _i1.TableRow<_i1.UuidValue?>, _i1.ProtocolSerialization {
   Holding._({
     this.id,
+    required this.accountId,
     required this.assetId,
     required this.quantity,
     required this.totalCostEur,
@@ -25,6 +26,7 @@ abstract class Holding
 
   factory Holding({
     _i1.UuidValue? id,
+    required _i1.UuidValue accountId,
     required _i1.UuidValue assetId,
     required double quantity,
     required double totalCostEur,
@@ -35,6 +37,9 @@ abstract class Holding
       id: jsonSerialization['id'] == null
           ? null
           : _i1.UuidValueJsonExtension.fromJson(jsonSerialization['id']),
+      accountId: _i1.UuidValueJsonExtension.fromJson(
+        jsonSerialization['accountId'],
+      ),
       assetId: _i1.UuidValueJsonExtension.fromJson(
         jsonSerialization['assetId'],
       ),
@@ -49,6 +54,9 @@ abstract class Holding
 
   @override
   _i1.UuidValue? id;
+
+  /// Reference to the account this holding belongs to (UUID)
+  _i1.UuidValue accountId;
 
   /// Reference to the asset (UUID)
   _i1.UuidValue assetId;
@@ -67,6 +75,7 @@ abstract class Holding
   @_i1.useResult
   Holding copyWith({
     _i1.UuidValue? id,
+    _i1.UuidValue? accountId,
     _i1.UuidValue? assetId,
     double? quantity,
     double? totalCostEur,
@@ -76,6 +85,7 @@ abstract class Holding
     return {
       '__className__': 'Holding',
       if (id != null) 'id': id?.toJson(),
+      'accountId': accountId.toJson(),
       'assetId': assetId.toJson(),
       'quantity': quantity,
       'totalCostEur': totalCostEur,
@@ -87,6 +97,7 @@ abstract class Holding
     return {
       '__className__': 'Holding',
       if (id != null) 'id': id?.toJson(),
+      'accountId': accountId.toJson(),
       'assetId': assetId.toJson(),
       'quantity': quantity,
       'totalCostEur': totalCostEur,
@@ -128,11 +139,13 @@ class _Undefined {}
 class _HoldingImpl extends Holding {
   _HoldingImpl({
     _i1.UuidValue? id,
+    required _i1.UuidValue accountId,
     required _i1.UuidValue assetId,
     required double quantity,
     required double totalCostEur,
   }) : super._(
          id: id,
+         accountId: accountId,
          assetId: assetId,
          quantity: quantity,
          totalCostEur: totalCostEur,
@@ -144,12 +157,14 @@ class _HoldingImpl extends Holding {
   @override
   Holding copyWith({
     Object? id = _Undefined,
+    _i1.UuidValue? accountId,
     _i1.UuidValue? assetId,
     double? quantity,
     double? totalCostEur,
   }) {
     return Holding(
       id: id is _i1.UuidValue? ? id : this.id,
+      accountId: accountId ?? this.accountId,
       assetId: assetId ?? this.assetId,
       quantity: quantity ?? this.quantity,
       totalCostEur: totalCostEur ?? this.totalCostEur,
@@ -159,6 +174,13 @@ class _HoldingImpl extends Holding {
 
 class HoldingUpdateTable extends _i1.UpdateTable<HoldingTable> {
   HoldingUpdateTable(super.table);
+
+  _i1.ColumnValue<_i1.UuidValue, _i1.UuidValue> accountId(
+    _i1.UuidValue value,
+  ) => _i1.ColumnValue(
+    table.accountId,
+    value,
+  );
 
   _i1.ColumnValue<_i1.UuidValue, _i1.UuidValue> assetId(_i1.UuidValue value) =>
       _i1.ColumnValue(
@@ -180,6 +202,10 @@ class HoldingUpdateTable extends _i1.UpdateTable<HoldingTable> {
 class HoldingTable extends _i1.Table<_i1.UuidValue?> {
   HoldingTable({super.tableRelation}) : super(tableName: 'holdings') {
     updateTable = HoldingUpdateTable(this);
+    accountId = _i1.ColumnUuid(
+      'accountId',
+      this,
+    );
     assetId = _i1.ColumnUuid(
       'assetId',
       this,
@@ -196,6 +222,9 @@ class HoldingTable extends _i1.Table<_i1.UuidValue?> {
 
   late final HoldingUpdateTable updateTable;
 
+  /// Reference to the account this holding belongs to (UUID)
+  late final _i1.ColumnUuid accountId;
+
   /// Reference to the asset (UUID)
   late final _i1.ColumnUuid assetId;
 
@@ -208,6 +237,7 @@ class HoldingTable extends _i1.Table<_i1.UuidValue?> {
   @override
   List<_i1.Column> get columns => [
     id,
+    accountId,
     assetId,
     quantity,
     totalCostEur,

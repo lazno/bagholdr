@@ -1,10 +1,24 @@
 import 'package:test/test.dart';
+import 'package:serverpod/serverpod.dart';
 import 'package:bagholdr_server/src/generated/protocol.dart';
 
 import 'test_tools/serverpod_test_tools.dart';
 
 void main() {
   withServerpod('Import Endpoint', (sessionBuilder, endpoints) {
+    // Create a test account ID that will be used across tests
+    late UuidValue testAccountId;
+
+    setUp(() async {
+      // Create a test account before each test
+      final account = await endpoints.account.createAccount(
+        sessionBuilder,
+        name: 'Test Account',
+        accountType: 'real',
+      );
+      testAccountId = account.id!;
+    });
+
     group('importDirectaCsv', () {
       test('imports orders and creates assets', () async {
         final csv = _buildCSV([
@@ -14,6 +28,7 @@ void main() {
         final result = await endpoints.import.importDirectaCsv(
           sessionBuilder,
           csvContent: csv,
+          accountId: testAccountId,
         );
 
         expect(result.ordersImported, equals(1));
@@ -31,6 +46,7 @@ void main() {
         await endpoints.import.importDirectaCsv(
           sessionBuilder,
           csvContent: csv1,
+          accountId: testAccountId,
         );
 
         // Second import with same ISIN
@@ -41,6 +57,7 @@ void main() {
         final result = await endpoints.import.importDirectaCsv(
           sessionBuilder,
           csvContent: csv2,
+          accountId: testAccountId,
         );
 
         expect(result.ordersImported, equals(1));
@@ -48,7 +65,7 @@ void main() {
         expect(result.holdingsUpdated, equals(1));
       });
 
-      test('skips duplicate orders by reference', () async {
+      test('replaces duplicate orders by reference', () async {
         final csv = _buildCSV([
           '15-03-2024,15-03-2024,Buy,VWCE,IE00BK5BQT80,123456,ETF,10,1000.00,0,EUR,REF001',
         ]);
@@ -57,17 +74,20 @@ void main() {
         await endpoints.import.importDirectaCsv(
           sessionBuilder,
           csvContent: csv,
+          accountId: testAccountId,
         );
 
         // Same CSV again
         final result = await endpoints.import.importDirectaCsv(
           sessionBuilder,
           csvContent: csv,
+          accountId: testAccountId,
         );
 
-        expect(result.ordersImported, equals(0)); // Skipped duplicate
+        // Orders with same reference are replaced, not skipped
+        expect(result.ordersImported, equals(1));
         expect(result.warnings.length, equals(1));
-        expect(result.warnings.first, contains('duplicate'));
+        expect(result.warnings.first, contains('Replaced'));
       });
 
       test('derives holdings correctly with buys and sells', () async {
@@ -81,6 +101,7 @@ void main() {
         final result = await endpoints.import.importDirectaCsv(
           sessionBuilder,
           csvContent: csv,
+          accountId: testAccountId,
         );
 
         expect(result.ordersImported, equals(4));
@@ -101,6 +122,7 @@ void main() {
         final result = await endpoints.import.importDirectaCsv(
           sessionBuilder,
           csvContent: csv,
+          accountId: testAccountId,
         );
 
         expect(result.ordersImported, equals(3));
@@ -116,6 +138,7 @@ void main() {
         final result = await endpoints.import.importDirectaCsv(
           sessionBuilder,
           csvContent: csv,
+          accountId: testAccountId,
         );
 
         expect(result.ordersImported, equals(0));
@@ -127,6 +150,7 @@ void main() {
         final result = await endpoints.import.importDirectaCsv(
           sessionBuilder,
           csvContent: 'line1\nline2\nline3',
+          accountId: testAccountId,
         );
 
         expect(result.ordersImported, equals(0));
@@ -142,6 +166,7 @@ void main() {
         final result = await endpoints.import.importDirectaCsv(
           sessionBuilder,
           csvContent: csv,
+          accountId: testAccountId,
         );
 
         expect(result.ordersImported, equals(1));
@@ -158,6 +183,7 @@ void main() {
         final result1 = await endpoints.import.importDirectaCsv(
           sessionBuilder,
           csvContent: csv1,
+          accountId: testAccountId,
         );
         expect(result1.holdingsUpdated, equals(1));
 
@@ -169,6 +195,7 @@ void main() {
         final result2 = await endpoints.import.importDirectaCsv(
           sessionBuilder,
           csvContent: csv2,
+          accountId: testAccountId,
         );
 
         // Holdings should be 0 (deleted) after selling everything

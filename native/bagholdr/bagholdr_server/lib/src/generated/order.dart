@@ -18,6 +18,7 @@ abstract class Order
     implements _i1.TableRow<_i1.UuidValue?>, _i1.ProtocolSerialization {
   Order._({
     this.id,
+    required this.accountId,
     required this.assetId,
     required this.orderDate,
     required this.quantity,
@@ -31,6 +32,7 @@ abstract class Order
 
   factory Order({
     _i1.UuidValue? id,
+    required _i1.UuidValue accountId,
     required _i1.UuidValue assetId,
     required DateTime orderDate,
     required double quantity,
@@ -47,6 +49,9 @@ abstract class Order
       id: jsonSerialization['id'] == null
           ? null
           : _i1.UuidValueJsonExtension.fromJson(jsonSerialization['id']),
+      accountId: _i1.UuidValueJsonExtension.fromJson(
+        jsonSerialization['accountId'],
+      ),
       assetId: _i1.UuidValueJsonExtension.fromJson(
         jsonSerialization['assetId'],
       ),
@@ -71,6 +76,9 @@ abstract class Order
 
   @override
   _i1.UuidValue? id;
+
+  /// Reference to the account this order belongs to (UUID)
+  _i1.UuidValue accountId;
 
   /// Reference to the asset (UUID)
   _i1.UuidValue assetId;
@@ -107,6 +115,7 @@ abstract class Order
   @_i1.useResult
   Order copyWith({
     _i1.UuidValue? id,
+    _i1.UuidValue? accountId,
     _i1.UuidValue? assetId,
     DateTime? orderDate,
     double? quantity,
@@ -122,6 +131,7 @@ abstract class Order
     return {
       '__className__': 'Order',
       if (id != null) 'id': id?.toJson(),
+      'accountId': accountId.toJson(),
       'assetId': assetId.toJson(),
       'orderDate': orderDate.toJson(),
       'quantity': quantity,
@@ -139,6 +149,7 @@ abstract class Order
     return {
       '__className__': 'Order',
       if (id != null) 'id': id?.toJson(),
+      'accountId': accountId.toJson(),
       'assetId': assetId.toJson(),
       'orderDate': orderDate.toJson(),
       'quantity': quantity,
@@ -186,6 +197,7 @@ class _Undefined {}
 class _OrderImpl extends Order {
   _OrderImpl({
     _i1.UuidValue? id,
+    required _i1.UuidValue accountId,
     required _i1.UuidValue assetId,
     required DateTime orderDate,
     required double quantity,
@@ -197,6 +209,7 @@ class _OrderImpl extends Order {
     required DateTime importedAt,
   }) : super._(
          id: id,
+         accountId: accountId,
          assetId: assetId,
          orderDate: orderDate,
          quantity: quantity,
@@ -214,6 +227,7 @@ class _OrderImpl extends Order {
   @override
   Order copyWith({
     Object? id = _Undefined,
+    _i1.UuidValue? accountId,
     _i1.UuidValue? assetId,
     DateTime? orderDate,
     double? quantity,
@@ -226,6 +240,7 @@ class _OrderImpl extends Order {
   }) {
     return Order(
       id: id is _i1.UuidValue? ? id : this.id,
+      accountId: accountId ?? this.accountId,
       assetId: assetId ?? this.assetId,
       orderDate: orderDate ?? this.orderDate,
       quantity: quantity ?? this.quantity,
@@ -243,6 +258,13 @@ class _OrderImpl extends Order {
 
 class OrderUpdateTable extends _i1.UpdateTable<OrderTable> {
   OrderUpdateTable(super.table);
+
+  _i1.ColumnValue<_i1.UuidValue, _i1.UuidValue> accountId(
+    _i1.UuidValue value,
+  ) => _i1.ColumnValue(
+    table.accountId,
+    value,
+  );
 
   _i1.ColumnValue<_i1.UuidValue, _i1.UuidValue> assetId(_i1.UuidValue value) =>
       _i1.ColumnValue(
@@ -297,6 +319,10 @@ class OrderUpdateTable extends _i1.UpdateTable<OrderTable> {
 class OrderTable extends _i1.Table<_i1.UuidValue?> {
   OrderTable({super.tableRelation}) : super(tableName: 'orders') {
     updateTable = OrderUpdateTable(this);
+    accountId = _i1.ColumnUuid(
+      'accountId',
+      this,
+    );
     assetId = _i1.ColumnUuid(
       'assetId',
       this,
@@ -337,6 +363,9 @@ class OrderTable extends _i1.Table<_i1.UuidValue?> {
 
   late final OrderUpdateTable updateTable;
 
+  /// Reference to the account this order belongs to (UUID)
+  late final _i1.ColumnUuid accountId;
+
   /// Reference to the asset (UUID)
   late final _i1.ColumnUuid assetId;
 
@@ -367,6 +396,7 @@ class OrderTable extends _i1.Table<_i1.UuidValue?> {
   @override
   List<_i1.Column> get columns => [
     id,
+    accountId,
     assetId,
     orderDate,
     quantity,

@@ -7,6 +7,9 @@ fields:
   ### UUID primary key (v7 for lexicographic sorting)
   id: UuidValue?, defaultPersist=random_v7
 
+  ### Reference to the account this holding belongs to (UUID)
+  accountId: UuidValue, relation(parent=accounts)
+
   ### Reference to the asset (UUID)
   assetId: UuidValue, relation(parent=assets)
 
@@ -17,7 +20,7 @@ fields:
   totalCostEur: double
 
 indexes:
-  ### Each asset can only have one holding record
-  holding_asset_idx:
-    fields: assetId
+  ### Each account-asset pair can only have one holding record
+  holding_account_asset_idx:
+    fields: accountId, assetId
     unique: true

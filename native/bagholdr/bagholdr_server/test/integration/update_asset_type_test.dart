@@ -8,8 +8,17 @@ void main() {
   withServerpod('Update Asset Type Endpoint', (sessionBuilder, endpoints) {
     group('updateAssetType', () {
       late UuidValue assetId;
+      late UuidValue testAccountId;
 
       setUp(() async {
+        // Create a test account first
+        final account = await endpoints.account.createAccount(
+          sessionBuilder,
+          name: 'Test Account',
+          accountType: 'real',
+        );
+        testAccountId = account.id!;
+
         // Create an asset via import
         final csv = _buildCSV([
           '15-03-2024,15-03-2024,Buy,VWCE,IE00BK5BQT80,123456,Vanguard FTSE All-World,10,1234.56,0,EUR,REF-ASSET-TYPE-TEST',
@@ -18,6 +27,7 @@ void main() {
         await endpoints.import.importDirectaCsv(
           sessionBuilder,
           csvContent: csv,
+          accountId: testAccountId,
         );
 
         // Get the asset ID from database

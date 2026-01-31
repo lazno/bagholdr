@@ -7,6 +7,9 @@ fields:
   ### UUID primary key (v7 for lexicographic sorting)
   id: UuidValue?, defaultPersist=random_v7
 
+  ### Reference to the account this order belongs to (UUID)
+  accountId: UuidValue, relation(parent=accounts)
+
   ### Reference to the asset (UUID)
   assetId: UuidValue, relation(parent=assets)
 
@@ -38,3 +41,7 @@ indexes:
   ### Index for efficient lookups by asset
   order_asset_idx:
     fields: assetId
+
+  ### Index for efficient lookups by account
+  order_account_idx:
+    fields: accountId

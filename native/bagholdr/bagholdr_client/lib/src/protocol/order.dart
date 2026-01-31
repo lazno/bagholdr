@@ -17,6 +17,7 @@ import 'package:serverpod_client/serverpod_client.dart' as _i1;
 abstract class Order implements _i1.SerializableModel {
   Order._({
     this.id,
+    required this.accountId,
     required this.assetId,
     required this.orderDate,
     required this.quantity,
@@ -30,6 +31,7 @@ abstract class Order implements _i1.SerializableModel {
 
   factory Order({
     _i1.UuidValue? id,
+    required _i1.UuidValue accountId,
     required _i1.UuidValue assetId,
     required DateTime orderDate,
     required double quantity,
@@ -46,6 +48,9 @@ abstract class Order implements _i1.SerializableModel {
       id: jsonSerialization['id'] == null
           ? null
           : _i1.UuidValueJsonExtension.fromJson(jsonSerialization['id']),
+      accountId: _i1.UuidValueJsonExtension.fromJson(
+        jsonSerialization['accountId'],
+      ),
       assetId: _i1.UuidValueJsonExtension.fromJson(
         jsonSerialization['assetId'],
       ),
@@ -66,6 +71,9 @@ abstract class Order implements _i1.SerializableModel {
 
   /// UUID primary key (v7 for lexicographic sorting)
   _i1.UuidValue? id;
+
+  /// Reference to the account this order belongs to (UUID)
+  _i1.UuidValue accountId;
 
   /// Reference to the asset (UUID)
   _i1.UuidValue assetId;
@@ -99,6 +107,7 @@ abstract class Order implements _i1.SerializableModel {
   @_i1.useResult
   Order copyWith({
     _i1.UuidValue? id,
+    _i1.UuidValue? accountId,
     _i1.UuidValue? assetId,
     DateTime? orderDate,
     double? quantity,
@@ -114,6 +123,7 @@ abstract class Order implements _i1.SerializableModel {
     return {
       '__className__': 'Order',
       if (id != null) 'id': id?.toJson(),
+      'accountId': accountId.toJson(),
       'assetId': assetId.toJson(),
       'orderDate': orderDate.toJson(),
       'quantity': quantity,
@@ -137,6 +147,7 @@ class _Undefined {}
 class _OrderImpl extends Order {
   _OrderImpl({
     _i1.UuidValue? id,
+    required _i1.UuidValue accountId,
     required _i1.UuidValue assetId,
     required DateTime orderDate,
     required double quantity,
@@ -148,6 +159,7 @@ class _OrderImpl extends Order {
     required DateTime importedAt,
   }) : super._(
          id: id,
+         accountId: accountId,
          assetId: assetId,
          orderDate: orderDate,
          quantity: quantity,
@@ -165,6 +177,7 @@ class _OrderImpl extends Order {
   @override
   Order copyWith({
     Object? id = _Undefined,
+    _i1.UuidValue? accountId,
     _i1.UuidValue? assetId,
     DateTime? orderDate,
     double? quantity,
@@ -177,6 +190,7 @@ class _OrderImpl extends Order {
   }) {
     return Order(
       id: id is _i1.UuidValue? ? id : this.id,
+      accountId: accountId ?? this.accountId,
       assetId: assetId ?? this.assetId,
       orderDate: orderDate ?? this.orderDate,
       quantity: quantity ?? this.quantity,
