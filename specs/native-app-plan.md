@@ -162,36 +162,6 @@ These tasks implement the new data architecture where Accounts are import target
 
 ---
 
-### NAPP-050: Account-Portfolio Data Model `[implement]`
-
-**Priority**: High | **Status**: `[ ]`
-**Blocked by**: None
-
-Implement the Account entity and refactor Portfolio to reference Accounts instead of directly owning holdings.
-
-**Data Model Changes**:
-- [ ] Create `Account` model (id, name, type: real|virtual, createdAt)
-- [ ] Add `accountId` foreign key to `Order` model
-- [ ] Add `accountId` foreign key to `Holding` model (derived from orders)
-- [ ] Create `PortfolioAccount` junction table (portfolioId, accountId)
-- [ ] Migration: Create default "Main Account", assign all existing orders/holdings to it
-- [ ] Migration: Link existing portfolios to the default account
-
-**Backend Changes**:
-- [ ] Update holdings derivation to be per-account
-- [ ] Update valuation endpoints to aggregate across portfolio's accounts
-- [ ] Update holdings endpoint to filter by portfolio's accounts
-- [ ] Create CRUD endpoints for accounts
-
-**Acceptance Criteria**:
-- [ ] Accounts can be created/listed/updated
-- [ ] Orders belong to an account
-- [ ] Portfolios reference one or more accounts
-- [ ] Existing data migrates cleanly
-- [ ] Dashboard shows holdings from portfolio's accounts only
-
----
-
 ### NAPP-051: Virtual Accounts `[implement]`
 
 **Priority**: Medium | **Status**: `[ ]`

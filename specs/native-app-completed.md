@@ -576,3 +576,38 @@ Add a compact, extensible filter to the dashboard for filtering the assets list.
 - `_SleeveFilterChip` - compact chip showing "Filter" (inactive) or sleeve name + X (active)
 - `_SleeveFilterBottomSheet` - modal picker with hierarchical sleeve list
 - Uses existing `sleeveId` parameter on `holdingsProvider` for efficient backend filtering
+
+### NAPP-050: Account-Portfolio Data Model `[implement]` - DONE
+
+Implemented Account entity and PortfolioAccount junction table so orders/holdings are scoped to accounts, and portfolios can aggregate multiple accounts.
+
+**Data Model Changes**:
+- [x] Created `Account` model (id, name, accountType: real|virtual, createdAt, updatedAt)
+- [x] Created `PortfolioAccount` junction table (portfolioId, accountId) with unique index
+- [x] Added `accountId` foreign key to `Order` model
+- [x] Added `accountId` foreign key to `Holding` model
+- [x] Migration: Creates default "Main Account", assigns all existing orders/holdings to it, links portfolios
+
+**Backend Changes**:
+- [x] Created `AccountEndpoint` with CRUD operations: getAccounts, createAccount, updateAccount, getPortfolioAccounts, addAccountToPortfolio, removeAccountFromPortfolio
+- [x] Updated `ImportEndpoint.importDirectaCsv` to require `accountId` parameter
+- [x] Updated holdings derivation to be per-account
+- [x] Created `portfolio_accounts.dart` helper utility with:
+  - `getPortfolioAccountIds()` - get account IDs linked to portfolio
+  - `getPortfolioHoldings()` - get holdings filtered by portfolio's accounts
+  - `getPortfolioOrders()` - get orders filtered by portfolio's accounts
+  - `aggregateHoldingsByAsset()` - aggregate holdings when same asset in multiple accounts
+- [x] Updated `HoldingsEndpoint`, `ValuationEndpoint`, `SleevesEndpoint` to filter by portfolio's accounts
+
+**Tests**:
+- [x] 6 unit tests for `aggregateHoldingsByAsset` helper
+- [x] All existing integration tests updated with accountId parameter
+- [x] 255 total tests passing (218 unit + 37 integration)
+
+**Files created**:
+- `lib/src/models/account.spy.yaml`
+- `lib/src/models/portfolio_account.spy.yaml`
+- `lib/src/endpoints/account_endpoint.dart`
+- `lib/src/utils/portfolio_accounts.dart`
+- `test/unit/portfolio_accounts_test.dart`
+- `migrations/20260131212804321/` (data-preserving migration)
