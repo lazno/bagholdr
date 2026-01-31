@@ -67,7 +67,8 @@
       "Bash(flutter build:*)",
       "Bash(find:*)",
       "Bash(sort:*)",
-      "Bash(PGPASSWORD=test psql:*)"
+      "Bash(PGPASSWORD=test psql:*)",
+      "Bash(\"$HOME/.pub-cache/bin/serverpod\" create-migration --force)"
     ]
   }
 }
